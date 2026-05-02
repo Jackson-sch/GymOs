@@ -1,0 +1,462 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated-client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────
+// AUTH (Better-Auth required models)
+// ─────────────────────────────────────────
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Custom GymOS fields
+  role     UserRole @default(RECEPTIONIST)
+  isActive Boolean  @default(true)
+
+  sessions      Session[]
+  accounts      Account[]
+  auditLogs     AuditLog[]
+  configUpdates SystemConfig[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@map("verification")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  RECEPTIONIST
+  TRAINER
+}
+
+// ─────────────────────────────────────────
+// MIEMBROS
+// ─────────────────────────────────────────
+
+model Member {
+  id               String       @id @default(cuid())
+  fullName         String
+  email            String?      @unique
+  phone            String
+  dni              String?      @unique
+  birthDate        DateTime?
+  gender           Gender?
+  photo            String?
+  qrCode           String       @unique @default(cuid())
+  status           MemberStatus @default(ACTIVE)
+  emergencyContact String?
+  emergencyPhone   String?
+  notes            String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  memberships   Membership[]
+  attendances   Attendance[]
+  payments      Payment[]
+  bodyMetrics   BodyMetric[]
+  classBookings ClassBooking[]
+
+  @@map("members")
+}
+
+enum MemberStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+model BodyMetric {
+  id         String   @id @default(cuid())
+  memberId   String
+  weight     Float?
+  height     Float?
+  bmi        Float?
+  bodyFat    Float?
+  muscle     Float?
+  notes      String?
+  measuredAt DateTime @default(now())
+
+  member Member @relation(fields: [memberId], references: [id])
+
+  @@map("body_metrics")
+}
+
+// ─────────────────────────────────────────
+// PLANES Y MEMBRESÍAS
+// ─────────────────────────────────────────
+
+model Plan {
+  id             String   @id @default(cuid())
+  name           String   @unique
+  description    String?
+  price          Decimal  @db.Decimal(10, 2)
+  durationDays   Int
+  maxFreezeDays  Int      @default(0)
+  allowedClasses Boolean  @default(true)
+  features       Json     @default("[]")
+  isActive       Boolean  @default(true)
+  color          String?
+  category       String   @default("GENERAL")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  memberships Membership[]
+
+  @@map("plans")
+}
+
+model Membership {
+  id         String           @id @default(cuid())
+  memberId   String
+  planId     String
+  startDate  DateTime
+  endDate    DateTime
+  status     MembershipStatus @default(ACTIVE)
+  autoRenew  Boolean          @default(false)
+  frozenAt   DateTime?
+  frozenDays Int              @default(0)
+  price      Decimal          @db.Decimal(10, 2)
+  notes      String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  member   Member    @relation(fields: [memberId], references: [id])
+  plan     Plan      @relation(fields: [planId], references: [id])
+  payments Payment[]
+
+  @@map("memberships")
+}
+
+enum MembershipStatus {
+  ACTIVE
+  EXPIRED
+  FROZEN
+  CANCELLED
+  PENDING
+}
+
+// ─────────────────────────────────────────
+// ASISTENCIA
+// ─────────────────────────────────────────
+
+model Attendance {
+  id       String        @id @default(cuid())
+  memberId String
+  checkIn  DateTime      @default(now())
+  checkOut DateTime?
+  method   CheckInMethod @default(QR)
+  classId  String?
+  notes    String?
+
+  member Member @relation(fields: [memberId], references: [id])
+  class  Class? @relation(fields: [classId], references: [id])
+
+  @@map("attendances")
+}
+
+enum CheckInMethod {
+  QR
+  NFC
+  PIN
+  MANUAL
+}
+
+// ─────────────────────────────────────────
+// PAGOS
+// ─────────────────────────────────────────
+
+model Payment {
+  id            String        @id @default(cuid())
+  memberId      String
+  membershipId  String?
+  amount        Decimal       @db.Decimal(10, 2)
+  method        PaymentMethod
+  status        PaymentStatus @default(PENDING)
+  reference     String?
+  invoiceUrl    String?
+  invoiceNumber String?       @unique
+  notes         String?
+  paidAt        DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  member     Member      @relation(fields: [memberId], references: [id])
+  membership Membership? @relation(fields: [membershipId], references: [id])
+
+  @@map("payments")
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+  YAPE
+  PLIN
+  CULQI
+  MERCADOPAGO
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// ─────────────────────────────────────────
+// CLASES
+// ─────────────────────────────────────────
+
+model Class {
+  id           String      @id @default(cuid())
+  name         String
+  description  String?
+  trainerId    String
+  maxCapacity  Int
+  durationMins Int
+  location     String?
+  color        String?
+  isRecurring  Boolean     @default(false)
+  recurrence   Json?
+  startTime    DateTime
+  endTime      DateTime
+  status       ClassStatus @default(SCHEDULED)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  trainer     Trainer        @relation(fields: [trainerId], references: [id])
+  bookings    ClassBooking[]
+  attendances Attendance[]
+
+  @@map("classes")
+}
+
+enum ClassStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model ClassBooking {
+  id       String        @id @default(cuid())
+  classId  String
+  memberId String
+  status   BookingStatus @default(CONFIRMED)
+  bookedAt DateTime      @default(now())
+
+  class  Class  @relation(fields: [classId], references: [id])
+  member Member @relation(fields: [memberId], references: [id])
+
+  @@unique([classId, memberId])
+  @@map("class_bookings")
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  ATTENDED
+  NO_SHOW
+}
+
+// ─────────────────────────────────────────
+// ENTRENADORES
+// ─────────────────────────────────────────
+
+model Trainer {
+  id            String   @id @default(cuid())
+  fullName      String
+  email         String   @unique
+  phone         String
+  photo         String?
+  specialties   String[]
+  bio           String?
+  commissionPct Decimal? @db.Decimal(5, 2)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  classes Class[]
+
+  @@map("trainers")
+}
+
+// ─────────────────────────────────────────
+// INVENTARIO
+// ─────────────────────────────────────────
+
+model Equipment {
+  id              String          @id @default(cuid())
+  name            String
+  category        String
+  photo           String?
+  serialNumber    String?         @unique
+  purchaseDate    DateTime?
+  purchasePrice   Decimal?        @db.Decimal(10, 2)
+  status          EquipmentStatus @default(OPERATIONAL)
+  lastMaintenance DateTime?
+  nextMaintenance DateTime?
+  notes           String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@map("equipment")
+}
+
+enum EquipmentStatus {
+  OPERATIONAL
+  MAINTENANCE
+  OUT_OF_SERVICE
+}
+
+// ─────────────────────────────────────────
+// CONFIGURACIÓN DEL SISTEMA (API Keys)
+// ─────────────────────────────────────────
+
+model SystemConfig {
+  key         String         @id
+  value       String
+  isEncrypted Boolean        @default(false)
+  category    ConfigCategory
+  description String?
+  updatedAt   DateTime       @updatedAt
+  updatedById String?
+
+  updatedBy User? @relation(fields: [updatedById], references: [id])
+
+  @@map("system_configs")
+}
+
+enum ConfigCategory {
+  TWILIO
+  RESEND
+  PAYMENT
+  UPLOADTHING
+  GENERAL
+  NOTIFICATIONS
+  CLOUDINARY
+}
+
+// ─────────────────────────────────────────
+// AUDIT LOG
+// ─────────────────────────────────────────
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String
+  entityId  String?
+  oldData   Json?
+  newData   Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+// ─────────────────────────────────────────
+// NOTIFICACIONES
+// ─────────────────────────────────────────
+
+model Notification {
+  id        String              @id @default(cuid())
+  memberId  String?
+  type      NotificationType
+  channel   NotificationChannel
+  status    NotificationStatus  @default(PENDING)
+  subject   String?
+  body      String
+  sentAt    DateTime?
+  error     String?
+  createdAt DateTime            @default(now())
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  WELCOME
+  MEMBERSHIP_EXPIRING
+  MEMBERSHIP_EXPIRED
+  PAYMENT_RECEIPT
+  PAYMENT_OVERDUE
+  CLASS_REMINDER
+  CLASS_CANCELLED
+  CUSTOM
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  BOTH
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
