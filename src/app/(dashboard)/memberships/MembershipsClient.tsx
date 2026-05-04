@@ -11,7 +11,9 @@ import {
   Zap,
   Edit2,
   Trash2,
-  MoreVertical
+  MoreVertical,
+  User,
+  Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,12 +32,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { PlanForm } from "@/components/shared/forms/PlanForm";
-import { deletePlanAction } from "@/lib/actions/plans-actions";
+import { deletePlanAction, getPlanMembersAction } from "@/lib/actions/plans-actions";
 import { toast } from "sonner";
 
 export function MembershipsClient({ data }: { data: any[] }) {
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
   const [editingPlan, setEditingPlan] = React.useState<any>(null);
+  const [membersPlan, setMembersPlan] = React.useState<any>(null);
+  const [planMembers, setPlanMembers] = React.useState<any[]>([]);
+  const [loadingMembers, setLoadingMembers] = React.useState(false);
 
   const handleDelete = async (id: string) => {
     if (confirm("¿Estás seguro de eliminar este plan?")) {
@@ -43,6 +48,18 @@ export function MembershipsClient({ data }: { data: any[] }) {
       if (result.success) toast.success("Plan eliminado");
       else toast.error(result.error);
     }
+  };
+
+  const handleViewMembers = async (plan: any) => {
+    setMembersPlan(plan);
+    setLoadingMembers(true);
+    const result = await getPlanMembersAction(plan.id);
+    if (result.success) {
+      setPlanMembers(result.data as any[]);
+    } else {
+      toast.error(result.error);
+    }
+    setLoadingMembers(false);
   };
 
   return (
@@ -136,9 +153,23 @@ export function MembershipsClient({ data }: { data: any[] }) {
                 </div>
               </div>
               
-              <Button variant="outline" className="w-full rounded-xl border-white/10 hover:bg-white/5 text-[10px] uppercase tracking-widest font-bold h-10 mt-auto">
-                Ver Socios Activos
-              </Button>
+              <div className="flex items-center justify-between mt-auto pt-6 border-t border-white/5">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-primary/10">
+                    <Users className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">
+                    {plan._count?.memberships || 0} Socios Activos
+                  </span>
+                </div>
+                <Button 
+                  onClick={() => handleViewMembers(plan)}
+                  variant="ghost" 
+                  className="rounded-lg hover:bg-white/5 text-[9px] uppercase tracking-widest font-bold h-8 px-3"
+                >
+                  Ver Lista
+                </Button>
+              </div>
             </div>
           ))
         ) : (
@@ -164,6 +195,62 @@ export function MembershipsClient({ data }: { data: any[] }) {
               onSuccess={() => setEditingPlan(null)} 
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Plan Members Dialog */}
+      <Dialog open={!!membersPlan} onOpenChange={(open) => !open && setMembersPlan(null)}>
+        <DialogContent className="glass-card border-white/10 bg-black/95 backdrop-blur-2xl max-w-md p-0 overflow-hidden">
+          <div className="p-6 border-b border-white/10">
+            <DialogHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
+                  <ShieldCheck className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <DialogTitle className="text-2xl font-serif">{membersPlan?.name}</DialogTitle>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold">
+                    Socios con Suscripción Activa
+                  </p>
+                </div>
+              </div>
+            </DialogHeader>
+          </div>
+
+          <div className="max-h-[400px] overflow-y-auto p-6 pt-2 custom-scrollbar">
+            {loadingMembers ? (
+              <div className="py-20 text-center">
+                <Sparkles className="w-8 h-8 text-primary mx-auto animate-pulse mb-4" />
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground animate-pulse">Cargando lista...</p>
+              </div>
+            ) : planMembers.length > 0 ? (
+              <div className="space-y-4">
+                {planMembers.map((member) => (
+                  <div key={member.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                      {member.photo ? (
+                        <img src={member.photo} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-5 h-5 text-muted-foreground/30" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{member.fullName}</p>
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{member.dni}</p>
+                    </div>
+                    <Badge variant="outline" className="rounded-full text-[8px] uppercase bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                      Activo
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-20 text-center">
+                <Users className="w-10 h-10 text-muted-foreground mx-auto mb-4 opacity-20" />
+                <p className="text-sm text-muted-foreground">No hay socios activos en este plan.</p>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

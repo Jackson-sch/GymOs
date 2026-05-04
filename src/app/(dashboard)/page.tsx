@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, CreditCard, UserCheck, TrendingUp, Sparkles, Activity, Clock, PieChart } from "lucide-react";
+import { Users, CreditCard, UserCheck, TrendingUp, Sparkles, Activity, Clock, PieChart, UserPlus, Settings, ShieldCheck } from "lucide-react";
 import { RosenChart } from "@/components/shared/RosenChart";
 import { RadialDonutChart } from "@/components/charts/RadialDonutChart";
 import { ActivityHeatmap } from "@/components/charts/ActivityHeatmap";
@@ -15,6 +15,18 @@ import {
   getAttendanceHeatmap,
   getWeeklyAttendance 
 } from "@/lib/actions/dashboard";
+import { formatDistanceToNow } from "date-fns";
+import { es } from "date-fns/locale";
+
+const getActionIcon = (type: string) => {
+  switch (type) {
+    case "ATTENDANCE": return UserCheck;
+    case "MEMBER_CREATE": return UserPlus;
+    case "PAYMENT": return CreditCard;
+    case "SYSTEM_UPDATE": return Settings;
+    default: return ShieldCheck;
+  }
+};
 
 export default function DashboardPage() {
   const [mounted, setMounted] = React.useState(false);
@@ -160,23 +172,37 @@ export default function DashboardPage() {
             <h2 className="text-lg md:text-2xl font-serif">Actividad Reciente</h2>
           </div>
           
-          <div className="space-y-4 overflow-hidden">
-            {activityData.map((item, i) => (
-              <div key={i} className="flex items-center gap-3 group cursor-default max-w-full">
-                <div className={cn(
-                  "w-1 h-6 md:h-8 rounded-full transition-all duration-500 group-hover:h-10 shrink-0",
-                  item.status === "emerald" ? "bg-emerald-500/20 group-hover:bg-emerald-500" :
-                  item.status === "primary" ? "bg-primary/20 group-hover:bg-primary" :
-                  "bg-accent/20 group-hover:bg-accent"
-                )} />
-                <div className="flex-1 min-w-0 space-y-0.5">
-                  <p className="text-xs md:text-sm font-medium truncate">
-                    {item.action}: <span className="text-muted-foreground">{item.user}</span>
-                  </p>
-                  <p className="text-[9px] text-muted-foreground uppercase tracking-tighter">{item.time}</p>
-                </div>
+          <div className="space-y-4 max-h-[420px] overflow-y-auto pr-2 custom-scrollbar relative">
+            {activityData.length > 0 ? (
+              activityData.map((item, i) => {
+                const Icon = getActionIcon(item.type);
+                return (
+                  <div key={i} className="flex items-center gap-3 group cursor-default max-w-full">
+                    <div className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300",
+                      item.status === "emerald" ? "bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white" :
+                      item.status === "primary" ? "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white" :
+                      "bg-accent/10 text-accent group-hover:bg-accent group-hover:text-white"
+                    )}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-0.5">
+                      <p className="text-xs md:text-sm font-medium truncate capitalize">
+                        {item.action.toLowerCase()}: <span className="text-muted-foreground normal-case">{item.user}</span>
+                      </p>
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-tighter">
+                        Hace {formatDistanceToNow(new Date(item.date), { locale: es, addSuffix: false })}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Activity className="w-8 h-8 text-muted-foreground/20 mb-2" />
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Sin actividad reciente</p>
               </div>
-            ))}
+            )}
           </div>
           
           <button className="w-full mt-6 py-2.5 rounded-lg bg-white/5 border border-white/10 text-[9px] uppercase tracking-[0.3em] font-bold hover:bg-white/10 transition-colors">

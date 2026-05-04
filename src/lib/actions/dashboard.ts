@@ -81,12 +81,12 @@ export async function getPlanComposition() {
 export async function getRecentActivity() {
   const [auditLogs, attendances] = await Promise.all([
     prisma.auditLog.findMany({
-      take: 4,
+      take: 10,
       orderBy: { createdAt: "desc" },
       include: { user: true },
     }),
     prisma.attendance.findMany({
-      take: 4,
+      take: 10,
       orderBy: { checkIn: "desc" },
       include: { member: true },
     }),
@@ -95,17 +95,22 @@ export async function getRecentActivity() {
   const activities = [
     ...auditLogs.map((log) => ({
       user: log.user.name,
-      action: log.action.replace("_", " "),
-      time: format(log.createdAt, "HH:mm"),
+      action: log.action.replace(/_/g, " "),
+      date: log.createdAt,
+      type: log.action.includes("CREATE") ? "MEMBER_CREATE" : 
+            log.action.includes("PAYMENT") ? "PAYMENT" : "SYSTEM_UPDATE",
       status: "accent" as const,
     })),
     ...attendances.map((att) => ({
       user: att.member.fullName,
       action: "Check-in",
-      time: format(att.checkIn, "HH:mm"),
+      date: att.checkIn,
+      type: "ATTENDANCE",
       status: "emerald" as const,
     })),
-  ].sort((a, b) => b.time.localeCompare(a.time)).slice(0, 5);
+  ]
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .slice(0, 10);
 
   return activities;
 }

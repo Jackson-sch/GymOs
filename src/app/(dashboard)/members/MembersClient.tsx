@@ -12,7 +12,8 @@ import {
   Trash2, 
   Plus, 
   ShieldCheck,
-  Smartphone
+  Smartphone,
+  RefreshCw
 } from "lucide-react";
 import { 
   DropdownMenu, 
@@ -29,12 +30,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MemberForm } from "@/components/shared/forms/MemberForm";
+import { RenewalForm } from "@/components/shared/forms/RenewalForm";
 import { deleteMemberAction } from "@/lib/actions/members-actions";
 import { toast } from "sonner";
 
-export function MembersClient({ data }: { data: any[] }) {
+export function MembersClient({ data, plans }: { data: any[], plans: any[] }) {
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
   const [editingMember, setEditingMember] = React.useState<any>(null);
+  const [renewingMember, setRenewingMember] = React.useState<any>(null);
 
   const handleDelete = React.useCallback(async (id: string) => {
     if (confirm("¿Estás seguro de eliminar este socio?")) {
@@ -121,6 +124,12 @@ export function MembersClient({ data }: { data: any[] }) {
               <Edit2 className="w-3 h-3" /> Editar
             </DropdownMenuItem>
             <DropdownMenuItem 
+              className="gap-2 text-[10px] uppercase tracking-widest font-bold focus:bg-emerald-500/20 text-emerald-500 cursor-pointer"
+              onClick={() => setRenewingMember(row.original)}
+            >
+              <RefreshCw className="w-3 h-3" /> Renovar Plan
+            </DropdownMenuItem>
+            <DropdownMenuItem 
               className="gap-2 text-[10px] uppercase tracking-widest font-bold focus:bg-rose-500/20 text-rose-500 cursor-pointer"
               onClick={() => handleDelete(row.original.id)}
             >
@@ -130,7 +139,7 @@ export function MembersClient({ data }: { data: any[] }) {
         </DropdownMenu>
       ),
     },
-  ], [handleDelete, setEditingMember]);
+  ], [handleDelete, setEditingMember, setRenewingMember]);
 
   return (
     <div className="space-y-6">
@@ -175,6 +184,25 @@ export function MembersClient({ data }: { data: any[] }) {
             <MemberForm 
               initialData={editingMember} 
               onSuccess={() => setEditingMember(null)} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Renewal Dialog */}
+      <Dialog open={!!renewingMember} onOpenChange={() => setRenewingMember(null)}>
+        <DialogContent className="glass-card border-white/10 bg-black/95 backdrop-blur-2xl max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-serif">Renovar Membresía</DialogTitle>
+            <DialogDescription className="text-xs uppercase tracking-widest text-muted-foreground">
+              Asigna un nuevo plan a {renewingMember?.fullName}.
+            </DialogDescription>
+          </DialogHeader>
+          {renewingMember && (
+            <RenewalForm 
+              member={renewingMember} 
+              plans={plans}
+              onSuccess={() => setRenewingMember(null)} 
             />
           )}
         </DialogContent>

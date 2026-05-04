@@ -119,16 +119,23 @@ async function main() {
       const attendancesCount = Math.floor(Math.random() * 20);
       for (let d = 0; d < attendancesCount; d++) {
         const attDate = new Date();
-        attDate.setDate(attDate.getDate() - Math.floor(Math.random() * 30));
-        // Randomize hour for heatmap (morning 6-11 or evening 16-22)
-        const isMorning = Math.random() > 0.4;
-        const hour = isMorning ? Math.floor(Math.random() * 5) + 6 : Math.floor(Math.random() * 6) + 16;
-        attDate.setHours(hour, Math.floor(Math.random() * 60));
+        // Subtract random time: 0-30 days ago, then random hours within that day
+        const daysAgo = Math.floor(Math.random() * 30);
+        const hoursAgo = Math.floor(Math.random() * 16) + 1; // 1-16 hours back
+        const minutesAgo = Math.floor(Math.random() * 60);
+        attDate.setTime(attDate.getTime() - (daysAgo * 86400000) - (hoursAgo * 3600000) - (minutesAgo * 60000));
+
+        // Decide if this person is "still in" (only if it's today and 10% chance)
+        const isToday = daysAgo === 0;
+        const isStillIn = isToday && Math.random() > 0.9;
+        
+        const checkOut = isStillIn ? null : new Date(attDate.getTime() + (Math.floor(Math.random() * 75) + 45) * 60000);
 
         await prisma.attendance.create({
           data: {
             memberId: member.id,
             checkIn: attDate,
+            checkOut: checkOut,
             method: "QR",
           },
         });

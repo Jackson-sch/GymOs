@@ -1,12 +1,17 @@
 import React from "react";
 import { getMembersAction } from "@/lib/actions/members-actions";
+import { getPlansAction } from "@/lib/actions/plans-actions";
 import { MembersClient } from "./MembersClient";
 import { Users, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default async function MembersPage() {
-  const result = await getMembersAction();
+  const [result, plansResult] = await Promise.all([
+    getMembersAction(),
+    getPlansAction()
+  ]);
   const members = result.success ? (result.data as any[]) : [];
+  const plans = plansResult.success ? (plansResult.data as any[]) : [];
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700">
@@ -55,7 +60,7 @@ export default async function MembersPage() {
             {members.length} Socios Registrados
           </span>
         </div>
-        <MembersClient data={members as any} />
+        <MembersClient data={members as any} plans={plans} />
       </div>
     </div>
   );

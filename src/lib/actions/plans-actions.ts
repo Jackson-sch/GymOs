@@ -10,11 +10,43 @@ export async function getPlansAction() {
   try {
     const plans = await prisma.plan.findMany({
       orderBy: { price: "asc" },
+      include: {
+        _count: {
+          select: {
+            memberships: {
+              where: { status: "ACTIVE" }
+            }
+          }
+        }
+      }
     });
     
     return { success: true, data: serialize(plans) };
   } catch (error) {
+    console.error("Error fetching plans:", error);
     return { success: false, error: "Error al cargar planes" };
+  }
+}
+
+export async function getPlanMembersAction(planId: string) {
+  try {
+    const memberships = await prisma.membership.findMany({
+      where: {
+        planId,
+        status: "ACTIVE",
+      },
+      include: {
+        member: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return { success: true, data: serialize(memberships.map(m => m.member)) };
+  } catch (error) {
+    console.error("Error fetching plan members:", error);
+    return { success: false, error: "Error al cargar los socios del plan" };
   }
 }
 

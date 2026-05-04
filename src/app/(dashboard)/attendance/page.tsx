@@ -1,17 +1,21 @@
 import React from "react";
-import { getRecentAttendanceAction } from "@/lib/actions/attendance-actions";
+import { getRecentAttendanceAction, getCurrentOccupancyAction, getAttendanceDashboardStatsAction } from "@/lib/actions/attendance-actions";
 import { getMembersAction } from "@/lib/actions/members-actions";
 import { Activity } from "lucide-react";
 import { AttendanceClient } from "./AttendanceClient";
 
 export default async function AttendancePage() {
-  const [attendanceRes, membersRes] = await Promise.all([
+  const [attendanceRes, membersRes, occupancyRes, statsRes] = await Promise.all([
     getRecentAttendanceAction(),
-    getMembersAction()
+    getMembersAction(),
+    getCurrentOccupancyAction(),
+    getAttendanceDashboardStatsAction()
   ]);
 
   const history = attendanceRes.success ? (attendanceRes.data as any[]) : [];
   const members = membersRes.success ? (membersRes.data as any[]) : [];
+  const occupancy = occupancyRes.success ? occupancyRes.count || 0 : 0;
+  const stats = statsRes.success ? statsRes.stats : { totalToday: 0, birthdaysToday: 0, planDistribution: [] };
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700">
@@ -30,7 +34,12 @@ export default async function AttendancePage() {
       </div>
 
       {/* Main Client Component */}
-      <AttendanceClient history={history} members={members} />
+      <AttendanceClient 
+        history={history} 
+        members={members} 
+        occupancy={occupancy} 
+        stats={stats}
+      />
     </div>
   );
 }

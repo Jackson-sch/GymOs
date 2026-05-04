@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { DashboardContent } from "./DashboardContent";
+import { getConfigMap } from "@/lib/config";
 
 export default async function DashboardLayout({
   children,
@@ -17,5 +18,8 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  return <DashboardContent>{children}</DashboardContent>;
+  // Fetch branding config
+  const branding = await getConfigMap(["GYM_NAME", "GYM_LOGO"]);
+
+  return <DashboardContent branding={branding}>{children}</DashboardContent>;
 }

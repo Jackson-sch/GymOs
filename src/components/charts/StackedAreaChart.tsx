@@ -122,7 +122,7 @@ export function StackedAreaChart({ data }: { data?: { name: string, value: numbe
                     cx={xScale(d.name)}
                     cy={yScale(d.value)}
                     r="4"
-                    fill="var(--color-accent)"
+                    fill="var(--color-primary)"
                     className="stroke-background stroke-2 cursor-pointer hover:r-6 transition-all"
                   />
                 </TooltipTrigger>
