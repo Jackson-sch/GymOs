@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, CreditCard, UserCheck, TrendingUp, Sparkles, Activity, Clock, PieChart, UserPlus, Settings, ShieldCheck } from "lucide-react";
+import { Users, CreditCard, UserCheck, TrendingUp, Sparkles, Activity, Clock, PieChart, UserPlus, Settings, ShieldCheck, AlertTriangle } from "lucide-react";
 import { RosenChart } from "@/components/shared/RosenChart";
 import { RadialDonutChart } from "@/components/charts/RadialDonutChart";
 import { ActivityHeatmap } from "@/components/charts/ActivityHeatmap";
@@ -15,8 +15,10 @@ import {
   getAttendanceHeatmap,
   getWeeklyAttendance 
 } from "@/lib/actions/dashboard";
+import { getMaintenanceAlerts } from "@/lib/actions/inventory-actions";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import { Badge } from "@/components/ui/badge";
 
 const getActionIcon = (type: string) => {
   switch (type) {
@@ -36,17 +38,19 @@ export default function DashboardPage() {
   const [activityData, setActivityData] = React.useState<any[]>([]);
   const [heatmapData, setHeatmapData] = React.useState<number[][] | undefined>(undefined);
   const [weeklyData, setWeeklyData] = React.useState<any[]>([]);
+  const [maintenanceAlerts, setMaintenanceAlerts] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     setMounted(true);
     const fetchData = async () => {
-      const [s, r, p, a, h, w] = await Promise.all([
+      const [s, r, p, a, h, w, m] = await Promise.all([
         getDashboardStats(),
         getRevenueData(),
         getPlanComposition(),
         getRecentActivity(),
         getAttendanceHeatmap(),
-        getWeeklyAttendance()
+        getWeeklyAttendance(),
+        getMaintenanceAlerts()
       ]);
       setStats(s);
       setRevenueData(r);
@@ -54,6 +58,7 @@ export default function DashboardPage() {
       setActivityData(a);
       setHeatmapData(h);
       setWeeklyData(w);
+      setMaintenanceAlerts(m.success ? (m.data as any[]) : []);
     };
     fetchData();
   }, []);
@@ -118,6 +123,37 @@ export default function DashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Maintenance Alerts - Priority Row */}
+      {maintenanceAlerts.length > 0 && (
+        <div className="glass-card p-4 md:p-6 border-rose-500/20 bg-rose-500/5 animate-in slide-in-from-top duration-1000">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center">
+              <AlertTriangle className="w-4 h-4 text-rose-500 animate-pulse" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-rose-500">Alertas de Mantenimiento</h2>
+              <p className="text-[9px] text-rose-500/60 uppercase tracking-widest font-medium">Equipos que requieren atención inmediata</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+            {maintenanceAlerts.map(item => (
+              <div key={item.id} className="flex flex-col justify-between bg-background/40 p-3 rounded-xl border border-rose-500/10 hover:border-rose-500/30 transition-all cursor-pointer group">
+                <div className="space-y-0.5">
+                  <p className="text-xs font-bold truncate group-hover:text-rose-500 transition-colors">{item.name}</p>
+                  <p className="text-[9px] uppercase text-muted-foreground tracking-tighter">{item.category}</p>
+                </div>
+                <div className="mt-2 flex justify-between items-center">
+                   <Badge variant="outline" className="text-[7px] border-rose-500/30 text-rose-500 uppercase h-4 px-1.5 font-bold">
+                    {item.status === "MAINTENANCE" ? "En Reparación" : "Vencido"}
+                  </Badge>
+                  <span className="text-[8px] text-muted-foreground font-mono">{item.serialNumber || "S/N"}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Row 1: Finance & Membership Composition */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">

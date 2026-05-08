@@ -57,7 +57,8 @@ export function ClassesClient({ classes, trainers }: { classes: any[], trainers:
         <Dialog open={isCreateTrainerOpen} onOpenChange={setIsCreateTrainerOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" className="bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl px-6 h-12 font-sans font-semibold tracking-wide gap-2">
-              Ver Entrenadores
+              <Plus className="w-4 h-4 text-primary" />
+              Nuevo Entrenador
             </Button>
           </DialogTrigger>
           <DialogContent className="glass-card border-white/10 bg-black/95 backdrop-blur-2xl max-w-lg">
@@ -131,7 +132,7 @@ export function ClassesClient({ classes, trainers }: { classes: any[], trainers:
                     </DropdownMenu>
                   </div>
 
-                  <div className="bg-white/[0.02] p-6 md:w-32 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-white/5">
+                  <div className="bg-white/2 p-6 md:w-32 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-white/5">
                     <p className="text-2xl font-serif leading-none mb-1">{format(new Date(session.startTime), "HH:mm")}</p>
                     <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{format(new Date(session.startTime), "aaa")}</p>
                   </div>

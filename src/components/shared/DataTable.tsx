@@ -22,6 +22,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   filterColumn?: string;
   placeholder?: string;
+  manualFiltering?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -29,6 +30,7 @@ export function DataTable<TData, TValue>({
   data,
   filterColumn,
   placeholder = "Buscar...",
+  manualFiltering = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   
@@ -52,7 +54,7 @@ export function DataTable<TData, TValue>({
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    manualFiltering: true, // We handle filtering via nuqs/URL
+    manualFiltering,
     state: {
       sorting,
       columnFilters,

@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { createMemberAction, updateMemberAction } from "@/lib/actions/members-actions";
 import { toast } from "sonner";
 import { Loader2, Save } from "lucide-react";
-import { ImageUpload } from "@/components/shared/ImageUpload";
 
 const memberSchema = z.object({
   fullName: z.string().min(3, "Mínimo 3 caracteres"),
@@ -32,7 +31,7 @@ interface MemberFormProps {
 export function MemberForm({ initialData, onSuccess }: MemberFormProps) {
   const [loading, setLoading] = React.useState(false);
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<MemberFormValues>({
+  const { register, handleSubmit, formState: { errors } } = useForm<MemberFormValues>({
     resolver: zodResolver(memberSchema),
     defaultValues: initialData ? {
       ...initialData,
@@ -57,16 +56,7 @@ export function MemberForm({ initialData, onSuccess }: MemberFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="flex flex-col items-center justify-center space-y-2 mb-6">
-        <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Foto del Socio</Label>
-        <ImageUpload 
-          value={watch("photo")}
-          onChange={(url) => setValue("photo", url)}
-          onRemove={() => setValue("photo", "")}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 pt-4">
         <div className="space-y-2">
           <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Nombre Completo</Label>
           <Input {...register("fullName")} className="bg-white/5 border-white/10" placeholder="Ej. Juan Pérez" />

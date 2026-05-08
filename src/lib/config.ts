@@ -1,5 +1,5 @@
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "crypto";
-import { prisma } from "../../prisma";
+import { prisma } from "./prisma";
 
 // Clave maestra desde .env
 const CONFIG_SECRET = process.env.CONFIG_SECRET || "default-secret-change-me";

@@ -148,3 +148,66 @@ export async function registerAttendanceAction(memberId: string, method: "QR" | 
     return { success: false, error: "Error al registrar asistencia" };
   }
 }
+
+export async function processKioskCheckInAction(code: string) {
+  try {
+    // 1. Find member by DNI or QR Code
+    const member = await prisma.member.findFirst({
+      where: {
+        OR: [
+          { dni: code },
+          { qrCode: code }
+        ]
+      },
+      include: {
+        memberships: {
+          where: {
+            status: "ACTIVE",
+            endDate: { gte: new Date() }
+          },
+          include: {
+            plan: true
+          }
+        }
+      }
+    });
+
+    if (!member) {
+      return { success: false, status: "NOT_FOUND", error: "Socio no encontrado" };
+    }
+
+    if (member.status !== "ACTIVE" || member.memberships.length === 0) {
+      return { 
+        success: true, 
+        status: "DENIED", 
+        member: { fullName: member.fullName, photo: member.photo },
+        reason: "Membresía inactiva o vencida" 
+      };
+    }
+
+    // 2. Register attendance
+    await prisma.attendance.create({
+      data: {
+        memberId: member.id,
+        method: "QR", // or manual, but default to QR for kiosk
+        checkIn: new Date(),
+      }
+    });
+
+    revalidatePath("/attendance");
+    revalidatePath("/");
+
+    return { 
+      success: true, 
+      status: "GRANTED", 
+      member: { 
+        fullName: member.fullName, 
+        photo: member.photo, 
+        planName: member.memberships[0].plan.name 
+      } 
+    };
+  } catch (error) {
+    console.error("Error processing kiosk check-in:", error);
+    return { success: false, status: "ERROR", error: "Error del servidor" };
+  }
+}

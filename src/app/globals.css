@@ -136,6 +136,18 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --animate-spin-slow: spin-slow 8s linear infinite;
+  --animate-scan-loop: scan-loop 2.5s ease-in-out infinite;
+}
+
+@keyframes scan-loop {
+  0%, 100% { top: 5%; opacity: 0.2; }
+  50% { top: 95%; opacity: 1; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 :root {

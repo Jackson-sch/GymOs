@@ -91,9 +91,9 @@ export function StackedAreaChart({ data }: { data?: { name: string, value: numbe
           ))}
 
           {/* X-Axis labels */}
-          {data.map((d) => (
+          {data.map((d, i) => (
             <text
-              key={d.name}
+              key={i}
               x={xScale(d.name)}
               y={innerHeight + 25}
               textAnchor="middle"

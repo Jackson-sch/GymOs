@@ -12,6 +12,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { NotificationCenter } from "@/components/shared/NotificationCenter";
 
 export function DashboardContent({
   children,
@@ -40,30 +41,33 @@ export function DashboardContent({
           <span className="font-serif text-xl tracking-tight">{gymName}</span>
         </div>
         
-        <Sheet>
-          <SheetTrigger asChild>
-            <button className="p-2 hover:bg-white/5 rounded-lg transition-colors">
-              <Menu className="w-6 h-6" />
-            </button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-72 bg-background/80 backdrop-blur-xl border-white/5 p-0">
-            <SheetHeader className="p-6 text-left border-b border-white/5">
-              <SheetTitle className="flex items-center gap-3">
-                <div className="bg-primary/20 p-2 rounded-xl border border-white/10 overflow-hidden flex items-center justify-center">
-                  {gymLogo ? (
-                    <img src={gymLogo} alt={gymName} className="w-6 h-6 object-cover" />
-                  ) : (
-                    <Dumbbell className="w-6 h-6 text-primary" />
-                  )}
-                </div>
-                <span className="font-serif text-2xl">{gymName}</span>
-              </SheetTitle>
-            </SheetHeader>
-            <div className="p-4">
-              <Sidebar isMobile branding={branding} />
-            </div>
-          </SheetContent>
-        </Sheet>
+        <div className="flex items-center gap-2">
+          <NotificationCenter />
+          <Sheet>
+            <SheetTrigger asChild>
+              <button className="p-2 hover:bg-white/5 rounded-lg transition-colors">
+                <Menu className="w-6 h-6" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-72 bg-background/80 backdrop-blur-xl border-white/5 p-0">
+              <SheetHeader className="p-6 text-left border-b border-white/5">
+                <SheetTitle className="flex items-center gap-3">
+                  <div className="bg-primary/20 p-2 rounded-xl border border-white/10 overflow-hidden flex items-center justify-center">
+                    {gymLogo ? (
+                      <img src={gymLogo} alt={gymName} className="w-6 h-6 object-cover" />
+                    ) : (
+                      <Dumbbell className="w-6 h-6 text-primary" />
+                    )}
+                  </div>
+                  <span className="font-serif text-2xl">{gymName}</span>
+                </SheetTitle>
+              </SheetHeader>
+              <div className="p-4">
+                <Sidebar isMobile branding={branding} />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </header>
 
       <Sidebar branding={branding} />
@@ -74,7 +78,12 @@ export function DashboardContent({
           "ml-0"
         )}
       >
-        <div className="w-full max-w-[100vw] px-4 sm:px-8 lg:px-12 py-20 md:py-12 mx-auto overflow-hidden">
+        {/* Desktop Top Bar */}
+        <header className="hidden md:flex h-20 items-center justify-end px-8 gap-4">
+          <NotificationCenter />
+        </header>
+
+        <div className="w-full max-w-[100vw] px-4 sm:px-8 lg:px-12 py-4 md:py-2 mx-auto overflow-hidden">
           {children}
         </div>
       </main>

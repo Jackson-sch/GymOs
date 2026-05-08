@@ -16,7 +16,9 @@ import {
   FileText,
   UserCheck,
   Sparkles,
-  LogOut
+  LogOut,
+  TrendingDown,
+  ScanLine
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/store/use-ui-store";
@@ -30,8 +32,13 @@ const menuItems = [
   { label: "Membresías", icon: CreditCard, href: "/memberships" },
   { label: "Asistencia", icon: UserCheck, href: "/attendance" },
   { label: "Clases", icon: Calendar, href: "/classes" },
-  { label: "Pagos", icon: FileText, href: "/payments" },
+  { label: "Entrenadores", icon: Sparkles, href: "/trainers" },
+  { label: "Ingresos", icon: FileText, href: "/payments" },
+  { label: "Egresos", icon: TrendingDown, href: "/expenses" },
   { label: "Inventario", icon: Package, href: "/inventory" },
+  { label: "Rutinas", icon: Dumbbell, href: "/routines" },
+  { label: "Reportes", icon: FileText, href: "/reports" },
+  { label: "Kiosco", icon: ScanLine, href: "/kiosk" },
   { label: "Configuración", icon: Settings, href: "/settings" },
 ];
 

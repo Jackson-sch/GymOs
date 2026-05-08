@@ -2,9 +2,11 @@
 
 import { prisma } from "../../../prisma";
 import { revalidatePath } from "next/cache";
+import { verifySession } from "@/lib/security";
 
 export async function getSystemConfigAction() {
   try {
+    await verifySession();
     const configs = await prisma.systemConfig.findMany({
       orderBy: {
         category: "asc",
@@ -19,6 +21,7 @@ export async function getSystemConfigAction() {
 
 export async function updateConfigAction(key: string, value: string) {
   try {
+    await verifySession(["SUPER_ADMIN", "ADMIN"]);
     const config = await prisma.systemConfig.upsert({
       where: { key },
       update: { value },
@@ -38,6 +41,7 @@ export async function updateConfigAction(key: string, value: string) {
 
 export async function updateConfigsAction(configs: { key: string; value: string; category?: any }[]) {
   try {
+    await verifySession(["SUPER_ADMIN", "ADMIN"]);
     const operations = configs.map(config => 
       prisma.systemConfig.upsert({
         where: { key: config.key },

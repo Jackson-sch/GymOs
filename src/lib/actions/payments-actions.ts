@@ -2,6 +2,7 @@
 
 import { prisma } from "../../../prisma";
 import { revalidatePath } from "next/cache";
+import { verifySession } from "@/lib/security";
 
 // Función de utilidad para serialización profunda y segura de tipos complejos de Prisma
 function serialize<T>(data: T): T {
@@ -12,6 +13,7 @@ function serialize<T>(data: T): T {
 
 export async function getRecentPaymentsAction() {
   try {
+    await verifySession();
     const payments = await prisma.payment.findMany({
       take: 15,
       orderBy: { createdAt: "desc" },
@@ -26,6 +28,7 @@ export async function getRecentPaymentsAction() {
 
 export async function createPaymentAction(data: any) {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN"]);
     // 1. Crear el pago
     const payment = await prisma.payment.create({
       data: {
@@ -69,6 +72,7 @@ export async function createPaymentAction(data: any) {
 
 export async function getFinancialStatsAction() {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN"]);
     const stats = await prisma.payment.groupBy({
       by: ['method'],
       _sum: { amount: true },

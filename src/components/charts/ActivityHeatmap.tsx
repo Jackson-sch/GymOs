@@ -64,7 +64,7 @@ export function ActivityHeatmap({ data }: { data?: number[][] }) {
                 {hour}
               </span>
               <div className="grid grid-cols-7 gap-2">
-                {data[hIndex].map((intensity, dIndex) => (
+                {(data[hIndex] || Array(7).fill(0)).map((intensity, dIndex) => (
                   <Tooltip key={`${hIndex}-${dIndex}`} delayDuration={0}>
                     <TooltipTrigger asChild>
                       <div

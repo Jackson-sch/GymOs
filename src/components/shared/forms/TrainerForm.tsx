@@ -3,85 +3,146 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { createTrainerAction } from "@/lib/actions/classes-actions";
-import { toast } from "sonner";
-import { Loader2, UserPlus } from "lucide-react";
-import { ImageUpload } from "@/components/shared/ImageUpload";
+import { InputGroup } from "@/components/ui/input-group";
 
 const trainerSchema = z.object({
-  fullName: z.string().min(3, "Mínimo 3 caracteres"),
+  fullName: z.string().min(2, "Nombre requerido"),
   email: z.string().email("Email inválido"),
-  phone: z.string().min(7, "Teléfono inválido"),
-  bio: z.string().optional(),
+  phone: z.string().min(6, "Teléfono requerido"),
   photo: z.string().optional(),
+  specialties: z.string().optional(),
+  bio: z.string().optional(),
+  commissionPct: z.number().optional(),
 });
 
-type TrainerFormValues = z.infer<typeof trainerSchema>;
+type TrainerFormData = z.infer<typeof trainerSchema>;
 
-export function TrainerForm({ onSuccess }: { onSuccess: () => void }) {
-  const [loading, setLoading] = React.useState(false);
+interface TrainerFormProps {
+  trainer?: any;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<TrainerFormValues>({
+export function TrainerForm({ trainer, onSuccess, onCancel }: TrainerFormProps) {
+  const [isLoading, setIsLoading] = React.useState(false);
+  
+  const form = useForm<TrainerFormData>({
     resolver: zodResolver(trainerSchema),
+    defaultValues: {
+      fullName: trainer?.fullName || "",
+      email: trainer?.email || "",
+      phone: trainer?.phone || "",
+      photo: trainer?.photo || "",
+      specialties: trainer?.specialties?.join(", ") || "",
+      bio: trainer?.bio || "",
+      commissionPct: trainer?.commissionPct ? Number(trainer.commissionPct) : undefined,
+    },
   });
 
-  const onSubmit = async (values: TrainerFormValues) => {
-    setLoading(true);
-    const result = await createTrainerAction(values);
-    if (result.success) {
-      toast.success("Entrenador registrado");
-      onSuccess();
-    } else {
-      toast.error(result.error);
+  const onSubmit = async (data: TrainerFormData) => {
+    setIsLoading(true);
+    try {
+      const payload = {
+        ...data,
+        specialties: data.specialties ? data.specialties.split(",").map(s => s.trim()) : [],
+      };
+      
+      const res = trainer
+        ? await fetch("/api/trainers", {
+            method: "PUT",
+            body: JSON.stringify({ id: trainer.id, ...payload }),
+          })
+        : await fetch("/api/trainers", {
+            method: "POST",
+            body: JSON.stringify(payload),
+          });
+      
+      const result = await res.json();
+      if (result.success) {
+        onSuccess?.();
+      } else {
+        form.setError("root", { message: result.error });
+      }
+    } catch (err) {
+      form.setError("root", { message: "Error al guardar" });
+    } finally {
+      setIsLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="flex flex-col items-center justify-center space-y-2 mb-6">
-        <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Foto del Instructor</Label>
-        <ImageUpload 
-          value={watch("photo")}
-          onChange={(url) => setValue("photo", url)}
-          onRemove={() => setValue("photo", "")}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Nombre del Instructor</Label>
-        <Input {...register("fullName")} className="bg-white/5 border-white/10" placeholder="Ej. Coach Alex" />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Email</Label>
-          <Input {...register("email")} type="email" className="bg-white/5 border-white/10" />
+          <Label htmlFor="fullName">Nombre completo</Label>
+          <Input id="fullName" {...form.register("fullName")} placeholder="Juan Pérez" />
+          {form.formState.errors.fullName && (
+            <p className="text-sm text-red-500">{form.formState.errors.fullName.message}</p>
+          )}
         </div>
+        
         <div className="space-y-2">
-          <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Teléfono</Label>
-          <Input {...register("phone")} className="bg-white/5 border-white/10" />
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" {...form.register("email")} placeholder="juan@email.com" />
+          {form.formState.errors.email && (
+            <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
+          )}
         </div>
       </div>
-
-      <div className="space-y-2">
-        <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Biografía / Especialidad</Label>
-        <Textarea {...register("bio")} className="bg-white/5 border-white/10" placeholder="Certificado en Crossfit, 10 años experiencia..." />
+      
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="phone">Teléfono</Label>
+          <Input id="phone" {...form.register("phone")} placeholder="+51 999 999 999" />
+          {form.formState.errors.phone && (
+            <p className="text-sm text-red-500">{form.formState.errors.phone.message}</p>
+          )}
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="commissionPct">Comisión %</Label>
+          <Input
+            id="commissionPct"
+            type="number"
+            step="0.01"
+            min="0"
+            max="100"
+            {...form.register("commissionPct", { valueAsNumber: true })}
+            placeholder="10"
+          />
+        </div>
       </div>
-
-      <Button 
-        type="submit" 
-        disabled={loading}
-        className="w-full bg-emerald-500 hover:bg-emerald-600 text-white h-12 rounded-xl font-bold uppercase tracking-widest gap-2"
-      >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-        Vincular Staff
-      </Button>
+      
+      <div className="space-y-2">
+        <Label htmlFor="specialties">Especialidades</Label>
+        <Input id="specialties" {...form.register("specialties")} placeholder="Musculación, Spinning, Yoga" />
+        <p className="text-xs text-muted-foreground">Separadas por coma</p>
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="bio">Biografía</Label>
+        <Textarea id="bio" {...form.register("bio")} placeholder="Breve descripción..." rows={3} />
+      </div>
+      
+      {form.formState.errors.root && (
+        <p className="text-sm text-red-500">{form.formState.errors.root.message}</p>
+      )}
+      
+      <div className="flex gap-2 justify-end">
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancelar
+          </Button>
+        )}
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Guardando..." : trainer ? "Actualizar" : "Crear"}
+        </Button>
+      </div>
     </form>
   );
 }

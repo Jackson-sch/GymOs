@@ -8,7 +8,18 @@ export const auth = betterAuth({
     }),
     emailAndPassword: {
         enabled: true,
-        requireEmailVerification: false, // Cambiar a true si se desea forzar verificación
+        requireEmailVerification: false,
     },
-    // Podrás añadir más plugins aquí (admin, multi-session, etc.)
+    user: {
+        additionalFields: {
+            role: {
+                type: "string",
+                defaultValue: "MEMBER",
+            },
+            isActive: {
+                type: "boolean",
+                defaultValue: true,
+            }
+        }
+    }
 });

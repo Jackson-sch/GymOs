@@ -29,7 +29,14 @@ export default function LoginPage() {
       setError(error.message || "Credenciales incorrectas");
       setLoading(false);
     } else {
-      router.push("/");
+      // Check user role for redirection
+      const { data: session } = await authClient.getSession();
+      const user = session?.user as any;
+      if (user?.role === "MEMBER") {
+        router.push("/portal");
+      } else {
+        router.push("/");
+      }
       router.refresh();
     }
   };
