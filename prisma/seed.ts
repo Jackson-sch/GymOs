@@ -12,6 +12,11 @@ async function main() {
     update: {},
     create: { key: "GYM_NAME", value: "GymOS - Elite Fitness", category: "GENERAL" },
   });
+  await prisma.systemConfig.upsert({
+    where: { key: "MAX_CAPACITY" },
+    update: {},
+    create: { key: "MAX_CAPACITY", value: "50", category: "GENERAL", description: "Capacidad máxima del local" },
+  });
 
   // 2. Planes de Membresía
   console.log("📋 Creando planes...");

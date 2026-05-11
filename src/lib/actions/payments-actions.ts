@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { verifySession } from "@/lib/security";
 import { serialize } from "@/lib/utils";
+import { createAuditLog } from "@/lib/audit";
 
 export async function getRecentPaymentsAction() {
   try {
@@ -81,6 +82,14 @@ export async function createPaymentAction(data: any) {
     revalidatePath("/payments");
     revalidatePath("/members");
     revalidatePath("/memberships");
+
+    // Registrar en auditoría
+    await createAuditLog({
+      action: "PAYMENT_RECEIVE",
+      entity: "Payment",
+      entityId: result.id,
+      newData: { memberId: data.memberId, amount: data.amount, method: data.method }
+    });
     
     return { success: true, data: serialize(result) };
   } catch (error) {

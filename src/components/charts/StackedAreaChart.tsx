@@ -28,7 +28,13 @@ const data: DataPoint[] = [
   { day: "Dom", musculacion: 40, cardio: 20, clases: 10 },
 ];
 
-export function StackedAreaChart({ data }: { data?: { name: string, value: number }[] }) {
+export function StackedAreaChart({ 
+  data,
+  tooltipLabel = "Asistencias" 
+}: { 
+  data?: { name: string, value: number }[];
+  tooltipLabel?: string;
+}) {
   const [isMobile, setIsMobile] = React.useState(false);
 
   React.useEffect(() => {
@@ -126,8 +132,8 @@ export function StackedAreaChart({ data }: { data?: { name: string, value: numbe
                     className="stroke-background stroke-2 cursor-pointer hover:r-6 transition-all"
                   />
                 </TooltipTrigger>
-                <TooltipContent className="bg-secondary/90 backdrop-blur-md border-white/10 text-foreground font-medium">
-                  {d.name}: {d.value} Asistencias
+                <TooltipContent className="bg-secondary/90 backdrop-blur-md border-white/10 text-foreground font-medium z-50">
+                  {d.name}: {d.value} {tooltipLabel}
                 </TooltipContent>
               </Tooltip>
             ))}

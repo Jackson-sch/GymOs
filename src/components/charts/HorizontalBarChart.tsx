@@ -87,7 +87,7 @@ export function HorizontalBarChart({
           "--marginTop": "20px",
           "--marginRight": "8px",
           "--marginBottom": "25px",
-          "--marginLeft": `${longestWord > 16 ? 112 : longestWord * 6.75}px`,
+          "--marginLeft": `${longestWord > 16 ? 112 : Math.max(longestWord * 8, 70)}px`,
         } as CSSProperties
       }
     >
@@ -95,8 +95,8 @@ export function HorizontalBarChart({
       <svg
         className="absolute inset-0
           z-10
-          h-(100%-var(--marginTop)-var(--marginBottom))
-          w-(100%-var(--marginLeft)-var(--marginRight))
+          h-[calc(100%-var(--marginTop)-var(--marginBottom))]
+          w-[calc(100%-var(--marginLeft)-var(--marginRight))]
           translate-x-(--marginLeft)
           translate-y-(--marginTop)
           overflow-visible
@@ -206,11 +206,11 @@ export function HorizontalBarChart({
       {/* Y Axis (Letters) */}
       <svg
         className="absolute inset-0
-          h-(100%-var(--marginTop)-var(--marginBottom))
+          h-[calc(100%-var(--marginTop)-var(--marginBottom))]
           translate-y-(--marginTop)
           overflow-visible"
       >
-        <g className="translate-x-(var(--marginLeft)-8px)">
+        <g style={{ transform: "translateX(calc(var(--marginLeft) - 8px))" }}>
           {data.map((entry, i) => (
             <text
               key={i}

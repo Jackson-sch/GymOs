@@ -62,6 +62,7 @@ export async function getDashboardStats() {
     newMembers: memThis,
     revenueTrend: (revThis >= revPrev ? "+" : "") + revenueTrend,
     activeTrend: (memThis >= memPrev ? "+" : "") + memberTrend,
+    newMemberTrend: (memThis >= memPrev ? "+" : "") + memberTrend,
   };
 }
 
@@ -213,18 +214,22 @@ export async function getWeeklyAttendance() {
 export async function getCurrentOccupancyAction() {
   try {
     const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
-    const activeCheckins = await prisma.attendance.count({
-      where: {
-        checkIn: { gte: twoHoursAgo }
-      }
-    });
+    const [activeCheckins, capacityConfig] = await Promise.all([
+      prisma.attendance.count({
+        where: {
+          checkIn: { gte: twoHoursAgo }
+        }
+      }),
+      prisma.systemConfig.findUnique({
+        where: { key: "MAX_CAPACITY" }
+      })
+    ]);
 
-    // Default capacity is 50, but we could fetch this from Settings
-    const maxCapacity = 50; 
+    const maxCapacity = parseInt(capacityConfig?.value || "50", 10) || 50;
     const percentage = Math.min(100, Math.round((activeCheckins / maxCapacity) * 100));
 
-    return { success: true, percentage, count: activeCheckins };
+    return { success: true, percentage, count: activeCheckins, maxCapacity };
   } catch (error) {
-    return { success: false, percentage: 0, count: 0 };
+    return { success: false, percentage: 0, count: 0, maxCapacity: 50 };
   }
 }

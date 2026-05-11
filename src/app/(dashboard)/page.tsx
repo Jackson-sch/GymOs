@@ -71,7 +71,7 @@ export default function DashboardPage() {
     { label: "Socios Activos", value: stats?.totalMembers ?? "...", icon: Users, trend: stats?.activeTrend ?? "...", color: "text-primary" },
     { label: "Ingresos Totales", value: `S/. ${(stats?.revenue ?? 0).toLocaleString()}`, icon: CreditCard, trend: stats?.revenueTrend ?? "...", color: "text-accent" },
     { label: "Asistencia Hoy", value: stats?.attendanceToday ?? "...", icon: UserCheck, trend: "En vivo", color: "text-primary" },
-    { label: "Nuevos Socios", value: `+${stats?.newMembers ?? "..."}`, icon: TrendingUp, trend: "+15%", color: "text-accent" },
+    { label: "Nuevos Socios", value: `+${stats?.newMembers ?? "..."}`, icon: TrendingUp, trend: stats?.newMemberTrend ?? "...", color: "text-accent" },
   ];
 
   if (!mounted) return <div className="w-full aspect-video animate-pulse bg-white/5 rounded-xl" />;

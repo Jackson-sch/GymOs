@@ -6,8 +6,16 @@ export const metadata = {
   description: "Registro de acciones y cambios en el sistema.",
 };
 
-export default async function AuditLogPage() {
-  const result = await getAuditLogsAction({ limit: 100 });
+export default async function AuditLogPage(props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const searchParams = await props.searchParams;
+  const actionParam = typeof searchParams.action === 'string' ? searchParams.action : undefined;
+  const entityParam = typeof searchParams.entity === 'string' ? searchParams.entity : undefined;
+
+  const result = await getAuditLogsAction({ 
+    limit: 100,
+    action: actionParam,
+    entity: entityParam
+  });
   const logs = result.success ? result.data : [];
 
   return (

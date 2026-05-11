@@ -12,6 +12,8 @@ import { verifySession } from "@/lib/security";
 export async function getAuditLogsAction(params?: {
   page?: number;
   limit?: number;
+  action?: string;
+  entity?: string;
 }) {
   try {
     await verifySession(["ADMIN", "SUPER_ADMIN"]);
@@ -20,8 +22,17 @@ export async function getAuditLogsAction(params?: {
     const limit = params?.limit || 20;
     const skip = (page - 1) * limit;
 
+    const where: any = {};
+    if (params?.action && params.action !== "ALL") {
+      where.action = params.action;
+    }
+    if (params?.entity && params.entity !== "ALL") {
+      where.entity = params.entity;
+    }
+
     const [logs, total] = await Promise.all([
       prisma.auditLog.findMany({
+        where,
         take: limit,
         skip: skip,
         orderBy: { createdAt: 'desc' },
@@ -35,7 +46,7 @@ export async function getAuditLogsAction(params?: {
           }
         }
       }),
-      prisma.auditLog.count()
+      prisma.auditLog.count({ where })
     ]);
 
     return { 

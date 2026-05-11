@@ -35,6 +35,13 @@ import { ImageUpload } from "@/components/shared/ImageUpload";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { authClient } from "@/lib/auth-client";
 import { useQueryState, parseAsString, parseAsInteger } from "nuqs";
 
@@ -237,6 +244,21 @@ export function SettingsClient({ initialData }: { initialData: any[] }) {
                     placeholder="+51 987 654 321" 
                     className="bg-white/5 border-white/10 h-12 rounded-xl" 
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Formato de Comprobante</Label>
+                  <Select 
+                    value={formState["RECEIPT_FORMAT"] || "A4"} 
+                    onValueChange={(value) => handleChange("RECEIPT_FORMAT", value)}
+                  >
+                    <SelectTrigger className="bg-white/5 border-white/10 h-12 rounded-xl">
+                      <SelectValue placeholder="Seleccionar formato" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="A4">Documento A4 (Estándar)</SelectItem>
+                      <SelectItem value="TICKET">Ticket 80mm (Térmico)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </section>

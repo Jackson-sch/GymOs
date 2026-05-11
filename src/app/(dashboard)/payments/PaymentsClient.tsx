@@ -4,7 +4,9 @@ import React from "react";
 import {
   Plus,
   Download,
-  Wallet
+  Wallet,
+  FileText,
+  Receipt
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +18,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { PaymentForm } from "@/components/shared/forms/PaymentForm";
 import { RosenChart } from "@/components/shared/RosenChart";
 import { DataTable } from "@/components/shared/DataTable";
@@ -23,11 +31,18 @@ import { ColumnDef } from "@tanstack/react-table";
 import { formatCurrency, formatDate } from "@/lib/formats";
 import { getRecentPaymentsAction } from "@/lib/actions/payments-actions";
 
-export function PaymentsClient({ payments: initialPayments, chartData, members, plans }: { 
+export function PaymentsClient({ 
+  payments: initialPayments, 
+  chartData, 
+  members, 
+  plans,
+  defaultReceiptFormat = "A4" 
+}: { 
   payments: any[], 
   chartData: any[],
   members: any[],
-  plans: any[]
+  plans: any[],
+  defaultReceiptFormat?: string
 }) {
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
   const [payments, setPayments] = React.useState(initialPayments);
@@ -81,13 +96,42 @@ export function PaymentsClient({ payments: initialPayments, chartData, members, 
       header: "",
       cell: ({ row }) => (
         <div className="text-right">
-          <Button 
-            variant="ghost" 
-            className="h-8 w-8 p-0 hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={() => window.open(`/api/payments/${row.original.id}/receipt`, "_blank")}
-          >
-            <Download className="w-4 h-4 text-muted-foreground" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                className="h-8 w-8 p-0 hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Download className="w-4 h-4 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl border-white/10 bg-black/80 backdrop-blur-xl">
+              <DropdownMenuItem
+                onClick={() => window.open(`/api/payments/${row.original.id}/receipt?format=a4`, "_blank")}
+                className="flex items-center justify-between gap-2 rounded-lg cursor-pointer focus:bg-primary/20 focus:text-primary transition-all duration-200 p-2"
+              >
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  <span className="text-xs font-medium">Recibo A4</span>
+                </div>
+                {defaultReceiptFormat === "A4" && (
+                  <Badge variant="outline" className="text-[8px] h-4 border-primary/20 text-primary uppercase font-bold px-1.5 bg-primary/5">Por defecto</Badge>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => window.open(`/api/payments/${row.original.id}/receipt?format=ticket`, "_blank")}
+                className="flex items-center justify-between gap-2 rounded-lg cursor-pointer focus:bg-primary/20 focus:text-primary transition-all duration-200 p-2"
+              >
+                <div className="flex items-center gap-2">
+                  <Receipt className="w-4 h-4" />
+                  <span className="text-xs font-medium">Ticket 80mm</span>
+                </div>
+                {defaultReceiptFormat === "TICKET" && (
+                  <Badge variant="outline" className="text-[8px] h-4 border-primary/20 text-primary uppercase font-bold px-1.5 bg-primary/5">Por defecto</Badge>
+                )}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )
     }

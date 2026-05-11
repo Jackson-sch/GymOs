@@ -14,6 +14,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useQueryState } from "nuqs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function AuditLogClient({ data }: { data: any[] }) {
   const columns = React.useMemo<ColumnDef<any>[]>(() => [
@@ -127,14 +129,32 @@ export function AuditLogClient({ data }: { data: any[] }) {
     }
   ], []);
 
+  const [entity, setEntity] = useQueryState("entity", { defaultValue: "ALL" });
+
   return (
-    <div className="glass-card p-6 border-white/5">
-      <DataTable 
-        columns={columns} 
-        data={data} 
-        filterColumn="action" 
-        placeholder="Filtrar por acción (EJ: CREATE_MEMBER)..." 
-      />
+    <div className="space-y-4">
+      <div className="flex gap-4">
+        <Select value={entity} onValueChange={setEntity}>
+          <SelectTrigger className="w-[200px] bg-white/5 border-white/10">
+            <SelectValue placeholder="Todas las entidades" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">Todas las entidades</SelectItem>
+            <SelectItem value="Member">Socio</SelectItem>
+            <SelectItem value="Payment">Pago</SelectItem>
+            <SelectItem value="SystemConfig">Configuración</SelectItem>
+            <SelectItem value="SYSTEM">Sistema</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="glass-card p-6 border-white/5">
+        <DataTable 
+          columns={columns} 
+          data={data} 
+          filterColumn="action" 
+          placeholder="Filtrar por acción (EJ: CREATE_MEMBER)..." 
+        />
+      </div>
     </div>
   );
 }

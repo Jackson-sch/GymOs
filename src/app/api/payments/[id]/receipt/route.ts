@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { generateInvoicePDF } from "@/lib/pdf";
+import { generateInvoicePDF, generateTicketPDF, getDefaultReceiptFormat } from "@/lib/pdf";
 import { verifySession } from "@/lib/security";
 
 export async function GET(
@@ -32,22 +32,38 @@ export async function GET(
       return NextResponse.json({ error: "Datos del socio no encontrados" }, { status: 400 });
     }
 
-    // 3. Generate PDF
-    try {
-      const pdfBuffer = await generateInvoicePDF({
-        invoiceNumber: payment.invoiceNumber || payment.id.slice(-8).toUpperCase(),
-        memberName: payment.member.fullName,
-        planName: payment.membership?.plan?.name || "Pago General",
-        amount: Number(payment.amount),
-        method: payment.method,
-        paidAt: payment.paidAt || payment.createdAt,
-      });
+    // 3. Determine format — ?format=ticket for 80mm, default is from system config
+    const formatParam = request.nextUrl.searchParams.get("format");
+    const defaultFormat = await getDefaultReceiptFormat();
+    
+    // Use param if present, otherwise use system default
+    const currentFormat = formatParam?.toUpperCase() || defaultFormat.toUpperCase();
+    const isTicket = currentFormat === "TICKET";
 
-      // 4. Return as PDF
+    const paymentData = {
+      invoiceNumber: payment.invoiceNumber || payment.id.slice(-8).toUpperCase(),
+      memberName: payment.member.fullName,
+      planName: payment.membership?.plan?.name || "Pago General",
+      amount: Number(payment.amount),
+      method: payment.method,
+      paidAt: payment.paidAt || payment.createdAt,
+    };
+
+    // 4. Generate PDF
+    try {
+      const pdfBuffer = isTicket
+        ? await generateTicketPDF(paymentData)
+        : await generateInvoicePDF(paymentData);
+
+      const filename = isTicket
+        ? `ticket-${payment.invoiceNumber || payment.id}.pdf`
+        : `recibo-${payment.invoiceNumber || payment.id}.pdf`;
+
+      // 5. Return as PDF
       return new NextResponse(pdfBuffer, {
         headers: {
           "Content-Type": "application/pdf",
-          "Content-Disposition": `attachment; filename=recibo-${payment.invoiceNumber || payment.id}.pdf`,
+          "Content-Disposition": `attachment; filename=${filename}`,
         },
       });
     } catch (pdfError) {

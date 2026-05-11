@@ -2,6 +2,7 @@
 
 import React from "react";
 import { HorizontalBarChart } from "@/components/charts/HorizontalBarChart";
+import { StackedAreaChart } from "@/components/charts/StackedAreaChart";
 import { RadialDonutChart } from "@/components/charts/RadialDonutChart";
 import { ActivityHeatmap } from "@/components/charts/ActivityHeatmap";
 import { Button } from "@/components/ui/button";
@@ -26,9 +27,8 @@ export function ReportsClient({
   topMembers: any[];
 }) {
   const revenueData = revenueByMonth.map((d: any) => ({
-    key: d.month,
+    name: d.month.substring(0, 3).toUpperCase(),
     value: d.revenue,
-    color: "#8b5cf6",
   }));
 
   const planData = membershipsByPlan.map((d: any) => ({
@@ -168,7 +168,7 @@ export function ReportsClient({
             <Badge variant="outline" className="text-[8px] uppercase tracking-tighter px-2 bg-primary/10 text-primary border-primary/20">Último año</Badge>
           </div>
           <div className="p-6">
-            <HorizontalBarChart data={revenueData} />
+            <StackedAreaChart data={revenueData} tooltipLabel="S/." />
           </div>
         </div>
         <div className="glass-card overflow-hidden">
