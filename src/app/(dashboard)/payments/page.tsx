@@ -5,6 +5,9 @@ import { getPlansAction } from "@/lib/actions/plans-actions";
 import { Wallet } from "lucide-react";
 import { PaymentsClient } from "./PaymentsClient";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function PaymentsPage() {
   const [paymentsRes, statsRes, membersRes, plansRes] = await Promise.all([
     getRecentPaymentsAction(),

@@ -3,16 +3,14 @@
 import React from "react";
 import { DataTable } from "@/components/shared/DataTable";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, TrendingDown, Tag, Save, Activity } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Plus, Trash2, TrendingDown, Tag } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
 import { createExpenseAction, deleteExpenseAction, createExpenseCategoryAction } from "@/lib/actions/expenses-actions";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmAction } from "@/components/shared/ConfirmAction";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +19,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import ExpenseForm from "@/components/shared/forms/ExpenseForm";
+import CategoryForm from "@/components/shared/forms/CategoryForm";
+import { formatCurrency, formatDate } from "@/lib/formats";
 
 export function ExpensesClient({ expenses, categories }: { expenses: any[]; categories: any[] }) {
   const [data, setData] = React.useState(expenses);
@@ -47,7 +48,7 @@ export function ExpensesClient({ expenses, categories }: { expenses: any[]; cate
       header: "Fecha",
       cell: ({ row }: any) => (
         <span className="font-medium text-muted-foreground">
-          {format(new Date(row.original.date), "dd MMM, yyyy", { locale: es })}
+          {formatDate(new Date(row.original.date))}
         </span>
       ),
     },
@@ -77,7 +78,7 @@ export function ExpensesClient({ expenses, categories }: { expenses: any[]; cate
       header: "Monto",
       cell: ({ row }: any) => (
         <span className="font-mono font-bold text-destructive">
-          - S/ {Number(row.original.amount).toFixed(2)}
+          {formatCurrency(row.original.amount)}
         </span>
       ),
     },
@@ -85,24 +86,33 @@ export function ExpensesClient({ expenses, categories }: { expenses: any[]; cate
       id: "actions",
       cell: ({ row }: any) => {
         return (
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={async () => {
-              if (confirm("¿Estás seguro de eliminar este gasto?")) {
-                const res = await deleteExpenseAction(row.original.id);
-                if (res.success) {
-                  toast.success("Gasto eliminado");
-                  setData(prev => prev.filter(e => e.id !== row.original.id));
-                } else {
-                  toast.error(res.error || "Error al eliminar");
-                }
+          <ConfirmAction
+            title="¿Eliminar gasto?"
+            description={
+              <>
+                Esta acción no se puede deshacer. El registro del gasto por{" "}
+                <span className="font-bold text-white">{formatCurrency(row.original.amount)}</span> será borrado permanentemente de la base de datos.
+              </>
+            }
+            onConfirm={async () => {
+              const res = await deleteExpenseAction(row.original.id);
+              if (res.success) {
+                toast.success("Gasto eliminado correctamente");
+                setData(prev => prev.filter(e => e.id !== row.original.id));
+              } else {
+                toast.error(res.error || "Error al intentar eliminar el gasto");
               }
             }}
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+            confirmText="Confirmar Eliminación"
           >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </ConfirmAction>
         );
       },
     },
@@ -166,7 +176,7 @@ export function ExpensesClient({ expenses, categories }: { expenses: any[]; cate
             </div>
             <div className="space-y-1">
               <div className="text-3xl font-light tracking-tighter text-destructive">
-                S/ {totalExpenses.toFixed(2)}
+                {formatCurrency(totalExpenses)}
               </div>
               <div className="text-[10px] font-bold text-destructive/80 uppercase tracking-[0.2em]">
                 Total Gastos Registrados
@@ -190,32 +200,13 @@ export function ExpensesClient({ expenses, categories }: { expenses: any[]; cate
                 Crea una categoría para clasificar los gastos (Ej. Mantenimiento, Planilla, Servicios).
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleCreateCategory} className="space-y-6 pt-4">
-              <div className="space-y-2">
-                <Label>Nombre de la Categoría</Label>
-                <Input 
-                  required
-                  value={catFormData.name}
-                  onChange={e => setCatFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="bg-background/50 border-white/10"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Descripción (Opcional)</Label>
-                <Input 
-                  value={catFormData.description}
-                  onChange={e => setCatFormData(prev => ({ ...prev, description: e.target.value }))}
-                  className="bg-background/50 border-white/10"
-                />
-              </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
-                <Button type="button" variant="ghost" onClick={() => setIsCatOpen(false)}>Cancelar</Button>
-                <Button type="submit" disabled={isSaving} className="bg-primary text-primary-foreground">
-                  {isSaving ? <Activity className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                  Guardar Categoría
-                </Button>
-              </div>
-            </form>
+            <CategoryForm 
+              catFormData={catFormData}
+              setCatFormData={setCatFormData}
+              handleCreateCategory={handleCreateCategory}
+              isSaving={isSaving}
+              setIsCatOpen={setIsCatOpen}
+            />
           </DialogContent>
         </Dialog>
 
@@ -232,70 +223,19 @@ export function ExpensesClient({ expenses, categories }: { expenses: any[]; cate
                 Ingresa los detalles del gasto operativo o caja chica.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleCreateExpense} className="space-y-6 pt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Monto (S/)</Label>
-                  <Input 
-                    type="number"
-                    step="0.01"
-                    required
-                    value={formData.amount}
-                    onChange={e => setFormData(prev => ({ ...prev, amount: e.target.value }))}
-                    className="bg-background/50 border-white/10 text-xl font-mono"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Categoría</Label>
-                  <Select 
-                    value={formData.categoryId} 
-                    onValueChange={v => setFormData(prev => ({ ...prev, categoryId: v }))}
-                  >
-                    <SelectTrigger className="bg-background/50 border-white/10 h-11">
-                      <SelectValue placeholder="Seleccionar..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {catData.map(cat => (
-                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Descripción del Gasto</Label>
-                <Input 
-                  required
-                  value={formData.description}
-                  onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  className="bg-background/50 border-white/10"
-                  placeholder="Ej. Pago recibo de luz"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>N° Comprobante / Referencia (Opcional)</Label>
-                <Input 
-                  value={formData.reference}
-                  onChange={e => setFormData(prev => ({ ...prev, reference: e.target.value }))}
-                  className="bg-background/50 border-white/10"
-                />
-              </div>
-              
-              <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
-                <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>Cancelar</Button>
-                <Button type="submit" disabled={isSaving} className="bg-primary text-primary-foreground">
-                  {isSaving ? <Activity className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                  Registrar Gasto
-                </Button>
-              </div>
-            </form>
+            <ExpenseForm 
+              formData={formData}
+              setFormData={setFormData}
+              catData={catData}
+              handleCreateExpense={handleCreateExpense}
+              isSaving={isSaving}
+              setIsOpen={setIsOpen}
+            />
           </DialogContent>
         </Dialog>
       </div>
 
-      <Card className="border-border/10 shadow-2xl bg-secondary/20 backdrop-blur-xl">
-        <CardContent className="p-0">
+      <div className="space-y-6">
           <DataTable 
             columns={columns} 
             data={data} 
@@ -303,8 +243,7 @@ export function ExpensesClient({ expenses, categories }: { expenses: any[]; cate
             placeholder="Buscar por descripción..."
             manualFiltering={false}
           />
-        </CardContent>
-      </Card>
+        </div>
     </div>
   );
 }

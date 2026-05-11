@@ -1,27 +1,22 @@
 "use server";
 
-import { prisma } from "../../../prisma";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { verifySession } from "@/lib/security";
-
-// Función de utilidad para serialización profunda y segura de tipos complejos de Prisma
-function serialize<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data, (key, value) => 
-    typeof value === 'bigint' ? value.toString() : value
-  ));
-}
+import { serialize } from "@/lib/utils";
 
 export async function getRecentPaymentsAction() {
   try {
     await verifySession();
     const payments = await prisma.payment.findMany({
-      take: 15,
+      where: { createdAt: { lte: new Date() } },
       orderBy: { createdAt: "desc" },
-      include: { member: true }
+      include: { member: true, membership: { include: { plan: true } } }
     });
     
     return { success: true, data: serialize(payments) };
   } catch (error) {
+    console.error("[getRecentPaymentsAction] Error:", error);
     return { success: false, error: "Error al cargar pagos" };
   }
 }
@@ -29,26 +24,26 @@ export async function getRecentPaymentsAction() {
 export async function createPaymentAction(data: any) {
   try {
     await verifySession(["ADMIN", "SUPER_ADMIN"]);
-    // 1. Crear el pago
-    const payment = await prisma.payment.create({
-      data: {
-        memberId: data.memberId,
-        amount: parseFloat(data.amount),
-        method: data.method,
-        status: "COMPLETED",
-        reference: data.reference,
-      }
-    });
+    
+    const result = await prisma.$transaction(async (tx) => {
+      let membershipId = null;
 
-    // 2. Si el pago es para una membresía, crear la membresía
-    if (data.planId) {
-      const plan = await prisma.plan.findUnique({ where: { id: data.planId } });
-      if (plan) {
+      // 1. Si el pago incluye un plan, crear la membresía primero
+      if (data.planId) {
+        const plan = await tx.plan.findUnique({ where: { id: data.planId } });
+        if (!plan) throw new Error("Plan no encontrado");
+
         const startDate = new Date();
         const endDate = new Date();
         endDate.setDate(startDate.getDate() + plan.durationDays);
 
-        await prisma.membership.create({
+        // Expirar membresías activas previas
+        await tx.membership.updateMany({
+          where: { memberId: data.memberId, status: "ACTIVE" },
+          data: { status: "EXPIRED" }
+        });
+
+        const membership = await tx.membership.create({
           data: {
             memberId: data.memberId,
             planId: data.planId,
@@ -58,15 +53,39 @@ export async function createPaymentAction(data: any) {
             price: plan.price
           }
         });
+        membershipId = membership.id;
+
+        // Actualizar estado del socio
+        await tx.member.update({
+          where: { id: data.memberId },
+          data: { status: "ACTIVE" }
+        });
       }
-    }
+
+      // 2. Crear el pago vinculado (o no) a la membresía
+      const payment = await tx.payment.create({
+        data: {
+          memberId: data.memberId,
+          membershipId: membershipId,
+          amount: parseFloat(data.amount),
+          method: data.method,
+          status: "COMPLETED",
+          reference: data.reference,
+          paidAt: new Date(),
+        }
+      });
+
+      return payment;
+    });
 
     revalidatePath("/payments");
     revalidatePath("/members");
-    return { success: true, data: serialize(payment) };
+    revalidatePath("/memberships");
+    
+    return { success: true, data: serialize(result) };
   } catch (error) {
     console.error("Error creating payment:", error);
-    return { success: false, error: "Error al registrar el pago" };
+    return { success: false, error: error instanceof Error ? error.message : "Error al registrar el pago" };
   }
 }
 

@@ -1,3 +1,5 @@
+"use client";
+
 import { Text as PDFText, StyleSheet } from '@react-pdf/renderer';
 import type { Style } from '@react-pdf/types';
 import { usePdfxTheme, useSafeMemo } from '@/lib/pdfx-theme-context';

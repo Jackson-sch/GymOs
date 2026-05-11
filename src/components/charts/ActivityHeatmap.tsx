@@ -1,33 +1,14 @@
 "use client";
 
-import React from "react";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
 const days = ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"];
 const hours = ["06h", "08h", "10h", "12h", "14h", "16h", "18h", "20h", "22h"];
-
-// Mock data generator for peak hours
-const generateHeatmapData = () => {
-  return Array.from({ length: 9 }, (_, hIndex) => {
-    return Array.from({ length: 7 }, (_, dIndex) => {
-      // Simulate peak hours (18h-20h and morning 8h-10h)
-      const hour = parseInt(hours[hIndex]);
-      let intensity = Math.random() * 0.3;
-      
-      if (hour >= 18 && hour <= 20) intensity += 0.5 + Math.random() * 0.2;
-      if (hour >= 8 && hour <= 10) intensity += 0.4 + Math.random() * 0.2;
-      if (dIndex >= 5) intensity -= 0.2; // Less busy on weekends
-      
-      return Math.min(Math.max(intensity, 0.05), 1);
-    });
-  });
-};
 
 export function ActivityHeatmap({ data }: { data?: number[][] }) {
   if (!data) {

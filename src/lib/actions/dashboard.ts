@@ -5,32 +5,63 @@ import { startOfMonth, subMonths, format, endOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
 
 export async function getDashboardStats() {
-  const [totalMembers, activeMembers, totalRevenue] = await Promise.all([
-    prisma.member.count(),
+  const now = new Date();
+  const currentMonthStart = startOfMonth(now);
+  const prevMonthStart = startOfMonth(subMonths(now, 1));
+  const prevMonthEnd = endOfMonth(subMonths(now, 1));
+
+  const [
+    activeMembers,
+    newMembersThisMonth,
+    newMembersLastMonth,
+    revenueThisMonth,
+    revenueLastMonth,
+    attendanceToday
+  ] = await Promise.all([
     prisma.member.count({ where: { status: "ACTIVE" } }),
+    prisma.member.count({
+      where: { createdAt: { gte: currentMonthStart } }
+    }),
+    prisma.member.count({
+      where: { createdAt: { gte: prevMonthStart, lte: prevMonthEnd } }
+    }),
     prisma.payment.aggregate({
-      where: { status: "COMPLETED" },
+      where: { status: "COMPLETED", paidAt: { gte: currentMonthStart } },
       _sum: { amount: true },
+    }),
+    prisma.payment.aggregate({
+      where: { status: "COMPLETED", paidAt: { gte: prevMonthStart, lte: prevMonthEnd } },
+      _sum: { amount: true },
+    }),
+    prisma.attendance.count({
+      where: {
+        checkIn: {
+          gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          lte: new Date(new Date().setHours(23, 59, 59, 999)),
+        },
+      },
     }),
   ]);
 
-  const today = new Date();
-  const attendanceToday = await prisma.attendance.count({
-    where: {
-      checkIn: {
-        gte: new Date(today.setHours(0, 0, 0, 0)),
-        lte: new Date(today.setHours(23, 59, 59, 999)),
-      },
-    },
-  });
+  const revThis = Number(revenueThisMonth._sum.amount || 0);
+  const revPrev = Number(revenueLastMonth._sum.amount || 0);
+  const revenueTrend = revPrev > 0 
+    ? `${((revThis - revPrev) / revPrev * 100).toFixed(1)}%` 
+    : "+100%";
+
+  const memThis = newMembersThisMonth;
+  const memPrev = newMembersLastMonth;
+  const memberTrend = memPrev > 0 
+    ? `${((memThis - memPrev) / memPrev * 100).toFixed(1)}%` 
+    : "+100%";
 
   return {
     totalMembers: activeMembers,
-    revenue: Number(totalRevenue._sum.amount || 0),
+    revenue: revThis,
     attendanceToday,
-    newMembers: 24, // Mock for now or we could calculate
-    revenueTrend: "+12.5%",
-    activeTrend: "+5.2%",
+    newMembers: memThis,
+    revenueTrend: (revThis >= revPrev ? "+" : "") + revenueTrend,
+    activeTrend: (memThis >= memPrev ? "+" : "") + memberTrend,
   };
 }
 
@@ -177,4 +208,23 @@ export async function getWeeklyAttendance() {
   );
 
   return data;
+}
+
+export async function getCurrentOccupancyAction() {
+  try {
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+    const activeCheckins = await prisma.attendance.count({
+      where: {
+        checkIn: { gte: twoHoursAgo }
+      }
+    });
+
+    // Default capacity is 50, but we could fetch this from Settings
+    const maxCapacity = 50; 
+    const percentage = Math.min(100, Math.round((activeCheckins / maxCapacity) * 100));
+
+    return { success: true, percentage, count: activeCheckins };
+  } catch (error) {
+    return { success: false, percentage: 0, count: 0 };
+  }
 }

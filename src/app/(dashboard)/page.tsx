@@ -1,19 +1,20 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Users, CreditCard, UserCheck, TrendingUp, Sparkles, Activity, Clock, PieChart, UserPlus, Settings, ShieldCheck, AlertTriangle } from "lucide-react";
 import { RosenChart } from "@/components/shared/RosenChart";
 import { RadialDonutChart } from "@/components/charts/RadialDonutChart";
 import { ActivityHeatmap } from "@/components/charts/ActivityHeatmap";
 import { StackedAreaChart } from "@/components/charts/StackedAreaChart";
 import { cn } from "@/lib/utils";
-import React from "react";
 import { 
   getDashboardStats, 
   getRevenueData, 
   getPlanComposition, 
   getRecentActivity, 
   getAttendanceHeatmap,
-  getWeeklyAttendance 
+  getWeeklyAttendance,
+  getCurrentOccupancyAction 
 } from "@/lib/actions/dashboard";
 import { getMaintenanceAlerts } from "@/lib/actions/inventory-actions";
 import { formatDistanceToNow } from "date-fns";
@@ -31,26 +32,28 @@ const getActionIcon = (type: string) => {
 };
 
 export default function DashboardPage() {
-  const [mounted, setMounted] = React.useState(false);
-  const [stats, setStats] = React.useState<any>(null);
-  const [revenueData, setRevenueData] = React.useState<any[]>([]);
-  const [planData, setPlanData] = React.useState<any[]>([]);
-  const [activityData, setActivityData] = React.useState<any[]>([]);
-  const [heatmapData, setHeatmapData] = React.useState<number[][] | undefined>(undefined);
-  const [weeklyData, setWeeklyData] = React.useState<any[]>([]);
-  const [maintenanceAlerts, setMaintenanceAlerts] = React.useState<any[]>([]);
+  const [mounted, setMounted] = useState(false);
+  const [stats, setStats] = useState<any>(null);
+  const [revenueData, setRevenueData] = useState<any[]>([]);
+  const [planData, setPlanData] = useState<any[]>([]);
+  const [activityData, setActivityData] = useState<any[]>([]);
+  const [heatmapData, setHeatmapData] = useState<number[][] | undefined>(undefined);
+  const [weeklyData, setWeeklyData] = useState<any[]>([]);
+  const [maintenanceAlerts, setMaintenanceAlerts] = useState<any[]>([]);
+  const [occupancy, setOccupancy] = useState<{ percentage: number, count: number }>({ percentage: 0, count: 0 });
 
-  React.useEffect(() => {
+  useEffect(() => {
     setMounted(true);
     const fetchData = async () => {
-      const [s, r, p, a, h, w, m] = await Promise.all([
+      const [s, r, p, a, h, w, m, o] = await Promise.all([
         getDashboardStats(),
         getRevenueData(),
         getPlanComposition(),
         getRecentActivity(),
         getAttendanceHeatmap(),
         getWeeklyAttendance(),
-        getMaintenanceAlerts()
+        getMaintenanceAlerts(),
+        getCurrentOccupancyAction()
       ]);
       setStats(s);
       setRevenueData(r);
@@ -59,6 +62,7 @@ export default function DashboardPage() {
       setHeatmapData(h);
       setWeeklyData(w);
       setMaintenanceAlerts(m.success ? (m.data as any[]) : []);
+      if (o.success) setOccupancy({ percentage: o.percentage, count: o.count });
     };
     fetchData();
   }, []);
@@ -259,7 +263,12 @@ export default function DashboardPage() {
           </div>
           <div className="text-right hidden sm:block">
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Capacidad Actual</p>
-            <p className="text-xs font-medium text-emerald-500">42% Sincronizado</p>
+            <p className={cn(
+              "text-xs font-medium",
+              occupancy.percentage > 80 ? "text-rose-500" : occupancy.percentage > 50 ? "text-amber-500" : "text-emerald-500"
+            )}>
+              {occupancy.percentage}% Sincronizado ({occupancy.count} personas)
+            </p>
           </div>
         </div>
         <div className="w-full overflow-hidden">

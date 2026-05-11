@@ -18,7 +18,8 @@ import {
   Sparkles,
   LogOut,
   TrendingDown,
-  ScanLine
+  ScanLine,
+  Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/store/use-ui-store";
@@ -40,6 +41,7 @@ const menuItems = [
   { label: "Reportes", icon: FileText, href: "/reports" },
   { label: "Kiosco", icon: ScanLine, href: "/kiosk" },
   { label: "Configuración", icon: Settings, href: "/settings" },
+  { label: "Auditoría", icon: Shield, href: "/audit-log" },
 ];
 
 import {
@@ -89,7 +91,7 @@ export function Sidebar({
           <button
             onClick={toggleSidebar}
             className={cn(
-              "absolute -right-3 top-8 z-50 w-7 h-7 flex items-center justify-center rounded-full bg-background border border-white/10 shadow-lg hover:scale-110 transition-all duration-300 group",
+              "absolute -right-3 top-8 z-50 w-7 h-7 flex items-center justify-center rounded-full glass-card border border-white/10 shadow-lg hover:scale-110 transition-all duration-300 group",
               "text-muted-foreground hover:text-primary"
             )}
           >

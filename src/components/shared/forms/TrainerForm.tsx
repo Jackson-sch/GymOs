@@ -8,7 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { InputGroup } from "@/components/ui/input-group";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 
 const trainerSchema = z.object({
   fullName: z.string().min(2, "Nombre requerido"),
@@ -105,16 +109,20 @@ export function TrainerForm({ trainer, onSuccess, onCancel }: TrainerFormProps) 
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="commissionPct">Comisión %</Label>
-          <Input
-            id="commissionPct"
-            type="number"
-            step="0.01"
-            min="0"
-            max="100"
-            {...form.register("commissionPct", { valueAsNumber: true })}
-            placeholder="10"
-          />
+          <Label htmlFor="commissionPct">Comisión</Label>
+          <InputGroup className="bg-white/5 border-white/10">
+            <InputGroupInput
+              id="commissionPct"
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+              {...form.register("commissionPct", { valueAsNumber: true })}
+              placeholder="10"
+              className="font-mono"
+            />
+            <InputGroupAddon align="inline-end">%</InputGroupAddon>
+          </InputGroup>
         </div>
       </div>
       

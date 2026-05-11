@@ -5,7 +5,6 @@ import { pie, arc } from "d3";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 

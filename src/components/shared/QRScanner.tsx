@@ -74,7 +74,7 @@ export function QRScanner({ onScan }: QRScannerProps) {
       
       {isReady && (
         <>
-          <div className="absolute inset-0 border-[40px] border-black/40 pointer-events-none" />
+          <div className="absolute inset-0 border-40 border-black/40 pointer-events-none" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 pointer-events-none">
             {/* Corner markers */}
             <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-2xl" />

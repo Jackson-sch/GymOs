@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { CSSProperties } from "react";
 import { scaleBand, scaleLinear, max } from "d3";
 
@@ -17,7 +17,13 @@ const defaultData: DataItem[] = [
   { key: "Utilities", value: 5.8, color: "#87db72" },
 ].toSorted((a, b) => b.value - a.value);
 
-export function HorizontalBarChart({ data = defaultData, singleColor }: { data?: DataItem[], singleColor?: string }) {
+export function HorizontalBarChart({
+  data = defaultData,
+  singleColor,
+}: {
+  data?: DataItem[];
+  singleColor?: string;
+}) {
   // Scales
   const yScale = scaleBand()
     .domain(data.map((d) => d.key))
@@ -27,11 +33,17 @@ export function HorizontalBarChart({ data = defaultData, singleColor }: { data?:
   const xScale = scaleLinear()
     .domain([0, max(data.map((d) => d.value)) ?? 0])
     .range([0, 100]);
-    
+
   const radius = 2; // Adjust the radius for the rounded corners
 
   // Function to create a path for each bar with rounded right corners
-  const roundedBarPath = (x: number, y: number, width: number, height: number, radius: number) => {
+  const roundedBarPath = (
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number,
+  ) => {
     return `M${x},${y}
             h${width - radius}
             a${radius},${radius} 0 0 1 ${radius},${radius}
@@ -47,7 +59,7 @@ export function HorizontalBarChart({ data = defaultData, singleColor }: { data?:
     width: number,
     height: number,
     radius: number,
-    strokeWidth: number
+    strokeWidth: number,
   ) => {
     // Adjusted dimensions for inner stroke
     const innerWidth = width - strokeWidth;
@@ -66,7 +78,7 @@ export function HorizontalBarChart({ data = defaultData, singleColor }: { data?:
   };
 
   const longestWord = max(data.map((d) => d.key.length)) || 1;
-  
+
   return (
     <div
       className="relative w-full h-72"
@@ -83,10 +95,10 @@ export function HorizontalBarChart({ data = defaultData, singleColor }: { data?:
       <svg
         className="absolute inset-0
           z-10
-          h-[calc(100%-var(--marginTop)-var(--marginBottom))]
-          w-[calc(100%-var(--marginLeft)-var(--marginRight))]
-          translate-x-[var(--marginLeft)]
-          translate-y-[var(--marginTop)]
+          h-(100%-var(--marginTop)-var(--marginBottom))
+          w-(100%-var(--marginLeft)-var(--marginRight))
+          translate-x-(--marginLeft)
+          translate-y-(--marginTop)
           overflow-visible
         "
       >
@@ -122,7 +134,13 @@ export function HorizontalBarChart({ data = defaultData, singleColor }: { data?:
             const barHeight = yScale.bandwidth();
             const innerStrokeWidth = 0.25; // Adjust as needed
 
-            const barPath = roundedBarPath(0, yScale(d.key)!, barWidth, barHeight, radius);
+            const barPath = roundedBarPath(
+              0,
+              yScale(d.key)!,
+              barWidth,
+              barHeight,
+              radius,
+            );
 
             const innerBarPath = roundedInnerBarPath(
               0,
@@ -130,7 +148,7 @@ export function HorizontalBarChart({ data = defaultData, singleColor }: { data?:
               barWidth,
               barHeight,
               radius,
-              innerStrokeWidth
+              innerStrokeWidth,
             );
             return (
               <g key={index}>
@@ -143,11 +161,23 @@ export function HorizontalBarChart({ data = defaultData, singleColor }: { data?:
 
                 {/* Define the gradient */}
                 <defs>
-                  <linearGradient id={`bar0-gradient-line${index}`} x1="1" x2="1" y1="1" y2="1">
+                  <linearGradient
+                    id={`bar0-gradient-line${index}`}
+                    x1="1"
+                    x2="1"
+                    y1="1"
+                    y2="1"
+                  >
                     <stop offset="0%" stopColor={d.color} />
                     <stop offset="30%" stopColor={singleColor ?? d.color} />
                   </linearGradient>
-                  <linearGradient id={`overlay-gradient${index}`} x1="0" x2="0" y1="0" y2="1">
+                  <linearGradient
+                    id={`overlay-gradient${index}`}
+                    x1="0"
+                    x2="0"
+                    y1="0"
+                    y2="1"
+                  >
                     <stop offset="10%" stopColor="rgba(255, 255, 255, 0.45)" />
                     <stop offset="80%" stopColor="rgba(255, 255, 255, 0.1)" />
                     <stop offset="100%" stopColor="rgba(255, 255, 255, 0)" />
@@ -176,11 +206,11 @@ export function HorizontalBarChart({ data = defaultData, singleColor }: { data?:
       {/* Y Axis (Letters) */}
       <svg
         className="absolute inset-0
-          h-[calc(100%-var(--marginTop)-var(--marginBottom))]
-          translate-y-[var(--marginTop)]
+          h-(100%-var(--marginTop)-var(--marginBottom))
+          translate-y-(--marginTop)
           overflow-visible"
       >
-        <g className="translate-x-[calc(var(--marginLeft)-8px)]">
+        <g className="translate-x-(var(--marginLeft)-8px)">
           {data.map((entry, i) => (
             <text
               key={i}
@@ -191,7 +221,9 @@ export function HorizontalBarChart({ data = defaultData, singleColor }: { data?:
               fill="currentColor"
               className="text-xs text-zinc-400"
             >
-              {entry.key.length > 16 ? entry.key.slice(0, 15) + "..." : entry.key}
+              {entry.key.length > 16
+                ? entry.key.slice(0, 15) + "..."
+                : entry.key}
             </text>
           ))}
         </g>
@@ -201,7 +233,7 @@ export function HorizontalBarChart({ data = defaultData, singleColor }: { data?:
       <svg
         className="absolute inset-0
           w-[calc(100%-var(--marginLeft)-var(--marginRight))]
-          translate-x-[var(--marginLeft)]
+          translate-x-(--marginLeft)
           h-[calc(100%-var(--marginBottom))]
           translate-y-4
           overflow-visible

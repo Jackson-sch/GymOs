@@ -18,15 +18,80 @@ import {
 } from "@/components/ui/dialog";
 import { PaymentForm } from "@/components/shared/forms/PaymentForm";
 import { RosenChart } from "@/components/shared/RosenChart";
+import { DataTable } from "@/components/shared/DataTable";
+import { ColumnDef } from "@tanstack/react-table";
 import { formatCurrency, formatDate } from "@/lib/formats";
+import { getRecentPaymentsAction } from "@/lib/actions/payments-actions";
 
-export function PaymentsClient({ payments, chartData, members, plans }: { 
+export function PaymentsClient({ payments: initialPayments, chartData, members, plans }: { 
   payments: any[], 
   chartData: any[],
   members: any[],
   plans: any[]
 }) {
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
+  const [payments, setPayments] = React.useState(initialPayments);
+
+  // Keep in sync if server re-renders with new props
+  React.useEffect(() => {
+    setPayments(initialPayments);
+  }, [initialPayments]);
+
+  const handlePaymentSuccess = React.useCallback(async () => {
+    setIsCreateOpen(false);
+    // Immediately re-fetch payments from DB
+    const result = await getRecentPaymentsAction();
+    if (result.success && result.data) {
+      setPayments(result.data as any[]);
+    }
+  }, []);
+
+  const columns = React.useMemo<ColumnDef<any>[]>(() => [
+    {
+      accessorKey: "member.fullName",
+      header: "Socio",
+      id: "member_fullName",
+      cell: ({ row }) => (
+        <span className="text-sm font-medium">{row.original.member.fullName}</span>
+      )
+    },
+    {
+      accessorKey: "amount",
+      header: "Monto",
+      cell: ({ row }) => (
+        <span className="text-sm font-sans font-semibold">{formatCurrency(row.original.amount)}</span>
+      )
+    },
+    {
+      accessorKey: "method",
+      header: "Método",
+      cell: ({ row }) => (
+        <Badge variant="outline" className="text-[8px] uppercase px-2">{row.original.method}</Badge>
+      )
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Fecha",
+      cell: ({ row }) => (
+        <span className="text-xs text-muted-foreground">{formatDate(row.original.createdAt, "d MMM, HH:mm")}</span>
+      )
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
+        <div className="text-right">
+          <Button 
+            variant="ghost" 
+            className="h-8 w-8 p-0 hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={() => window.open(`/api/payments/${row.original.id}/receipt`, "_blank")}
+          >
+            <Download className="w-4 h-4 text-muted-foreground" />
+          </Button>
+        </div>
+      )
+    }
+  ], []);
 
   return (
     <div className="space-y-12">
@@ -49,7 +114,7 @@ export function PaymentsClient({ payments, chartData, members, plans }: {
               <PaymentForm 
                 members={members} 
                 plans={plans} 
-                onSuccess={() => setIsCreateOpen(false)} 
+                onSuccess={handlePaymentSuccess} 
               />
             )}
           </DialogContent>
@@ -79,43 +144,13 @@ export function PaymentsClient({ payments, chartData, members, plans }: {
 
       {/* Transaction List */}
       <div className="space-y-6">
-        <h2 className="text-2xl font-serif">Últimas Transacciones</h2>
-        <div className="glass-card border-white/5 overflow-hidden">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-white/5 bg-white/2">
-                <th className="px-6 py-4 text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Socio</th>
-                <th className="px-6 py-4 text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Monto</th>
-                <th className="px-6 py-4 text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Método</th>
-                <th className="px-6 py-4 text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">Fecha</th>
-                <th className="px-6 py-4 text-right"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {payments.map((p: any) => (
-                <tr key={p.id} className="group hover:bg-white/3 transition-colors">
-                  <td className="px-6 py-4">
-                    <span className="text-sm font-medium">{p.member.fullName}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm font-sans font-semibold">{formatCurrency(p.amount)}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Badge variant="outline" className="text-[8px] uppercase px-2">{p.method}</Badge>
-                  </td>
-                  <td className="px-6 py-4 text-xs text-muted-foreground">
-                    {formatDate(p.createdAt, "d MMM, HH:mm")}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Download className="w-4 h-4 text-muted-foreground" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <h2 className="text-2xl font-serif">Historial de Transacciones</h2>
+        <DataTable 
+          columns={columns} 
+          data={payments} 
+          filterColumn="member_fullName"
+          placeholder="Buscar transacción..."
+        />
       </div>
     </div>
   );
