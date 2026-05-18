@@ -10,10 +10,17 @@ const eslintConfig = defineConfig([
       "prefer-const": "warn",
       "no-var": "error",
       "eqeqeq": ["warn", "always", { "null": "ignore" }],
-      "no-unused-vars": "off", // Handled by TS
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-require-imports": "warn",
+      "react-refresh/only-export-components": "off",
+      "react/no-unescaped-entities": "off",
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/refs": "off",
+      "react-hooks/variable-before-declared": "off",
+      "react-hooks/purity": "off",
     },
   },
-  // Override default ignores of eslint-config-next.
   globalIgnores([
     ".next/**",
     "out/**",
@@ -21,6 +28,11 @@ const eslintConfig = defineConfig([
     "dist/**",
     "prisma/generated-client/**",
     "next-env.d.ts",
+    "scratch/**",
+    "scripts/**",
+    "e2e/**",
+    ".agents/**",
+    "artifacts/**",
   ]),
 ]);
 

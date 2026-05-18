@@ -26,10 +26,6 @@ export function QRClient({ member, planName, isActive }: QRClientProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    generateQR();
-  }, [member.qrCode]);
-
   const generateQR = async () => {
     try {
       const url = await QRCode.toDataURL(member.qrCode, {
@@ -45,6 +41,10 @@ export function QRClient({ member, planName, isActive }: QRClientProps) {
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    generateQR();
+  }, [member.qrCode]);
 
   const handleRegenerate = async () => {
     if (!confirm("¿Estás seguro de que deseas regenerar tu código? El código anterior dejará de funcionar inmediatamente.")) return;

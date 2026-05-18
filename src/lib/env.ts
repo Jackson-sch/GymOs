@@ -9,7 +9,7 @@ const serverSchema = z.object({
 
 const clientSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.string().url('NEXT_PUBLIC_SITE_URL debe ser una URL válida').optional(),
-  NEXT_PUBLIC_SENTRY_DSN: z.string().url('NEXT_PUBLIC_SENTRY_DSN debe ser una URL válida').optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url('NEXT_PUBLIC_SENTRY_DSN debe ser una URL válida'),
 });
 
 const processEnv = {

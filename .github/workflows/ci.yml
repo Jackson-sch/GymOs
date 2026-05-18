@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://pg:pg@localhost:5432/gymos
+      BETTER_AUTH_SECRET: placeholder-for-ci
+      NEXT_PUBLIC_SENTRY_DSN: https://placeholder@000.ingest.us.sentry.io/0000000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run db:generate
+      - run: bun run lint
+      - run: bun run build

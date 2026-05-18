@@ -280,13 +280,9 @@ export default function TrainerProfileClient({
 
   const { isEditing, isSaving, isUploading, photoControlsVisible, activeTab, newSpecialty, formData, selectedClassId } = state;
 
-  const dragReposition = useDragReposition(
-    formData.photoPosition,
-    (newPos) => {
-      dispatch({ type: "UPDATE_FORM", payload: { photoPosition: newPos } });
-      handleSave({ ...formData, photoPosition: newPos });
-    }
-  );
+  const dragReposition = useDragReposition(formData.photoPosition ?? 50, (pos) => {
+    dispatch({ type: "UPDATE_FORM", payload: { photoPosition: pos } });
+  });
 
   const handleSave = async (dataToSave = formData) => {
     dispatch({ type: "SET_SAVING", payload: true });

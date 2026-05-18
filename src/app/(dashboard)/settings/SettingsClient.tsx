@@ -90,12 +90,6 @@ export function SettingsClient({ initialData }: { initialData: any[] }) {
     parseAsInteger.withDefault(1).withOptions({ shallow: false }),
   );
 
-  useEffect(() => {
-    if (activeTab === "audit") {
-      loadLogs(currentPage);
-    }
-  }, [activeTab, currentPage]);
-
   const { data: sessionData } = authClient.useSession();
   const user = sessionData?.user;
 
@@ -135,6 +129,12 @@ export function SettingsClient({ initialData }: { initialData: any[] }) {
       dispatchAudit({ type: "FETCH_ERROR" });
     }
   };
+
+  useEffect(() => {
+    if (activeTab === "audit") {
+      loadLogs(currentPage);
+    }
+  }, [activeTab, currentPage]);
 
   // Transform flat array to key-value object for easier form management
   const [formState, setFormState] = React.useState<Record<string, string>>(
