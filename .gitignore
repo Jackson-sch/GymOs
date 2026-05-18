@@ -23,6 +23,15 @@
 # misc
 .DS_Store
 *.pem
+*.log
+
+# scratch files
+/scratch/
+
+# test reports
+/playwright-report/
+/test-results/
+/html/
 
 # debug
 npm-debug.log*
@@ -30,8 +39,13 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files (keep .env.example as template)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
 
 # vercel
 .vercel
@@ -40,7 +54,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/src/generated/prisma
+# prisma
+prisma/generated-client/
 
 # user uploads
 /public/uploads/*

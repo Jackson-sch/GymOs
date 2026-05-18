@@ -12,7 +12,7 @@ export const auth = betterAuth({
         enabled: true,
         window: 60,
         max: 15,
-        storage: "memory",
+        storage: "database",
     },
     emailVerification: {
         sendVerificationEmail: async ({ user, url }) => {

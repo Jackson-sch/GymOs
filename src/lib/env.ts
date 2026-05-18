@@ -9,6 +9,7 @@ const serverSchema = z.object({
 
 const clientSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.string().url('NEXT_PUBLIC_SITE_URL debe ser una URL válida').optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url('NEXT_PUBLIC_SENTRY_DSN debe ser una URL válida').optional(),
 });
 
 const processEnv = {
@@ -17,6 +18,7 @@ const processEnv = {
   CRON_SECRET: process.env.CRON_SECRET,
   ALLOWED_DEV_ORIGIN: process.env.ALLOWED_DEV_ORIGIN,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
 };
 
 const parsedServer = serverSchema.safeParse(processEnv);

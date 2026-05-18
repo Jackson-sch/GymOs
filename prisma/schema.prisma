@@ -488,6 +488,21 @@ model AuditLog {
 }
 
 // ─────────────────────────────────────────
+// RATE LIMIT (Better-Auth database-backed rate limiting)
+// ─────────────────────────────────────────
+
+model rateLimit {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  count       Int
+  lastRequest BigInt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("rate_limit")
+}
+
+// ─────────────────────────────────────────
 // EGRESOS (Caja Chica y Gastos Operativos)
 // ─────────────────────────────────────────
 
@@ -592,6 +607,8 @@ model WorkoutLog {
   routineId String
   date      DateTime             @default(now())
   notes     String?
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
   exercises WorkoutExerciseLog[]
 
   routine Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
@@ -606,6 +623,8 @@ model WorkoutExerciseLog {
   completed         Boolean         @default(true)
   weightUsed        String?
   repsDone          String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
   workoutLog        WorkoutLog      @relation(fields: [workoutLogId], references: [id], onDelete: Cascade)
   routineExercise   RoutineExercise @relation(fields: [routineExerciseId], references: [id])
 

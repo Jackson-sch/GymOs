@@ -9,6 +9,7 @@ import { verifySession } from "@/lib/security";
 import { memberSchema, type MemberInput } from "@/lib/validations/members";
 import { parseISO } from "date-fns";
 import { z } from "zod";
+import crypto from "crypto";
 import { type MemberStatus } from "@prisma/client";
 
 
@@ -236,7 +237,7 @@ export async function enablePortalAccess(memberId: string) {
     if (!user) {
       try {
         // Generar una contraseña temporal aleatoria criptográficamente robusta
-        const secureRandomPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10) + "A1!";
+        const secureRandomPassword = crypto.randomBytes(16).toString("hex") + "A1!";
         const res = await auth.api.signUpEmail({
           body: {
             email: member.email,
