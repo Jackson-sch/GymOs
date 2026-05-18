@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Activity, Save } from "lucide-react";
-import React from "react";
+import React, { type SyntheticEvent } from "react";
 
 export interface CategoryFormData {
   name: string;
@@ -12,7 +12,7 @@ export interface CategoryFormData {
 interface CategoryFormProps {
   catFormData: CategoryFormData;
   setCatFormData: React.Dispatch<React.SetStateAction<CategoryFormData>>;
-  handleCreateCategory: (e: React.FormEvent) => void;
+  handleCreateCategory: (e: SyntheticEvent<HTMLFormElement>) => void;
   isSaving: boolean;
   setIsCatOpen: (isOpen: boolean) => void;
 }

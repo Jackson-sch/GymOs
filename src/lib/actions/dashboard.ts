@@ -1,10 +1,12 @@
 "use server";
 
-import { prisma } from "../../../prisma";
-import { startOfMonth, subMonths, format, endOfMonth } from "date-fns";
+import { prisma } from "@/lib/prisma";
+import { startOfMonth, subMonths, format, endOfMonth, startOfDay, endOfDay } from "date-fns";
 import { es } from "date-fns/locale";
+import { verifySession } from "@/lib/security";
 
 export async function getDashboardStats() {
+  await verifySession();
   const now = new Date();
   const currentMonthStart = startOfMonth(now);
   const prevMonthStart = startOfMonth(subMonths(now, 1));
@@ -36,8 +38,8 @@ export async function getDashboardStats() {
     prisma.attendance.count({
       where: {
         checkIn: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
-          lte: new Date(new Date().setHours(23, 59, 59, 999)),
+          gte: startOfDay(new Date()),
+          lte: endOfDay(new Date()),
         },
       },
     }),
@@ -67,6 +69,7 @@ export async function getDashboardStats() {
 }
 
 export async function getRevenueData() {
+  await verifySession();
   const months = Array.from({ length: 6 }).map((_, i) => subMonths(new Date(), 5 - i));
   
   const revenueByMonth = await Promise.all(
@@ -92,6 +95,7 @@ export async function getRevenueData() {
 }
 
 export async function getPlanComposition() {
+  await verifySession();
   const plans = await prisma.plan.findMany({
     where: { isActive: true },
     include: {
@@ -111,6 +115,7 @@ export async function getPlanComposition() {
 }
 
 export async function getRecentActivity() {
+  await verifySession();
   const [auditLogs, attendances] = await Promise.all([
     prisma.auditLog.findMany({
       take: 10,
@@ -126,6 +131,7 @@ export async function getRecentActivity() {
 
   const activities = [
     ...auditLogs.map((log) => ({
+      id: log.id,
       user: log.user.name,
       action: log.action.replace(/_/g, " "),
       date: log.createdAt,
@@ -134,6 +140,7 @@ export async function getRecentActivity() {
       status: "accent" as const,
     })),
     ...attendances.map((att) => ({
+      id: att.id,
       user: att.member.fullName,
       action: "Check-in",
       date: att.checkIn,
@@ -148,6 +155,7 @@ export async function getRecentActivity() {
 }
 
 export async function getAttendanceHeatmap() {
+  await verifySession();
   const attendances = await prisma.attendance.findMany({
     where: {
       checkIn: {
@@ -185,6 +193,7 @@ export async function getAttendanceHeatmap() {
 }
 
 export async function getWeeklyAttendance() {
+  await verifySession();
   const last7Days = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
@@ -196,8 +205,8 @@ export async function getWeeklyAttendance() {
       const count = await prisma.attendance.count({
         where: {
           checkIn: {
-            gte: new Date(date.setHours(0, 0, 0, 0)),
-            lte: new Date(date.setHours(23, 59, 59, 999)),
+            gte: startOfDay(date),
+            lte: endOfDay(date),
           },
         },
       });
@@ -213,6 +222,7 @@ export async function getWeeklyAttendance() {
 
 export async function getCurrentOccupancyAction() {
   try {
+    await verifySession();
     const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
     const [activeCheckins, capacityConfig] = await Promise.all([
       prisma.attendance.count({

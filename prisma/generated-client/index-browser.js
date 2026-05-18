@@ -129,7 +129,10 @@ exports.Prisma.UserScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   role: 'role',
-  isActive: 'isActive'
+  isActive: 'isActive',
+  banned: 'banned',
+  banReason: 'banReason',
+  banExpires: 'banExpires'
 };
 
 exports.Prisma.SessionScalarFieldEnum = {
@@ -140,7 +143,8 @@ exports.Prisma.SessionScalarFieldEnum = {
   updatedAt: 'updatedAt',
   ipAddress: 'ipAddress',
   userAgent: 'userAgent',
-  userId: 'userId'
+  userId: 'userId',
+  impersonatedBy: 'impersonatedBy'
 };
 
 exports.Prisma.AccountScalarFieldEnum = {
@@ -177,13 +181,17 @@ exports.Prisma.MemberScalarFieldEnum = {
   birthDate: 'birthDate',
   gender: 'gender',
   photo: 'photo',
+  photoPosition: 'photoPosition',
+  address: 'address',
   qrCode: 'qrCode',
+  pin: 'pin',
   status: 'status',
   emergencyContact: 'emergencyContact',
   emergencyPhone: 'emergencyPhone',
   notes: 'notes',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  userId: 'userId'
 };
 
 exports.Prisma.BodyMetricScalarFieldEnum = {
@@ -195,6 +203,9 @@ exports.Prisma.BodyMetricScalarFieldEnum = {
   bodyFat: 'bodyFat',
   muscle: 'muscle',
   notes: 'notes',
+  photoFrontUrl: 'photoFrontUrl',
+  photoBackUrl: 'photoBackUrl',
+  photoSideUrl: 'photoSideUrl',
   measuredAt: 'measuredAt'
 };
 
@@ -227,7 +238,8 @@ exports.Prisma.MembershipScalarFieldEnum = {
   price: 'price',
   notes: 'notes',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  referralTrainerId: 'referralTrainerId'
 };
 
 exports.Prisma.AttendanceScalarFieldEnum = {
@@ -286,14 +298,30 @@ exports.Prisma.TrainerScalarFieldEnum = {
   id: 'id',
   fullName: 'fullName',
   email: 'email',
+  dni: 'dni',
   phone: 'phone',
   photo: 'photo',
+  photoPosition: 'photoPosition',
   specialties: 'specialties',
   bio: 'bio',
   commissionPct: 'commissionPct',
+  baseSalary: 'baseSalary',
+  perClassRate: 'perClassRate',
+  userId: 'userId',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PayrollScalarFieldEnum = {
+  id: 'id',
+  trainerId: 'trainerId',
+  amount: 'amount',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  status: 'status',
+  expenseId: 'expenseId',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.EquipmentScalarFieldEnum = {
@@ -310,6 +338,16 @@ exports.Prisma.EquipmentScalarFieldEnum = {
   notes: 'notes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AppNotificationScalarFieldEnum = {
+  id: 'id',
+  memberId: 'memberId',
+  title: 'title',
+  message: 'message',
+  type: 'type',
+  read: 'read',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SystemConfigScalarFieldEnum = {
@@ -334,17 +372,80 @@ exports.Prisma.AuditLogScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
-exports.Prisma.NotificationScalarFieldEnum = {
+exports.Prisma.ExpenseCategoryScalarFieldEnum = {
   id: 'id',
-  memberId: 'memberId',
-  type: 'type',
-  channel: 'channel',
+  name: 'name',
+  description: 'description',
+  color: 'color',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ExpenseScalarFieldEnum = {
+  id: 'id',
+  amount: 'amount',
+  description: 'description',
+  date: 'date',
+  categoryId: 'categoryId',
+  receiptUrl: 'receiptUrl',
+  reference: 'reference',
   status: 'status',
-  subject: 'subject',
-  body: 'body',
-  sentAt: 'sentAt',
-  error: 'error',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RoutineScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  memberId: 'memberId',
+  trainerId: 'trainerId',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ExerciseScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  category: 'category',
+  equipment: 'equipment',
+  muscleGroup: 'muscleGroup',
+  demoUrl: 'demoUrl',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RoutineExerciseScalarFieldEnum = {
+  id: 'id',
+  routineId: 'routineId',
+  exerciseId: 'exerciseId',
+  day: 'day',
+  order: 'order',
+  sets: 'sets',
+  reps: 'reps',
+  weight: 'weight',
+  rest: 'rest',
+  notes: 'notes'
+};
+
+exports.Prisma.WorkoutLogScalarFieldEnum = {
+  id: 'id',
+  routineId: 'routineId',
+  date: 'date',
+  notes: 'notes'
+};
+
+exports.Prisma.WorkoutExerciseLogScalarFieldEnum = {
+  id: 'id',
+  workoutLogId: 'workoutLogId',
+  routineExerciseId: 'routineExerciseId',
+  completed: 'completed',
+  weightUsed: 'weightUsed',
+  repsDone: 'repsDone'
 };
 
 exports.Prisma.SortOrder = {
@@ -380,7 +481,8 @@ exports.UserRole = exports.$Enums.UserRole = {
   SUPER_ADMIN: 'SUPER_ADMIN',
   ADMIN: 'ADMIN',
   RECEPTIONIST: 'RECEPTIONIST',
-  TRAINER: 'TRAINER'
+  TRAINER: 'TRAINER',
+  MEMBER: 'MEMBER'
 };
 
 exports.Gender = exports.$Enums.Gender = {
@@ -439,7 +541,8 @@ exports.BookingStatus = exports.$Enums.BookingStatus = {
   CONFIRMED: 'CONFIRMED',
   CANCELLED: 'CANCELLED',
   ATTENDED: 'ATTENDED',
-  NO_SHOW: 'NO_SHOW'
+  NO_SHOW: 'NO_SHOW',
+  WAITLISTED: 'WAITLISTED'
 };
 
 exports.EquipmentStatus = exports.$Enums.EquipmentStatus = {
@@ -458,27 +561,10 @@ exports.ConfigCategory = exports.$Enums.ConfigCategory = {
   CLOUDINARY: 'CLOUDINARY'
 };
 
-exports.NotificationType = exports.$Enums.NotificationType = {
-  WELCOME: 'WELCOME',
-  MEMBERSHIP_EXPIRING: 'MEMBERSHIP_EXPIRING',
-  MEMBERSHIP_EXPIRED: 'MEMBERSHIP_EXPIRED',
-  PAYMENT_RECEIPT: 'PAYMENT_RECEIPT',
-  PAYMENT_OVERDUE: 'PAYMENT_OVERDUE',
-  CLASS_REMINDER: 'CLASS_REMINDER',
-  CLASS_CANCELLED: 'CLASS_CANCELLED',
-  CUSTOM: 'CUSTOM'
-};
-
-exports.NotificationChannel = exports.$Enums.NotificationChannel = {
-  EMAIL: 'EMAIL',
-  SMS: 'SMS',
-  BOTH: 'BOTH'
-};
-
-exports.NotificationStatus = exports.$Enums.NotificationStatus = {
+exports.ExpenseStatus = exports.$Enums.ExpenseStatus = {
   PENDING: 'PENDING',
-  SENT: 'SENT',
-  FAILED: 'FAILED'
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
 };
 
 exports.Prisma.ModelName = {
@@ -495,10 +581,18 @@ exports.Prisma.ModelName = {
   Class: 'Class',
   ClassBooking: 'ClassBooking',
   Trainer: 'Trainer',
+  Payroll: 'Payroll',
   Equipment: 'Equipment',
+  AppNotification: 'AppNotification',
   SystemConfig: 'SystemConfig',
   AuditLog: 'AuditLog',
-  Notification: 'Notification'
+  ExpenseCategory: 'ExpenseCategory',
+  Expense: 'Expense',
+  Routine: 'Routine',
+  Exercise: 'Exercise',
+  RoutineExercise: 'RoutineExercise',
+  WorkoutLog: 'WorkoutLog',
+  WorkoutExerciseLog: 'WorkoutExerciseLog'
 };
 
 /**

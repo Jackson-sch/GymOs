@@ -23,6 +23,7 @@ interface DataTableProps<TData, TValue> {
   filterColumn?: string;
   placeholder?: string;
   manualFiltering?: boolean;
+  onRowClick?: (row: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -31,6 +32,7 @@ export function DataTable<TData, TValue>({
   filterColumn,
   placeholder = "Buscar...",
   manualFiltering = false,
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   
@@ -49,9 +51,10 @@ export function DataTable<TData, TValue>({
   const table = useReactTable({
     data,
     columns,
+    getRowId: (row: any, index) => (row?.id ? String(row.id) : String(index)),
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
+    onSortingChange: (updater) => setSorting(updater),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     manualFiltering,
@@ -117,10 +120,14 @@ export function DataTable<TData, TValue>({
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="group hover:bg-white/3 transition-colors duration-200"
+                    onClick={() => onRowClick?.(row.original)}
+                    className={cn(
+                      "group transition-colors duration-200",
+                      onRowClick ? "cursor-pointer hover:bg-white/5" : "hover:bg-white/3"
+                    )}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-6 py-4 text-sm font-sans">
+                      <td key={`${row.id}-${cell.column.id}`} className="px-6 py-4 text-sm font-sans">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
                     ))}

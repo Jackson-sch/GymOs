@@ -1,0 +1,26 @@
+{
+  "name": "GymOS Portal de Socios",
+  "short_name": "GymOS",
+  "description": "Accede a tu membresía, reserva clases y sigue tu progreso en GymOS.",
+  "start_url": "/portal",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "orientation": "portrait",
+  "scope": "/portal",
+  "categories": ["fitness", "lifestyle"]
+}

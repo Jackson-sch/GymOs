@@ -18,6 +18,8 @@ import {
 import { createClassAction, updateClassAction } from "@/lib/actions/classes-actions";
 import { toast } from "sonner";
 import { Loader2, Save } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 const classSchema = z.object({
   name: z.string().min(3, "Mínimo 3 caracteres"),
@@ -28,6 +30,8 @@ const classSchema = z.object({
   trainerId: z.string().min(1, "Entrenador requerido"),
   location: z.string().optional(),
   status: z.string().optional(),
+  isRecurring: z.boolean(),
+  recurrenceWeeks: z.string().optional().refine((val) => !val || !isNaN(parseInt(val)), "Número inválido"),
 });
 
 type ClassFormValues = z.infer<typeof classSchema>;
@@ -44,16 +48,26 @@ export function ClassForm({ initialData, trainers, onSuccess }: ClassFormProps) 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ClassFormValues>({
     resolver: zodResolver(classSchema),
     defaultValues: initialData ? {
-      ...initialData,
+      name: initialData.name || "",
+      description: initialData.description || "",
       startTime: new Date(initialData.startTime).toISOString().slice(0, 16),
-      durationMins: initialData.durationMins.toString(),
-      maxCapacity: initialData.maxCapacity.toString(),
+      durationMins: initialData.durationMins?.toString() || "60",
+      maxCapacity: initialData.maxCapacity?.toString() || "20",
+      trainerId: initialData.trainerId || "",
+      location: initialData.location || "Sala Principal",
+      status: initialData.status || "ACTIVE",
+      isRecurring: Boolean(initialData.isRecurring),
+      recurrenceWeeks: "4"
     } : {
       location: "Sala Principal",
       durationMins: "60",
-      maxCapacity: "20"
+      maxCapacity: "20",
+      isRecurring: false,
+      recurrenceWeeks: "4"
     }
   });
+
+  const isRecurring = watch("isRecurring");
 
   const onSubmit = async (values: ClassFormValues) => {
     setLoading(true);
@@ -62,7 +76,13 @@ export function ClassForm({ initialData, trainers, onSuccess }: ClassFormProps) 
       : await createClassAction(values);
 
     if (result.success) {
-      toast.success(initialData ? "Clase actualizada" : "Clase programada");
+      toast.success(
+        initialData 
+          ? "Clase actualizada" 
+          : values.isRecurring 
+            ? `Programadas ${(result as any).count || 1} sesiones correctamente`
+            : "Clase programada"
+      );
       onSuccess();
     } else {
       toast.error(result.error);
@@ -120,6 +140,44 @@ export function ClassForm({ initialData, trainers, onSuccess }: ClassFormProps) 
           <Input {...register("maxCapacity")} type="number" className="bg-white/5 border-white/10" />
         </div>
       </div>
+
+      {!initialData && (
+        <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label className="text-[11px] font-bold uppercase tracking-wider">Repetir semanalmente</Label>
+              <p className="text-[10px] text-muted-foreground">Generar múltiples sesiones automáticamente</p>
+            </div>
+            <input 
+              type="checkbox" 
+              {...register("isRecurring")}
+              className="size-5 rounded border-white/20 bg-white/5 text-primary focus:ring-primary/20 accent-primary"
+            />
+          </div>
+
+          {isRecurring && (
+            <div className="pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="flex items-center gap-4">
+                <div className="flex-1 space-y-2">
+                  <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Durante cuántas semanas</Label>
+                  <Input 
+                    {...register("recurrenceWeeks")} 
+                    type="number" 
+                    className="bg-white/5 border-white/10 h-10" 
+                    placeholder="Ej: 4"
+                  />
+                  {errors.recurrenceWeeks && <p className="text-[10px] text-rose-500 font-bold uppercase">{errors.recurrenceWeeks.message}</p>}
+                </div>
+                <div className="flex-1 pt-6">
+                  <p className="text-[10px] text-muted-foreground italic">
+                    Se crearán {watch("recurrenceWeeks") || 0} sesiones cada {format(new Date(watch("startTime") || new Date()), "EEEE", { locale: es })}.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <Button 
         type="submit" 

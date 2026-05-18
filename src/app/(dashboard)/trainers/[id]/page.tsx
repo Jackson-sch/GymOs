@@ -1,5 +1,5 @@
 import { getTrainerById } from "@/lib/actions/trainers-actions";
-import { TrainerProfileClient } from "./TrainerProfileClient";
+import TrainerProfileClient from "./TrainerProfileClient";
 
 export default async function TrainerProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

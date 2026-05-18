@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "../../../prisma";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { serialize } from "@/lib/utils";
 import { verifySession } from "@/lib/security";
@@ -13,6 +13,7 @@ export async function getTrainerPayrollData(trainerId: string, startDate: Date, 
       select: {
         baseSalary: true,
         perClassRate: true,
+        commissionPct: true,
       }
     });
 
@@ -34,8 +35,31 @@ export async function getTrainerPayrollData(trainerId: string, startDate: Date, 
 
     const classesCount = completedClasses.length;
     const perClassTotal = classesCount * (Number(trainer.perClassRate) || 0);
+
+    // 2. Calcular comisiones por ventas (referidos)
+    const referrals = await prisma.membership.findMany({
+      where: {
+        referralTrainerId: trainerId,
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        }
+      },
+      include: {
+        member: true,
+        plan: true,
+      }
+    });
+
+    const salesCount = referrals.length;
+    const commissionPct = Number(trainer.commissionPct) || 0;
+    const commissionsTotal = referrals.reduce((acc, curr) => {
+      const price = Number(curr.price) || 0;
+      return acc + (price * (commissionPct / 100));
+    }, 0);
+
     const baseAmount = Number(trainer.baseSalary) || 0;
-    const totalAmount = baseAmount + perClassTotal;
+    const totalAmount = baseAmount + perClassTotal + commissionsTotal;
 
     return {
       success: true,
@@ -43,9 +67,13 @@ export async function getTrainerPayrollData(trainerId: string, startDate: Date, 
         classesCount,
         perClassRate: Number(trainer.perClassRate) || 0,
         perClassTotal,
+        salesCount,
+        commissionPct,
+        commissionsTotal,
         baseAmount,
         totalAmount,
         classes: serialize(completedClasses),
+        referrals: serialize(referrals),
       }
     };
   } catch (error) {
@@ -114,14 +142,26 @@ export async function settlePayrollAction(data: {
 
 export async function getTrainerPayrollHistory(trainerId: string) {
   try {
-    await verifySession(["ADMIN", "SUPER_ADMIN"]);
+    const session = await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
+    
+    // Si es entrenador, solo puede ver el suyo
+    if ((session.user as any).role === "TRAINER") {
+      const trainer = await prisma.trainer.findUnique({
+        where: { userId: session.user.id }
+      });
+      if (!trainer || trainer.id !== trainerId) {
+        throw new Error("FORBIDDEN: Solo puedes ver tu propio historial");
+      }
+    }
+
     const history = await prisma.payroll.findMany({
       where: { trainerId },
       orderBy: { createdAt: "desc" },
       include: { expense: true }
     });
     return { success: true, data: serialize(history) };
-  } catch (error) {
-    return { success: false, error: "Error al cargar historial" };
+  } catch (error: any) {
+    console.error("Error fetching payroll history:", error);
+    return { success: false, error: error.message || "Error al cargar historial" };
   }
 }

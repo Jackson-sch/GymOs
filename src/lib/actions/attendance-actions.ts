@@ -1,13 +1,16 @@
 "use server";
 
-import { prisma } from "../../../prisma";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { serialize } from "@/lib/utils";
+import { verifySession } from "@/lib/security";
+import { startOfDay } from "date-fns";
 
 
 
 export async function getRecentAttendanceAction() {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     const attendance = await prisma.attendance.findMany({
       take: 50,
       orderBy: {
@@ -39,6 +42,7 @@ export async function getRecentAttendanceAction() {
 
 export async function getCurrentOccupancyAction() {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     // Definimos un umbral razonable (ej: las últimas 15 horas) para evitar contar registros antiguos del seed
     const fifteenHoursAgo = new Date(Date.now() - 15 * 60 * 60 * 1000);
     
@@ -59,23 +63,24 @@ export async function getCurrentOccupancyAction() {
 
 export async function getAttendanceDashboardStatsAction() {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const todayStart = startOfDay(today);
+    const todayMonth = today.getMonth();
+    const todayDay = today.getDate();
 
-    const [totalToday, birthdaysToday, planDist] = await Promise.all([
+    const [totalToday, activeMembersWithBirthdays, planDist] = await Promise.all([
       // Total check-ins today
       prisma.attendance.count({
-        where: { checkIn: { gte: today } }
+        where: { checkIn: { gte: todayStart } }
       }),
       // Members with birthdays today
-      prisma.member.count({
+      prisma.member.findMany({
         where: {
-          birthDate: {
-            // Note: This is a simplified birthday check for the demo
-            // In a real app, you'd use raw SQL or more complex logic to ignore the year
-            not: null
-          }
-        }
+          status: "ACTIVE",
+          birthDate: { not: null }
+        },
+        select: { birthDate: true }
       }),
       // Plan distribution of active attendances
       prisma.attendance.findMany({
@@ -93,6 +98,8 @@ export async function getAttendanceDashboardStatsAction() {
       })
     ]);
 
+    const birthdaysTodayCount = activeMembersWithBirthdays.filter(m => m.birthDate && m.birthDate.getMonth() === todayMonth && m.birthDate.getDate() === todayDay).length;
+
     // Group plan distribution
     const planCounts: Record<string, number> = {};
     planDist.forEach(att => {
@@ -104,7 +111,7 @@ export async function getAttendanceDashboardStatsAction() {
       success: true,
       stats: {
         totalToday,
-        birthdaysToday: 2, // Hardcoded for demo/seed variety if needed
+        birthdaysToday: birthdaysTodayCount,
         planDistribution: Object.entries(planCounts).map(([name, value]) => ({ name, value }))
       }
     };
@@ -116,6 +123,7 @@ export async function getAttendanceDashboardStatsAction() {
 
 export async function registerAttendanceAction(memberId: string, method: "QR" | "MANUAL" = "MANUAL") {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     // 1. Verificar si el socio existe y tiene membresía activa
     const member = await prisma.member.findUnique({
       where: { id: memberId },
@@ -151,12 +159,13 @@ export async function registerAttendanceAction(memberId: string, method: "QR" | 
 
 export async function processKioskCheckInAction(code: string) {
   try {
-    // 1. Find member by DNI or QR Code
+    // 1. Find member by DNI, QR Code, or PIN
     const member = await prisma.member.findFirst({
       where: {
         OR: [
           { dni: code },
-          { qrCode: code }
+          { qrCode: code },
+          { pin: code }
         ]
       },
       include: {
@@ -185,11 +194,31 @@ export async function processKioskCheckInAction(code: string) {
       };
     }
 
+    const methodUsed = member.pin === code ? "PIN" : "QR";
+
+    // Verificación de Anti-Spam / Rate Limiting (2 minutos)
+    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+    const recentCheckIn = await prisma.attendance.findFirst({
+      where: {
+        memberId: member.id,
+        checkIn: { gte: twoMinutesAgo }
+      }
+    });
+
+    if (recentCheckIn) {
+      return {
+        success: true,
+        status: "DENIED",
+        member: { fullName: member.fullName, photo: member.photo },
+        reason: "Ya registraste tu ingreso hace unos instantes"
+      };
+    }
+
     // 2. Register attendance
     await prisma.attendance.create({
       data: {
         memberId: member.id,
-        method: "QR", // or manual, but default to QR for kiosk
+        method: methodUsed,
         checkIn: new Date(),
       }
     });
@@ -209,5 +238,59 @@ export async function processKioskCheckInAction(code: string) {
   } catch (error) {
     console.error("Error processing kiosk check-in:", error);
     return { success: false, status: "ERROR", error: "Error del servidor" };
+  }
+}
+
+export async function markClassAttendanceAction(data: {
+  classId: string;
+  memberId: string;
+  attended: boolean;
+}) {
+  try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
+    
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Actualizar el estado de la reserva
+      const booking = await tx.classBooking.update({
+        where: {
+          classId_memberId: {
+            classId: data.classId,
+            memberId: data.memberId
+          }
+        },
+        data: {
+          status: data.attended ? "ATTENDED" : "CONFIRMED"
+        }
+      });
+
+      // 2. Crear o eliminar el registro de asistencia correspondiente
+      if (data.attended) {
+        await tx.attendance.create({
+          data: {
+            memberId: data.memberId,
+            classId: data.classId,
+            method: "MANUAL",
+            notes: "Asistencia a clase registrada por entrenador"
+          }
+        });
+      } else {
+        await tx.attendance.deleteMany({
+          where: {
+            memberId: data.memberId,
+            classId: data.classId
+          }
+        });
+      }
+
+      return booking;
+    });
+
+    revalidatePath("/attendance");
+    revalidatePath(`/portal/trainer/classes/${data.classId}/attendance`);
+    
+    return { success: true, data: serialize(result) };
+  } catch (error: any) {
+    console.error("Error marking class attendance:", error);
+    return { success: false, error: "Error al registrar asistencia" };
   }
 }

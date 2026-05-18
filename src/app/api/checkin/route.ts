@@ -4,13 +4,16 @@ import { processCheckIn, getCheckInStats } from "@/lib/actions/checkin-actions";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { qrCode, method } = body;
+    const { qrCode, code, pin, method } = body;
     
-    if (!qrCode) {
-      return NextResponse.json({ error: "Código QR requerido" }, { status: 400 });
+    const identifier = qrCode || code || pin;
+    
+    if (!identifier) {
+      return NextResponse.json({ success: false, error: "Identificador de acceso requerido" }, { status: 400 });
     }
     
-    const result = await processCheckIn(qrCode, method || "QR");
+    const checkInMethod = method || (pin ? "PIN" : "QR");
+    const result = await processCheckIn(identifier, checkInMethod);
     
     if (!result.success) {
       return NextResponse.json(result, { status: 400 });

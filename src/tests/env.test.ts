@@ -1,4 +1,4 @@
-import { expect, test, describe } from "bun:test";
+import { expect, test, describe } from "vitest";
 import { prisma } from "../lib/prisma";
 
 describe("Environment & Infrastructure", () => {

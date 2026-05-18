@@ -18,7 +18,7 @@ export default async function ExpensesPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-primary">
-            <TrendingDown className="w-4 h-4" />
+            <TrendingDown className="size-4" />
             <span className="text-[10px] uppercase tracking-[0.3em] font-bold">Gestión de Tesorería</span>
           </div>
           <h1 className="text-6xl font-serif leading-tight">Egresos & Gastos</h1>

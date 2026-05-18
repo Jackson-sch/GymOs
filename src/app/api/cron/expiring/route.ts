@@ -13,7 +13,7 @@ async function verifyCronAuth(request: Request): Promise<boolean> {
   return true;
 }
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   const isAuthorized = await verifyCronAuth(request);
   if (!isAuthorized) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });

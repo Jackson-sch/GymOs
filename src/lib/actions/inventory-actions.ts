@@ -1,10 +1,11 @@
 "use server";
 
-import { prisma, Prisma } from "../../../prisma";
+import { prisma, Prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { EquipmentStatus } from "@prisma/client";
 import { serialize } from "@/lib/utils";
+import { verifySession } from "@/lib/security";
 
 const equipmentSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
@@ -19,8 +20,11 @@ const equipmentSchema = z.object({
   notes: z.string().nullish(),
 });
 
+export type EquipmentInput = z.input<typeof equipmentSchema>;
+
 export async function getEquipmentAction() {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     const equipment = await prisma.equipment.findMany({
       orderBy: { createdAt: "desc" },
     });
@@ -31,6 +35,7 @@ export async function getEquipmentAction() {
 }
 
 export async function getEquipmentKPIs() {
+  await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
   const [total, maintenance, outOfService] = await Promise.all([
     prisma.equipment.count(),
     prisma.equipment.count({ where: { status: "MAINTENANCE" } }),
@@ -47,15 +52,19 @@ export async function getEquipmentKPIs() {
 
 export async function getMaintenanceAlerts() {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
+    const today = new Date();
+    const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
     const overdue = await prisma.equipment.findMany({
       where: {
         OR: [
           { status: "MAINTENANCE" },
-          { nextMaintenance: { lt: new Date() } }
+          { nextMaintenance: { lte: nextWeek } }
         ]
       },
       orderBy: { nextMaintenance: "asc" },
-      take: 5
+      take: 8
     });
     return { success: true, data: serialize(overdue) };
   } catch (error) {
@@ -63,8 +72,9 @@ export async function getMaintenanceAlerts() {
   }
 }
 
-export async function createEquipmentAction(data: any) {
+export async function createEquipmentAction(data: EquipmentInput) {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN"]);
     const parsed = equipmentSchema.parse(data);
     const equipment = await prisma.equipment.create({
       data: {
@@ -80,8 +90,9 @@ export async function createEquipmentAction(data: any) {
   }
 }
 
-export async function updateEquipmentAction(id: string, data: any) {
+export async function updateEquipmentAction(id: string, data: EquipmentInput) {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN"]);
     const parsed = equipmentSchema.partial().parse(data);
     const equipment = await prisma.equipment.update({
       where: { id },
@@ -100,6 +111,7 @@ export async function updateEquipmentAction(id: string, data: any) {
 
 export async function deleteEquipmentAction(id: string) {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN"]);
     await prisma.equipment.delete({ where: { id } });
     revalidatePath("/inventory");
     return { success: true };

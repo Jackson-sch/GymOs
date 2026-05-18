@@ -34,6 +34,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Validar tipo MIME permitido
+    const allowedMimeTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "image/svg+xml",
+      "application/pdf"
+    ];
+
+    if (!allowedMimeTypes.includes(file.type)) {
+      return NextResponse.json(
+        { error: "Tipo de archivo no permitido (solo imágenes y PDF)" },
+        { status: 400 },
+      );
+    }
+
     // Usar utilidad de almacenamiento (Local o Cloudinary)
     const url = await uploadFile(file);
 
@@ -70,14 +87,19 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Eliminar físicamente el archivo
-    const success = await deleteFile(url);
+    const result = await deleteFile(url);
 
-    if (success) {
+    if (result.success) {
       return NextResponse.json({ success: true });
+    } else if (result.notFound) {
+      return NextResponse.json(
+        { error: "Archivo no encontrado" },
+        { status: 404 },
+      );
     } else {
       return NextResponse.json(
-        { error: "No se pudo eliminar el archivo físico" },
-        { status: 404 },
+        { error: result.error || "No se pudo eliminar el archivo físico por un error interno" },
+        { status: 500 },
       );
     }
   } catch (error: any) {

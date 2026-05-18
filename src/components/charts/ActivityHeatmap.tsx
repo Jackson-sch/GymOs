@@ -14,7 +14,7 @@ export function ActivityHeatmap({ data }: { data?: number[][] }) {
   if (!data) {
     return (
       <div className="w-full h-[300px] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+        <div className="size-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
       </div>
     );
   }
@@ -29,7 +29,7 @@ export function ActivityHeatmap({ data }: { data?: number[][] }) {
           <div className="grid grid-cols-7 gap-2">
             {days.map((day) => (
               <div key={day} className="text-center">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">
                   {day}
                 </span>
               </div>
@@ -72,17 +72,17 @@ export function ActivityHeatmap({ data }: { data?: number[][] }) {
 
       {/* Legend */}
       <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/5">
-        <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-bold">Menos</span>
+        <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">Menos</span>
         <div className="flex gap-1.5">
           {[0.2, 0.4, 0.6, 0.8, 1].map((lvl) => (
             <div 
               key={lvl} 
-              className="w-4 h-4 rounded-md" 
+              className="size-4 rounded-md" 
               style={{ backgroundColor: `oklch(70% 0.15 280 / ${lvl})` }} 
             />
           ))}
         </div>
-        <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-bold">Más</span>
+        <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">Más</span>
       </div>
     </div>
   );

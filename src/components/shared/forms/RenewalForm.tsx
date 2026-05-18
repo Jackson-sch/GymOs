@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { type SyntheticEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -22,6 +22,7 @@ import {
   CheckCircle2,
   Sparkles
 } from "lucide-react";
+import { formatCurrency, formatDate } from "@/lib/formats";
 
 interface RenewalFormProps {
   member: any;
@@ -30,19 +31,34 @@ interface RenewalFormProps {
 }
 
 export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
-  const [selectedPlanId, setSelectedPlanId] = React.useState<string>("");
+  const currentMembership = member.memberships?.[0];
+  const initialPlanId = React.useMemo(() => {
+    const currentPlanId = currentMembership?.planId || currentMembership?.plan?.id;
+    if (currentPlanId && plans.some(p => p.id === currentPlanId && p.isActive)) {
+      return currentPlanId;
+    }
+    return "";
+  }, [currentMembership, plans]);
+
+  const [selectedPlanId, setSelectedPlanId] = React.useState<string>(initialPlanId);
   const [paymentMethod, setPaymentMethod] = React.useState<string>("");
   const [notes, setNotes] = React.useState("");
   const [loading, setLoading] = React.useState(false);
 
+  React.useEffect(() => {
+    const currentPlanId = member.memberships?.[0]?.planId || member.memberships?.[0]?.plan?.id;
+    if (currentPlanId && plans.some(p => p.id === currentPlanId && p.isActive)) {
+      setSelectedPlanId(currentPlanId);
+    }
+  }, [member, plans]);
+
   const selectedPlan = plans.find((p) => p.id === selectedPlanId);
-  const currentMembership = member.memberships?.[0];
 
   const endDate = selectedPlan
     ? new Date(Date.now() + selectedPlan.durationDays * 86400000)
     : null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!selectedPlanId) {
@@ -114,7 +130,7 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
             <Clock className="w-3 h-3" />
             <span>
               Plan: {currentMembership.plan?.name || "—"} · Vence:{" "}
-              {new Date(currentMembership.endDate).toLocaleDateString("es-PE")}
+              {formatDate(currentMembership.endDate)}
             </span>
           </div>
         )}
@@ -126,7 +142,7 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
           Nuevo Plan
         </Label>
         <Select value={selectedPlanId} onValueChange={setSelectedPlanId}>
-          <SelectTrigger className="bg-white/5 border-white/10 rounded-xl h-12">
+          <SelectTrigger className="bg-white/5 border-white/10 rounded-xl h-12 w-full">
             <SelectValue placeholder="Seleccionar plan..." />
           </SelectTrigger>
           <SelectContent className="bg-black/95 border-white/10 backdrop-blur-xl">
@@ -138,7 +154,7 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
                     <ShieldCheck className="w-4 h-4 text-emerald-500" />
                     <span>{plan.name}</span>
                     <span className="text-muted-foreground">
-                      — S/. {Number(plan.price).toFixed(2)} / {plan.durationDays}d
+                      — {formatCurrency(plan.price)} / {plan.durationDays}d
                     </span>
                   </div>
                 </SelectItem>
@@ -162,7 +178,7 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
                 Inicio
               </p>
               <p className="font-medium">
-                {new Date().toLocaleDateString("es-PE")}
+                {formatDate(new Date())}
               </p>
             </div>
             <div>
@@ -170,7 +186,7 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
                 Vencimiento
               </p>
               <p className="font-medium">
-                {endDate?.toLocaleDateString("es-PE")}
+                {formatDate(endDate || "" )}
               </p>
             </div>
             <div>
@@ -184,7 +200,7 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
                 Monto
               </p>
               <p className="font-medium text-emerald-500">
-                S/. {Number(selectedPlan.price).toFixed(2)}
+                {formatCurrency(selectedPlan.price)}
               </p>
             </div>
           </div>
@@ -197,7 +213,7 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
           Método de Pago
         </Label>
         <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-          <SelectTrigger className="bg-white/5 border-white/10 rounded-xl h-12">
+          <SelectTrigger className="bg-white/5 border-white/10 rounded-xl h-12 w-full">
             <SelectValue placeholder="Registrar pago (opcional)..." />
           </SelectTrigger>
           <SelectContent className="bg-black/95 border-white/10 backdrop-blur-xl">

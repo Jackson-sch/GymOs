@@ -5,10 +5,16 @@ import { revalidatePath } from "next/cache";
 import { verifySession } from "@/lib/security";
 import { serialize } from "@/lib/utils";
 import { createAuditLog } from "@/lib/audit";
+import { sendEmailWithLog } from "@/lib/email";
+import { PaymentReceiptEmail } from "@/components/emails/PaymentReceiptEmail";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { getConfig } from "@/lib/config";
+import React from "react";
 
 export async function getRecentPaymentsAction() {
   try {
-    await verifySession();
+    await verifySession(["ADMIN", "SUPER_ADMIN"]);
     const payments = await prisma.payment.findMany({
       where: { createdAt: { lte: new Date() } },
       orderBy: { createdAt: "desc" },
@@ -22,12 +28,41 @@ export async function getRecentPaymentsAction() {
   }
 }
 
-export async function createPaymentAction(data: any) {
+import { type PaymentMethod } from "@prisma/client";
+
+export interface PaymentInput {
+  memberId: string;
+  amount: string | number;
+  method: PaymentMethod | string;
+  invoiceNumber?: string;
+  planId?: string;
+  referralTrainerId?: string | null;
+  reference?: string | null;
+}
+
+export async function createPaymentAction(data: PaymentInput) {
   try {
     await verifySession(["ADMIN", "SUPER_ADMIN"]);
     
     const result = await prisma.$transaction(async (tx) => {
       let membershipId = null;
+
+      // 0. Generar número de factura si no existe
+      let invoiceNumber = data.invoiceNumber;
+      if (!invoiceNumber) {
+        const lastPayment = await tx.payment.findFirst({
+          where: { invoiceNumber: { startsWith: "F001-" } },
+          orderBy: { createdAt: "desc" },
+          select: { invoiceNumber: true }
+        });
+
+        let nextNumber = 1;
+        if (lastPayment?.invoiceNumber) {
+          const lastNumStr = lastPayment.invoiceNumber.split("-")[1];
+          nextNumber = parseInt(lastNumStr) + 1;
+        }
+        invoiceNumber = `F001-${nextNumber.toString().padStart(4, "0")}`;
+      }
 
       // 1. Si el pago incluye un plan, crear la membresía primero
       if (data.planId) {
@@ -51,7 +86,8 @@ export async function createPaymentAction(data: any) {
             startDate,
             endDate,
             status: "ACTIVE",
-            price: plan.price
+            price: plan.price,
+            referralTrainerId: data.referralTrainerId === "none" ? null : data.referralTrainerId
           }
         });
         membershipId = membership.id;
@@ -68,10 +104,11 @@ export async function createPaymentAction(data: any) {
         data: {
           memberId: data.memberId,
           membershipId: membershipId,
-          amount: parseFloat(data.amount),
-          method: data.method,
+          amount: typeof data.amount === 'string' ? parseFloat(data.amount) : data.amount,
+          method: data.method as PaymentMethod,
           status: "COMPLETED",
           reference: data.reference,
+          invoiceNumber: invoiceNumber,
           paidAt: new Date(),
         }
       });
@@ -90,6 +127,42 @@ export async function createPaymentAction(data: any) {
       entityId: result.id,
       newData: { memberId: data.memberId, amount: data.amount, method: data.method }
     });
+
+    // 3. Enviar Recibo por Email
+    try {
+      const fullPayment = await prisma.payment.findUnique({
+        where: { id: result.id },
+        include: { 
+          member: true,
+          membership: { include: { plan: true } }
+        }
+      });
+
+      if (fullPayment && fullPayment.member.email) {
+        const [gymName, gymLogo] = await Promise.all([
+          getConfig("GYM_NAME"),
+          getConfig("GYM_LOGO"),
+        ]);
+
+        await sendEmailWithLog({
+          to: fullPayment.member.email,
+          subject: `Recibo de Pago: ${fullPayment.invoiceNumber}`,
+          react: React.createElement(PaymentReceiptEmail, {
+            memberName: fullPayment.member.fullName,
+            planName: fullPayment.membership?.plan.name || "Servicio General",
+            amount: `S/ ${fullPayment.amount.toFixed(2)}`,
+            method: fullPayment.method,
+            paidAt: format(fullPayment.paidAt || new Date(), "PPP p", { locale: es }),
+            invoiceNumber: fullPayment.invoiceNumber || undefined,
+            gymName: gymName || undefined,
+            gymLogo: gymLogo || undefined,
+          }),
+          text: `Hola ${fullPayment.member.fullName}, recibimos tu pago de S/ ${fullPayment.amount.toFixed(2)} por ${fullPayment.membership?.plan.name || "el servicio"}.`
+        }, fullPayment.memberId, "SUCCESS");
+      }
+    } catch (emailError) {
+      console.error("Error sending payment receipt email:", emailError);
+    }
     
     return { success: true, data: serialize(result) };
   } catch (error) {

@@ -60,7 +60,7 @@ export async function GET(
         : `recibo-${payment.invoiceNumber || payment.id}.pdf`;
 
       // 5. Return as PDF
-      return new NextResponse(pdfBuffer, {
+      return new NextResponse(new Uint8Array(pdfBuffer), {
         headers: {
           "Content-Type": "application/pdf",
           "Content-Disposition": `attachment; filename=${filename}`,

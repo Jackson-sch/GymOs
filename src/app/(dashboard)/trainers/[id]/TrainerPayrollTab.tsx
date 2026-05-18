@@ -26,6 +26,9 @@ import {
   settlePayrollAction, 
   getTrainerPayrollHistory 
 } from "@/lib/actions/payroll-actions";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { PayrollReceiptPDF } from "./components/PayrollReceiptPDF";
+import { FileDown } from "lucide-react";
 
 export function TrainerPayrollTab({ trainer }: { trainer: any }) {
   const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
@@ -34,6 +37,11 @@ export function TrainerPayrollTab({ trainer }: { trainer: any }) {
   const [history, setHistory] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSettling, setIsSettling] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const fetchPayrollData = async () => {
     setIsLoading(true);
@@ -123,53 +131,117 @@ export function TrainerPayrollTab({ trainer }: { trainer: any }) {
                   </div>
                   <div className="p-4 rounded-2xl bg-background/30 border border-white/5 space-y-1">
                     <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Pago x Clases</div>
-                    <div className="text-2xl font-light">${payrollData.perClassTotal.toLocaleString()}</div>
+                    <div className="text-2xl font-light">S/. {payrollData.perClassTotal.toLocaleString()}</div>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-background/30 border border-white/5 space-y-1">
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Ventas/Comis.</div>
+                    <div className="text-2xl font-light">S/. {payrollData.commissionsTotal.toLocaleString()}</div>
+                    <div className="text-[10px] text-accent/60 font-bold uppercase">{payrollData.salesCount} ventas ({payrollData.commissionPct}%)</div>
                   </div>
                   <div className="p-4 rounded-2xl bg-background/30 border border-white/5 space-y-1">
                     <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Salario Base</div>
-                    <div className="text-2xl font-light">${payrollData.baseAmount.toLocaleString()}</div>
+                    <div className="text-2xl font-light">S/. {payrollData.baseAmount.toLocaleString()}</div>
                   </div>
                 </div>
 
                 <div className="p-6 rounded-3xl bg-primary/5 border border-primary/20 flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="space-y-1 text-center md:text-left">
                     <div className="text-xs font-bold text-primary uppercase tracking-[0.2em]">Total a Liquidar</div>
-                    <div className="text-4xl font-light text-foreground">${payrollData.totalAmount.toLocaleString()}</div>
+                    <div className="text-4xl font-light text-foreground">S/. {payrollData.totalAmount.toLocaleString()}</div>
                   </div>
-                  <Button 
-                    onClick={handleSettle}
-                    disabled={isSettling || payrollData.totalAmount <= 0}
-                    className="h-14 px-10 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform w-full md:w-auto"
-                  >
-                    {isSettling ? <Zap className="w-5 h-5 animate-spin mr-2" /> : <CheckCircle2 className="w-5 h-5 mr-2" />}
-                    {isSettling ? "Procesando..." : "Registrar Pago"}
-                  </Button>
+                  <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+                    {isMounted && payrollData && (
+                      <PDFDownloadLink
+                        document={
+                          <PayrollReceiptPDF 
+                            trainer={trainer} 
+                            payrollData={payrollData} 
+                            periodStart={new Date(startDate)} 
+                            periodEnd={new Date(endDate)} 
+                          />
+                        }
+                        fileName={`RECIBO-${trainer.fullName.replace(/\s+/g, '_')}-${format(new Date(), 'yyyyMMdd')}.pdf`}
+                      >
+                        {({ loading }) => (
+                          <Button 
+                            variant="outline"
+                            className="h-14 px-6 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground font-bold transition-all w-full md:w-auto"
+                            disabled={loading}
+                          >
+                            <FileDown className="w-5 h-5 mr-2" />
+                            {loading ? "Generando..." : "Descargar PDF"}
+                          </Button>
+                        )}
+                      </PDFDownloadLink>
+                    )}
+                    <Button 
+                      onClick={handleSettle}
+                      disabled={isSettling || payrollData.totalAmount <= 0}
+                      className="h-14 px-10 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform w-full md:w-auto"
+                    >
+                      {isSettling ? <Zap className="w-5 h-5 animate-spin mr-2" /> : <CheckCircle2 className="w-5 h-5 mr-2" />}
+                      {isSettling ? "Procesando..." : "Registrar Pago"}
+                    </Button>
+                  </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Detalle de Clases</div>
-                  {payrollData.classes.length === 0 ? (
-                    <div className="text-center py-8 bg-background/20 rounded-2xl border border-dashed border-white/10 opacity-30 text-xs uppercase tracking-widest">
-                      No se encontraron clases completadas en este rango
-                    </div>
-                  ) : (
-                    <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 scrollbar-hide">
-                      {payrollData.classes.map((c: any) => (
-                        <div key={c.id} className="flex justify-between items-center p-3 rounded-xl bg-background/20 border border-white/5 text-sm group hover:border-primary/20 transition-colors">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-[10px] font-bold">
-                              {format(new Date(c.startTime), "dd")}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Detalle de Clases */}
+                  <div className="space-y-3">
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Clases Dictadas ({payrollData.classesCount})</div>
+                    {payrollData.classes.length === 0 ? (
+                      <div className="text-center py-8 bg-background/20 rounded-2xl border border-dashed border-white/10 opacity-30 text-xs uppercase tracking-widest">
+                        Sin clases en este periodo
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                        {payrollData.classes.map((c: any) => (
+                          <div key={c.id} className="flex justify-between items-center p-3 rounded-xl bg-background/20 border border-white/5 text-sm group hover:border-primary/20 transition-colors">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-[10px] font-bold">
+                                {format(new Date(c.startTime), "dd")}
+                              </div>
+                              <div>
+                                <div className="font-medium text-xs">{c.name}</div>
+                                <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">{format(new Date(c.startTime), "HH:mm")}</div>
+                              </div>
                             </div>
-                            <div>
-                              <div className="font-medium">{c.name}</div>
-                              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">{format(new Date(c.startTime), "HH:mm")}</div>
-                            </div>
+                            <div className="text-xs font-bold opacity-60 group-hover:opacity-100 group-hover:text-primary transition-all">S/. {payrollData.perClassRate}</div>
                           </div>
-                          <div className="text-xs font-bold opacity-60 group-hover:opacity-100 group-hover:text-primary transition-all">${payrollData.perClassRate}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Detalle de Ventas */}
+                  <div className="space-y-3">
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Ventas Realizadas ({payrollData.salesCount})</div>
+                    {payrollData.referrals.length === 0 ? (
+                      <div className="text-center py-8 bg-background/20 rounded-2xl border border-dashed border-white/10 opacity-30 text-xs uppercase tracking-widest">
+                        Sin ventas en este periodo
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                        {payrollData.referrals.map((r: any) => {
+                          const commission = (Number(r.price) * (payrollData.commissionPct / 100));
+                          return (
+                            <div key={r.id} className="flex justify-between items-center p-3 rounded-xl bg-background/20 border border-white/5 text-sm group hover:border-accent/20 transition-colors">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent text-[10px] font-bold">
+                                  {format(new Date(r.createdAt), "dd")}
+                                </div>
+                                <div>
+                                  <div className="font-medium text-xs">{r.member.fullName}</div>
+                                  <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">{r.plan.name}</div>
+                                </div>
+                              </div>
+                              <div className="text-xs font-bold opacity-60 group-hover:opacity-100 group-hover:text-accent transition-all">S/. {commission.toLocaleString()}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </>
             ) : null}
@@ -196,12 +268,12 @@ export function TrainerPayrollTab({ trainer }: { trainer: any }) {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Tarifa por Clase</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Comisión por Venta</Label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <TrendingUp className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input 
                     disabled
-                    value={trainer.perClassRate ? Number(trainer.perClassRate) : 0}
+                    value={`${trainer.commissionPct ? Number(trainer.commissionPct) : 0}%`}
                     className="pl-9 bg-background/30 border-white/5 h-11"
                   />
                 </div>
@@ -230,7 +302,7 @@ export function TrainerPayrollTab({ trainer }: { trainer: any }) {
                     <div key={p.id} className="p-4 rounded-2xl bg-background/40 border border-white/5 space-y-3 group hover:border-primary/20 transition-all">
                       <div className="flex justify-between items-start">
                         <div className="space-y-1">
-                          <div className="text-lg font-light tracking-tight text-foreground">${Number(p.amount).toLocaleString()}</div>
+                          <div className="text-lg font-light tracking-tight text-foreground">S/. {Number(p.amount).toLocaleString()}</div>
                           <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">
                             {format(new Date(p.periodStart), "dd/MM")} - {format(new Date(p.periodEnd), "dd/MM")}
                           </div>

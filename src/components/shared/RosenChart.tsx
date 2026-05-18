@@ -35,8 +35,6 @@ export function RosenChart({ data = defaultData }: { data?: DataItem[] }) {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  if (!mounted) return null;
-
   const width = 600;
   const height = 300;
   const margin = { 
@@ -52,7 +50,7 @@ export function RosenChart({ data = defaultData }: { data?: DataItem[] }) {
   const yScale = scaleBand()
     .domain(data.map((d) => d.key))
     .range([0, innerHeight])
-    .padding(0.4);
+    .padding(data.length < 3 ? 0.8 : data.length < 5 ? 0.6 : 0.4);
 
   const xScale = scaleLinear()
     .domain([0, max(data.map((d) => d.value)) ?? 0])
@@ -60,16 +58,17 @@ export function RosenChart({ data = defaultData }: { data?: DataItem[] }) {
 
   return (
     <div className="relative w-full aspect-video md:aspect-2/1 min-h-[250px] md:min-h-[300px]">
-      <svg 
-        viewBox={`0 0 ${width} ${height}`} 
-        className="w-full h-full select-none"
-        preserveAspectRatio="xMidYMid meet"
-      >
+      {!mounted ? null : (
+        <svg 
+          viewBox={`0 0 ${width} ${height}`} 
+          className="w-full h-full select-none"
+          preserveAspectRatio="xMidYMid meet"
+        >
         {/* Grid Lines */}
         <g transform={`translate(${margin.left}, ${margin.top})`}>
-          {xScale.ticks(5).map((t, i) => (
+          {xScale.ticks(5).map((t) => (
             <line
-              key={i}
+              key={`grid-${t}`}
               x1={xScale(t)}
               x2={xScale(t)}
               y1="0"
@@ -81,8 +80,8 @@ export function RosenChart({ data = defaultData }: { data?: DataItem[] }) {
           ))}
 
           {/* Bars */}
-          {data.map((d, i) => (
-            <TooltipProvider key={i}>
+          {data.map((d) => (
+            <TooltipProvider key={d.key}>
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
                   <g className="cursor-pointer group">
@@ -126,9 +125,9 @@ export function RosenChart({ data = defaultData }: { data?: DataItem[] }) {
 
         {/* Labels */}
         <g transform={`translate(${margin.left - 10}, ${margin.top})`}>
-          {data.map((d, i) => (
+          {data.map((d) => (
             <text
-              key={i}
+              key={`label-${d.key}`}
               x="0"
               y={yScale(d.key)! + yScale.bandwidth() / 2}
               textAnchor="end"
@@ -151,6 +150,8 @@ export function RosenChart({ data = defaultData }: { data?: DataItem[] }) {
           </linearGradient>
         </defs>
       </svg>
+      )}
     </div>
+    
   );
 }

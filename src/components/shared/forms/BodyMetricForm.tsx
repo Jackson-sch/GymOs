@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload } from "@/components/shared/ImageUpload";
 
 const bodyMetricSchema = z.object({
   weight: z.number().positive("Peso debe ser positivo").optional(),
@@ -32,6 +33,9 @@ interface BodyMetricFormProps {
 
 export function BodyMetricForm({ memberId, initialData, onSuccess, onCancel }: BodyMetricFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
+  const [photoFrontUrl, setPhotoFrontUrl] = React.useState<string>(initialData?.photoFrontUrl || "");
+  const [photoBackUrl, setPhotoBackUrl] = React.useState<string>(initialData?.photoBackUrl || "");
+  const [photoSideUrl, setPhotoSideUrl] = React.useState<string>(initialData?.photoSideUrl || "");
   
   const form = useForm<BodyMetricFormData>({
     resolver: zodResolver(bodyMetricSchema),
@@ -46,22 +50,28 @@ export function BodyMetricForm({ memberId, initialData, onSuccess, onCancel }: B
 
   const onSubmit = async (data: BodyMetricFormData) => {
     setIsLoading(true);
+    const payload = {
+      ...data,
+      photoFrontUrl: photoFrontUrl || null,
+      photoBackUrl: photoBackUrl || null,
+      photoSideUrl: photoSideUrl || null,
+    };
     try {
       const res = initialData 
         ? await fetch("/api/body-metrics", {
             method: "PUT",
-            body: JSON.stringify({ id: initialData.id, ...data }),
+            body: JSON.stringify({ id: initialData.id, ...payload }),
           })
         : await fetch("/api/body-metrics", {
             method: "POST",
-            body: JSON.stringify({ memberId, ...data }),
+            body: JSON.stringify({ memberId, ...payload }),
           });
       
       const result = await res.json();
       if (result.success) {
         onSuccess?.();
       } else {
-        form.setError("root", { message: result.error });
+        form.setError("root", { message: result.error || "Error al guardar" });
       }
     } catch (err) {
       form.setError("root", { message: "Error al guardar" });
@@ -140,7 +150,43 @@ export function BodyMetricForm({ memberId, initialData, onSuccess, onCancel }: B
         </div>
       </div>
       
-      <div className="space-y-2">
+      <div className="space-y-3 pt-2 border-t border-white/10">
+        <Label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Fotos de Progreso (Opcional)</Label>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex flex-col items-center gap-2 bg-white/5 p-4 rounded-2xl border border-white/5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Frontal</span>
+            <ImageUpload
+              value={photoFrontUrl}
+              onChange={(url) => setPhotoFrontUrl(url)}
+              onRemove={() => setPhotoFrontUrl("")}
+              disabled={isLoading}
+              className="w-36 h-36"
+            />
+          </div>
+          <div className="flex flex-col items-center gap-2 bg-white/5 p-4 rounded-2xl border border-white/5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Espalda</span>
+            <ImageUpload
+              value={photoBackUrl}
+              onChange={(url) => setPhotoBackUrl(url)}
+              onRemove={() => setPhotoBackUrl("")}
+              disabled={isLoading}
+              className="w-36 h-36"
+            />
+          </div>
+          <div className="flex flex-col items-center gap-2 bg-white/5 p-4 rounded-2xl border border-white/5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Perfil</span>
+            <ImageUpload
+              value={photoSideUrl}
+              onChange={(url) => setPhotoSideUrl(url)}
+              onRemove={() => setPhotoSideUrl("")}
+              disabled={isLoading}
+              className="w-36 h-36"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-2 pt-2">
         <Label htmlFor="notes">Notas</Label>
         <Textarea
           id="notes"

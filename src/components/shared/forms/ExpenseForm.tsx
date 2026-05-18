@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Activity, Save } from "lucide-react";
-import React from "react";
+import React, { type SyntheticEvent } from "react";
 
 export interface ExpenseFormData {
   amount: string;
@@ -27,7 +27,7 @@ interface ExpenseFormProps {
   formData: ExpenseFormData;
   setFormData: React.Dispatch<React.SetStateAction<ExpenseFormData>>;
   catData: any[];
-  handleCreateExpense: (e: React.FormEvent) => void;
+  handleCreateExpense: (e: SyntheticEvent<HTMLFormElement>) => void;
   isSaving: boolean;
   setIsOpen: (isOpen: boolean) => void;
 }

@@ -21,27 +21,30 @@ import {
   ScanLine,
   Shield
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getUserRole } from "@/lib/utils";
 import { useUIStore } from "@/store/use-ui-store";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const menuItems = [
-  { label: "Dashboard", icon: LayoutDashboard, href: "/" },
-  { label: "Miembros", icon: Users, href: "/members" },
-  { label: "Membresías", icon: CreditCard, href: "/memberships" },
-  { label: "Asistencia", icon: UserCheck, href: "/attendance" },
-  { label: "Clases", icon: Calendar, href: "/classes" },
-  { label: "Entrenadores", icon: Sparkles, href: "/trainers" },
-  { label: "Ingresos", icon: FileText, href: "/payments" },
-  { label: "Egresos", icon: TrendingDown, href: "/expenses" },
-  { label: "Inventario", icon: Package, href: "/inventory" },
-  { label: "Rutinas", icon: Dumbbell, href: "/routines" },
-  { label: "Reportes", icon: FileText, href: "/reports" },
-  { label: "Kiosco", icon: ScanLine, href: "/kiosk" },
-  { label: "Configuración", icon: Settings, href: "/settings" },
-  { label: "Auditoría", icon: Shield, href: "/audit-log" },
+  { label: "Dashboard", icon: LayoutDashboard, href: "/", roles: ["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"] },
+  { label: "Dashboard", icon: LayoutDashboard, href: "/portal/trainer", roles: ["TRAINER"] },
+  { label: "Mis Alumnos", icon: Users, href: "/portal/trainer/members", roles: ["TRAINER"] },
+  { label: "Miembros", icon: Users, href: "/members", roles: ["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"] },
+  { label: "Membresías", icon: CreditCard, href: "/memberships", roles: ["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"] },
+  { label: "Asistencia", icon: UserCheck, href: "/attendance", roles: ["ADMIN", "SUPER_ADMIN", "TRAINER", "RECEPTIONIST"] },
+  { label: "Clases", icon: Calendar, href: "/classes", roles: ["ADMIN", "SUPER_ADMIN", "TRAINER", "RECEPTIONIST"] },
+  { label: "Entrenadores", icon: Sparkles, href: "/trainers", roles: ["ADMIN", "SUPER_ADMIN"] },
+  { label: "Ingresos", icon: FileText, href: "/payments", roles: ["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"] },
+  { label: "Egresos", icon: TrendingDown, href: "/expenses", roles: ["ADMIN", "SUPER_ADMIN"] },
+  { label: "Inventario", icon: Package, href: "/inventory", roles: ["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"] },
+  { label: "Rutinas", icon: Dumbbell, href: "/routines", roles: ["ADMIN", "SUPER_ADMIN", "TRAINER"] },
+  { label: "Reportes", icon: FileText, href: "/reports", roles: ["ADMIN", "SUPER_ADMIN"] },
+  { label: "Kiosco", icon: ScanLine, href: "/kiosk", roles: ["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"] },
+  { label: "Configuración", icon: Settings, href: "/settings", roles: ["ADMIN", "SUPER_ADMIN"] },
+  { label: "Auditoría", icon: Shield, href: "/audit-log", roles: ["ADMIN", "SUPER_ADMIN"] },
 ];
 
 import {
@@ -59,7 +62,7 @@ export function Sidebar({
   branding?: Record<string, string>;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
+  const { push } = useRouter();
   const { isSidebarOpen, toggleSidebar } = useUIStore();
   const { data: session, isPending } = authClient.useSession();
 
@@ -67,13 +70,20 @@ export function Sidebar({
   const gymLogo = branding?.["GYM_LOGO"];
 
   const handleLogout = async () => {
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          router.push("/login");
+    try {
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            push("/login");
+          },
         },
-      },
-    });
+      });
+    } catch (err) {
+      console.error("Error al cerrar sesión:", err);
+      push("/login");
+    } finally {
+      push("/login");
+    }
   };
 
   return (
@@ -91,34 +101,34 @@ export function Sidebar({
           <button
             onClick={toggleSidebar}
             className={cn(
-              "absolute -right-3 top-8 z-50 w-7 h-7 flex items-center justify-center rounded-full glass-card border border-white/10 shadow-lg hover:scale-110 transition-all duration-300 group",
+              "absolute -right-3 top-8 z-50 size-7 flex items-center justify-center rounded-full glass-card border border-white/10 shadow-lg hover:scale-110 transition-all duration-300 group",
               "text-muted-foreground hover:text-primary"
             )}
           >
             {isSidebarOpen ? (
-              <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+              <ChevronLeft className="size-4 group-hover:-translate-x-0.5 transition-transform" />
             ) : (
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
             )}
           </button>
 
           <div className="flex h-20 items-center justify-between px-4">
             <div className={cn("flex items-center gap-3 transition-all duration-500", !isSidebarOpen && "opacity-0 invisible w-0 translate-x-[-10px]")}>
-              <div className="bg-primary/20 p-2 rounded-xl border border-white/10 overflow-hidden flex items-center justify-center">
+              <div className="bg-primary/20 p-2 rounded-xl border border-white/10 overflow-hidden flex items-center justify-center size-10 relative">
                 {gymLogo ? (
-                  <img src={gymLogo} alt={gymName} className="w-6 h-6 object-cover" />
+                  <Image src={gymLogo} alt={gymName} fill sizes="40px" className="object-cover" />
                 ) : (
-                  <Dumbbell className="w-6 h-6 text-primary" />
+                  <Dumbbell className="size-6 text-primary" />
                 )}
               </div>
               <span className="font-serif text-2xl tracking-tight">{gymName}</span>
             </div>
             {!isSidebarOpen && (
-              <div className="mx-auto bg-primary/20 p-2 rounded-xl border border-white/10 overflow-hidden flex items-center justify-center">
+              <div className="mx-auto bg-primary/20 p-2 rounded-xl border border-white/10 overflow-hidden flex items-center justify-center size-10 relative">
                 {gymLogo ? (
-                  <img src={gymLogo} alt={gymName} className="w-6 h-6 object-cover" />
+                  <Image src={gymLogo} alt={gymName} fill sizes="40px" className="object-cover" />
                 ) : (
-                  <Dumbbell className="w-6 h-6 text-primary" />
+                  <Dumbbell className="size-6 text-primary" />
                 )}
               </div>
             )}
@@ -128,7 +138,7 @@ export function Sidebar({
 
       <nav className="p-3 space-y-1.5 h-[calc(100%-160px)] overflow-y-auto custom-scrollbar">
         <TooltipProvider>
-          {menuItems.map((item) => {
+          {menuItems.filter(item => item.roles.includes(getUserRole(session))).map((item) => {
             const isActive = pathname === item.href;
             const content = (
               <Link
@@ -145,7 +155,7 @@ export function Sidebar({
                 {isActive && (
                   <div className="absolute left-0 w-1 h-6 bg-white rounded-r-full" />
                 )}
-                <item.icon className={cn("w-5 h-5 shrink-0 transition-transform duration-300", !isActive && "group-hover:scale-110")} />
+                <item.icon className={cn("size-5 shrink-0 transition-transform duration-300", !isActive && "group-hover:scale-110")} />
                 <span className={cn(
                   "font-sans text-sm font-medium tracking-wide transition-all duration-500", 
                   !isMobile && !isSidebarOpen && "opacity-0 w-0 translate-x-[-10px]"
@@ -180,48 +190,63 @@ export function Sidebar({
             "p-2 rounded-2xl bg-white/5 border border-white/5 transition-all duration-500",
             !isSidebarOpen ? "mx-auto w-12 flex justify-center" : "flex items-center gap-3"
           )}>
-            <Avatar className="w-8 h-8 border border-white/10">
-              <AvatarImage src={session?.user?.image || ""} />
-              <AvatarFallback className="bg-primary/20 text-primary text-[10px] font-bold">
-                {session?.user?.name?.substring(0, 2).toUpperCase() || "GY"}
-              </AvatarFallback>
-            </Avatar>
-            
-            {isSidebarOpen && (
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-foreground truncate">
-                  {session?.user?.name || "Invitado"}
-                </p>
-                <p className="text-[10px] text-muted-foreground truncate uppercase tracking-tighter">
-                  Admin Account
-                </p>
-              </div>
-            )}
+            {isPending ? (
+              <>
+                <div className="size-8 rounded-full bg-white/10 animate-pulse border border-white/5" />
+                {isSidebarOpen && (
+                  <div className="flex-1 space-y-2 py-1 min-w-0">
+                    <div className="h-3 w-20 bg-white/10 rounded animate-pulse" />
+                    <div className="h-2 w-12 bg-white/5 rounded animate-pulse" />
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <Avatar className="size-8 border border-white/10">
+                  <AvatarImage src={session?.user?.image || ""} />
+                  <AvatarFallback className="bg-primary/20 text-primary text-[10px] font-semibold">
+                    {session?.user?.name?.substring(0, 2).toUpperCase() || gymName.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                
+                {isSidebarOpen && (
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground truncate">
+                      {session?.user?.name || "Invitado"}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground truncate uppercase tracking-tighter">
+                      {getUserRole(session) === "TRAINER" ? "Staff Técnico" : 
+                       getUserRole(session) === "MEMBER" ? "Socio" : "Administrador"}
+                    </p>
+                  </div>
+                )}
 
-            {isSidebarOpen && (
-              <button 
-                onClick={handleLogout}
-                className="p-2 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-destructive transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
+                {isSidebarOpen && (
+                  <button 
+                    onClick={handleLogout}
+                    className="p-2 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    <LogOut className="size-4" />
+                  </button>
+                )}
+              </>
             )}
           </div>
 
           {!isSidebarOpen && (
-             <TooltipProvider>
-               <Tooltip delayDuration={0}>
-                 <TooltipTrigger asChild>
-                   <button 
-                    onClick={handleLogout}
-                    className="mx-auto w-10 h-10 flex items-center justify-center rounded-xl hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
-                   >
-                     <LogOut className="w-4 h-4" />
-                   </button>
-                 </TooltipTrigger>
-                 <TooltipContent side="right" className="bg-destructive text-white border-none font-bold">
-                    Cerrar Sesión
-                 </TooltipContent>
+              <TooltipProvider>
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <button 
+                     onClick={handleLogout}
+                     className="mx-auto size-10 flex items-center justify-center rounded-xl hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
+                    >
+                      <LogOut className="size-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="bg-destructive text-white border-none font-semibold">
+                     Cerrar Sesión
+                  </TooltipContent>
                </Tooltip>
              </TooltipProvider>
           )}

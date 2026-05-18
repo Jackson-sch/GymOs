@@ -5,6 +5,8 @@ import { Heading } from "@/components/pdfx/heading/pdfx-heading";
 import { Text } from "@/components/pdfx/text/pdfx-text";
 import { PdfGraph } from "@/components/pdfx/graph/pdfx-graph";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/pdfx/table/pdfx-table";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 const styles = StyleSheet.create({
   page: {
@@ -60,7 +62,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   label: {
-    fontSize: 8,
+    fontSize: 12,
     width: 40,
     color: "#6b7280",
     textAlign: "right",
@@ -77,6 +79,9 @@ export function ReportPDF({
   membershipsByPlan,
   membersByStatus,
   topMembers,
+  startDate,
+  endDate,
+  generatedDate,
 }: {
   kpis: any;
   revenueByMonth: any[];
@@ -84,7 +89,14 @@ export function ReportPDF({
   membershipsByPlan: any[];
   membersByStatus: any[];
   topMembers: any[];
+  startDate?: Date;
+  endDate?: Date;
+  generatedDate: string;
 }) {
+  const periodText = startDate && endDate 
+    ? `Periodo: ${format(startDate, "dd/MM/yyyy", { locale: es })} - ${format(endDate, "dd/MM/yyyy", { locale: es })}`
+    : `Periodo: Últimos 12 meses`;
+
   const revenueData = revenueByMonth.map((d) => ({
     label: d.month,
     value: d.revenue,
@@ -118,25 +130,28 @@ export function ReportPDF({
         {/* Header */}
         <View style={styles.header}>
           <Heading level={1}>Reporte de Gestión GymOS</Heading>
-          <Text color="mutedForeground">Generado el {new Date().toLocaleDateString()}</Text>
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            <Text color="mutedForeground">{periodText}</Text>
+            <Text color="mutedForeground" style={{ fontSize: 12 }}>Generado: {generatedDate}</Text>
+          </View>
         </View>
 
         {/* KPIs */}
         <View style={styles.grid}>
           <View style={styles.kpiCard}>
-            <Text color="mutedForeground" transform="uppercase" style={{ fontSize: 8 }}>Miembros Activos</Text>
+            <Text color="mutedForeground" transform="uppercase" style={{ fontSize: 12 }}>Miembros Activos</Text>
             <Heading level={3} noMargin>{String(kpis.activeMembers)}</Heading>
           </View>
           <View style={styles.kpiCard}>
-            <Text color="mutedForeground" transform="uppercase" style={{ fontSize: 8 }}>Ingresos Mes</Text>
+            <Text color="mutedForeground" transform="uppercase" style={{ fontSize: 12 }}>Ingresos Mes</Text>
             <Heading level={3} noMargin>{`S/ ${kpis.revenueThisMonth?.toLocaleString()}`}</Heading>
           </View>
           <View style={styles.kpiCard}>
-            <Text color="mutedForeground" transform="uppercase" style={{ fontSize: 8 }}>Asistencia Hoy</Text>
+            <Text color="mutedForeground" transform="uppercase" style={{ fontSize: 12 }}>Asistencia Hoy</Text>
             <Heading level={3} noMargin>{String(kpis.attendanceToday)}</Heading>
           </View>
           <View style={styles.kpiCard}>
-            <Text color="mutedForeground" transform="uppercase" style={{ fontSize: 8 }}>Por Vencer</Text>
+            <Text color="mutedForeground" transform="uppercase" style={{ fontSize: 12 }}>Por Vencer</Text>
             <Heading level={3} noMargin>{String(kpis.expiringThisWeek)}</Heading>
           </View>
         </View>
@@ -184,17 +199,17 @@ export function ReportPDF({
           <View style={styles.heatmapContainer}>
             <View style={{ flexDirection: "row", marginLeft: 45, marginBottom: 5, gap: 5 }}>
               {days.map(day => (
-                <Text key={day} style={{ width: 60, fontSize: 8, textAlign: "center", color: "#6b7280" }}>{day}</Text>
+                <Text key={day} style={{ width: 60, fontSize: 12, textAlign: "center", color: "#6b7280" }}>{day}</Text>
               ))}
             </View>
             {heatmapData.map((row, hIndex) => (
-              <View key={hIndex} style={styles.heatmapRow}>
+              <View key={`row-${hIndex}`} style={styles.heatmapRow}>
                 <Text style={styles.label}>{hours[hIndex]}</Text>
                 {row.map((val, dIndex) => {
                   const intensity = val / maxAttendance;
                   return (
                     <View 
-                      key={dIndex} 
+                      key={`cell-${hIndex}-${dIndex}`} 
                       style={[
                         styles.heatmapCell, 
                         { backgroundColor: `rgba(139, 92, 246, ${Math.max(0.05, intensity)})` }
@@ -221,7 +236,7 @@ export function ReportPDF({
             </TableHeader>
             <TableBody>
               {topMembers.slice(0, 10).map((m, i) => (
-                <TableRow key={i}>
+                <TableRow key={m.id || i}>
                   <TableCell width="10%">{String(i + 1)}</TableCell>
                   <TableCell width="50%">{String(m.fullName)}</TableCell>
                   <TableCell width="20%">{String(m.dni || "S/D")}</TableCell>

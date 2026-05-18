@@ -14,13 +14,6 @@ export default async function DashboardLayout({
     headers: await headers(),
   });
 
-  if (!session) {
-    redirect("/login");
-  }
-
-  if (session.user.role === "MEMBER") {
-    redirect("/portal");
-  }
 
   // Fetch branding config
   const branding = await getConfigMap(["GYM_NAME", "GYM_LOGO"]);

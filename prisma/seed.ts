@@ -46,16 +46,72 @@ async function main() {
 
   // 3. Entrenadores
   console.log("💪 Creando entrenadores...");
+  
+  // Función auxiliar para crear entrenador y su usuario
+  async function createTrainerWithUser(data: { fullName: string, email: string, phone: string, specialties: string[], dni: string }) {
+    try {
+      const userEmail = data.email;
+      
+      // Forzamos el recreado para asegurar que el DNI sea la contraseña
+      const existingUser = await prisma.user.findUnique({ where: { email: userEmail } });
+      if (existingUser) {
+        console.log(`♻️ Recreando usuario para ${userEmail}...`);
+        await prisma.user.delete({ where: { id: existingUser.id } });
+      }
+
+      await auth.api.signUpEmail({
+        body: { 
+          email: userEmail, 
+          password: data.dni, // Usamos el DNI como contraseña
+          name: data.fullName 
+        }
+      });
+      
+      const user = await prisma.user.findUnique({ where: { email: userEmail } });
+
+      if (user) {
+        // 2. Asegurar que el rol sea TRAINER
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: "TRAINER" }
+        });
+
+        // 3. Crear el registro de Trainer vinculado
+        return await prisma.trainer.upsert({
+          where: { email: userEmail },
+          update: { 
+            userId: user.id,
+            dni: data.dni 
+          },
+          create: { 
+            fullName: data.fullName, 
+            email: userEmail, 
+            phone: data.phone, 
+            specialties: data.specialties,
+            userId: user.id,
+            dni: data.dni
+          },
+        });
+      }
+    } catch (error) {
+      console.error(`Error creando entrenador ${data.email}:`, error);
+    }
+  }
+
   const trainers = await Promise.all([
-    prisma.trainer.upsert({
-      where: { email: "carlos.fit@gymos.com" },
-      update: {},
-      create: { fullName: "Carlos Rodriguez", email: "carlos.fit@gymos.com", phone: "999111222", specialties: ["Crossfit", "HIIT"] },
+    createTrainerWithUser({ 
+      fullName: "Carlos Rodriguez", 
+      email: "carlos.fit@gymos.com", 
+      phone: "999111222", 
+      dni: "19086514",
+      specialties: ["Crossfit", "HIIT"] 
     }),
-    prisma.trainer.upsert({
-      where: { email: "ana.yoga@gymos.com" },
-      update: {},
-      create: { fullName: "Ana Martínez", email: "ana.yoga@gymos.com", phone: "999333444", specialties: ["Yoga", "Pilates"] },
+    createTrainerWithUser({ 
+      fullName: "Ana Martínez", 
+      email: "ana.yoga@gymos.com", 
+      phone: "999333444", 
+      dni: "20212223",
+      specialties: ["Yoga", "Pilates"] 
     }),
   ]);
 
@@ -151,12 +207,16 @@ async function main() {
   // 5. Usuario Administrador
   console.log("🔐 Asegurando usuario admin...");
   const adminEmail = "admin@gymos.com";
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD || "admin123";
   const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
   
   if (!existingAdmin) {
+    if (adminPassword === "admin123") {
+      console.warn("⚠️ [ADVERTENCIA DE SEGURIDAD]: Se está creando el usuario administrador con la contraseña por defecto 'admin123'. Asegúrese de cambiarla inmediatamente en producción o defina la variable SEED_ADMIN_PASSWORD en el entorno.");
+    }
     try {
       await auth.api.signUpEmail({
-        body: { email: adminEmail, password: "admin123", name: "Admin GymOS" },
+        body: { email: adminEmail, password: adminPassword, name: "Admin GymOS" },
       });
       await prisma.user.update({
         where: { email: adminEmail },
@@ -167,21 +227,66 @@ async function main() {
     }
   }
 
-  // 6. Logs de Auditoría Recientes
-  console.log("📝 Generando logs de auditoría...");
-  const admin = await prisma.user.findUnique({ where: { email: adminEmail } });
-  if (admin) {
-    const actions = ["MEMBER_CREATE", "PAYMENT_RECEIVE", "PLAN_UPDATE", "CONFIG_CHANGE", "ATTENDANCE_LOG"];
-    for (let i = 0; i < 30; i++) {
-      await prisma.auditLog.create({
-        data: {
-          userId: admin.id,
-          action: actions[Math.floor(Math.random() * actions.length)],
-          entity: "SYSTEM",
-          createdAt: new Date(Date.now() - Math.floor(Math.random() * 72) * 3600000),
+  
+
+  // 7. Datos de Entrenamiento (Clases y Rutinas) para probar el Portal
+  console.log("🏋️ Generando clases y rutinas para el portal...");
+  
+  const allMembers = await prisma.member.findMany({ where: { status: "ACTIVE" }, take: 50 });
+  
+  for (const trainer of trainers) {
+    if (!trainer) continue;
+
+    // Crear una clase para cada entrenador
+    const startTime = new Date();
+    startTime.setHours(startTime.getHours() + 2);
+    const endTime = new Date(startTime);
+    endTime.setHours(endTime.getHours() + 1);
+
+    const classRecord = await prisma.class.create({
+      data: {
+        name: trainer.fullName === "Ana Martínez" ? "Yoga Flow" : "Entrenamiento Funcional",
+        description: "Clase de prueba para el portal",
+        trainerId: trainer.id,
+        maxCapacity: 15,
+        durationMins: 60,
+        startTime,
+        endTime,
+        status: "SCHEDULED",
+        location: "Sala A"
+      }
+    });
+
+    // Inscribir 12 miembros aleatorios a la clase
+    const shuffled = [...allMembers].sort(() => 0.5 - Math.random()).slice(0, 12);
+    for (const member of shuffled) {
+      if (!member) continue;
+      await prisma.classBooking.upsert({
+        where: {
+          classId_memberId: {
+            classId: classRecord.id,
+            memberId: member.id
+          }
         },
+        update: {},
+        create: {
+          classId: classRecord.id,
+          memberId: member.id,
+          status: "CONFIRMED"
+        }
       });
     }
+
+    // Crear una rutina para un miembro aleatorio
+    await prisma.routine.create({
+      data: {
+        name: "Rutina de Definición",
+        description: "Enfoque en resistencia",
+        trainerId: trainer.id,
+        memberId: allMembers[Math.floor(Math.random() * allMembers.length)].id,
+        isActive: true
+      }
+    });
   }
 
   console.log("✅ Seeding masivo completado.");

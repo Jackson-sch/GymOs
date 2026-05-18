@@ -23,10 +23,18 @@ export interface SendEmailOptions {
   text?: string;
 }
 
+function sanitizeErrorMessage(err: any): string {
+  if (!err) return "Error desconocido en el servicio de correo";
+  if (typeof err === "string") return err.split("\n")[0];
+  if (err.message) return err.message.split("\n")[0];
+  return "Error de comunicación en envío de correo";
+}
+
 export async function sendEmail({ to, subject, react, html, text }: SendEmailOptions) {
   const resend = await getResend();
   
-  const fromEmail = (await getConfig("RESEND_FROM_EMAIL")) || "GymOS <noreply@gymos.com>";
+  // Priorizamos variable de entorno o DB config, con fallback a dominio profesional de GymOS
+  const fromEmail = process.env.RESEND_FROM_EMAIL || (await getConfig("RESEND_FROM_EMAIL")) || "GymOS <notificaciones@gymos.club>";
   
   const result = await resend.emails.send({
     from: fromEmail,
@@ -41,18 +49,32 @@ export async function sendEmail({ to, subject, react, html, text }: SendEmailOpt
 }
 
 export async function sendEmailWithLog(options: SendEmailOptions, memberId?: string, type?: string) {
-  const result: any = await sendEmail(options);
+  let result: any = null;
+  let errorMsg: string | null = null;
+
+  try {
+    result = await sendEmail(options);
+    if (result && result.error) {
+      errorMsg = sanitizeErrorMessage(result.error);
+    }
+  } catch (err: any) {
+    errorMsg = sanitizeErrorMessage(err);
+  }
   
   if (memberId) {
     const { prisma } = await import("../lib/prisma");
     await prisma.appNotification.create({
       data: {
         memberId,
-        type: (type as any) || "INFO",
+        type: errorMsg ? "ERROR" : ((type as any) || "SUCCESS"),
         title: options.subject,
-        message: options.text || options.subject,
+        message: errorMsg ? `Error en envío de correo: ${errorMsg}` : (options.text || options.subject),
       },
     });
+  }
+  
+  if (errorMsg) {
+    console.error("❌ Error en sendEmailWithLog:", errorMsg);
   }
   
   return result;

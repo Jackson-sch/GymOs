@@ -21,16 +21,20 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toggleExerciseCompletionAction } from "@/lib/actions/routine-actions";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Save } from "lucide-react";
 
 interface RoutinesClientProps {
   initialData: any[];
-  todayCompletions: string[];
+  todayCompletions: any[];
 }
 
 export function RoutinesClient({ initialData, todayCompletions }: RoutinesClientProps) {
   const [selectedRoutine, setSelectedRoutine] = useState(initialData[0] || null);
-  const [completedExercises, setCompletedExercises] = useState<string[]>(todayCompletions);
+  const [completedLogs, setCompletedLogs] = useState<any[]>(todayCompletions);
   const [isLogging, setIsLogging] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Record<string, { weight: string, reps: string }>>({});
   
   const [expandedDays, setExpandedDays] = useState<Record<string, boolean>>({
     "Lunes": true,
@@ -60,21 +64,34 @@ export function RoutinesClient({ initialData, todayCompletions }: RoutinesClient
     setExpandedDays(prev => ({ ...prev, [day]: !prev[day] }));
   };
 
-  const handleToggleExercise = async (routineExerciseId: string) => {
+  const handleToggleExercise = async (routineExerciseId: string, weight?: string, reps?: string) => {
     if (isLogging) return;
     
-    const isCompleted = completedExercises.includes(routineExerciseId);
+    const existingLog = completedLogs.find(l => l.routineExerciseId === routineExerciseId);
+    const isCompleted = !!existingLog;
     setIsLogging(routineExerciseId);
     
     try {
-      const result = await toggleExerciseCompletionAction(selectedRoutine.id, routineExerciseId, !isCompleted);
+      const result = await toggleExerciseCompletionAction(
+        selectedRoutine.id, 
+        routineExerciseId, 
+        !isCompleted,
+        weight,
+        reps
+      );
       
       if (result.success) {
         if (isCompleted) {
-          setCompletedExercises(prev => prev.filter(id => id !== routineExerciseId));
+          setCompletedLogs(prev => prev.filter(l => l.routineExerciseId !== routineExerciseId));
           toast.success("Ejercicio desmarcado");
         } else {
-          setCompletedExercises(prev => [...prev, routineExerciseId]);
+          // Note: In a real app we'd get the new log ID back, but for UI we can fake it or revalidate
+          setCompletedLogs(prev => [...prev, { 
+            routineExerciseId, 
+            completed: true,
+            weightUsed: weight,
+            repsDone: reps
+          }]);
           toast.success("¡Ejercicio completado!");
         }
       } else {
@@ -85,6 +102,18 @@ export function RoutinesClient({ initialData, todayCompletions }: RoutinesClient
     } finally {
       setIsLogging(null);
     }
+  };
+
+  const handleUpdateLogs = async (routineExerciseId: string) => {
+    const vals = editValues[routineExerciseId];
+    if (!vals) return;
+    await handleToggleExercise(routineExerciseId, vals.weight, vals.reps);
+    // Clear edit state
+    setEditValues(prev => {
+      const next = { ...prev };
+      delete next[routineExerciseId];
+      return next;
+    });
   };
 
   // Group exercises by day
@@ -100,7 +129,9 @@ export function RoutinesClient({ initialData, todayCompletions }: RoutinesClient
 
   // Calculate completion percentage for the active routine today
   const totalExercises = selectedRoutine?.exercises.length || 0;
-  const completedInRoutine = selectedRoutine?.exercises.filter((ex: any) => completedExercises.includes(ex.id)).length || 0;
+  const completedInRoutine = selectedRoutine?.exercises.filter((ex: any) => 
+    completedLogs.some(l => l.routineExerciseId === ex.id)
+  ).length || 0;
   const completionPercentage = totalExercises > 0 ? Math.round((completedInRoutine / totalExercises) * 100) : 0;
 
   return (
@@ -226,110 +257,165 @@ export function RoutinesClient({ initialData, todayCompletions }: RoutinesClient
 
               {expandedDays[day] && (
                 <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-500">
-                  {groupedExercises[day].map((item: any, idx: number) => {
-                    const isCompleted = completedExercises.includes(item.id);
-                    const isLoading = isLogging === item.id;
-                    
-                    return (
-                      <div 
-                        key={item.id} 
-                        className={cn(
-                          "glass-card p-6 border-white/5 transition-all group relative overflow-hidden",
-                          isCompleted ? "bg-emerald-500/5 border-emerald-500/20" : "hover:border-primary/20"
-                        )}
-                      >
-                        {/* Background indicator for completion */}
-                        {isCompleted && (
-                          <div className="absolute top-0 right-0 p-2 opacity-10">
-                            <CheckCircle2 className="w-24 h-24 text-emerald-500 -mr-4 -mt-4 rotate-12" />
-                          </div>
-                        )}
+                    {groupedExercises[day].map((item: any, idx: number) => {
+                      const log = completedLogs.find(l => l.routineExerciseId === item.id);
+                      const isCompleted = !!log;
+                      const isLoading = isLogging === item.id;
+                      const isEditing = !!editValues[item.id];
+                      
+                      return (
+                        <div 
+                          key={item.id} 
+                          className={cn(
+                            "glass-card p-6 border-white/5 transition-all group relative overflow-hidden",
+                            isCompleted ? "bg-emerald-500/5 border-emerald-500/20" : "hover:border-primary/20"
+                          )}
+                        >
+                          {/* Background indicator for completion */}
+                          {isCompleted && (
+                            <div className="absolute top-0 right-0 p-2 opacity-10">
+                              <CheckCircle2 className="w-24 h-24 text-emerald-500 -mr-4 -mt-4 rotate-12" />
+                            </div>
+                          )}
 
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-                          <div className="flex items-center gap-5">
-                            <button 
-                              onClick={() => handleToggleExercise(item.id)}
-                              disabled={isLoading}
-                              className={cn(
-                                "w-12 h-12 rounded-2xl flex items-center justify-center transition-all border",
-                                isCompleted 
-                                  ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-500" 
-                                  : "bg-white/5 border-white/5 text-muted-foreground hover:border-primary/30 hover:text-primary"
-                              )}
-                            >
-                              {isLoading ? (
-                                <Loader2 className="w-6 h-6 animate-spin" />
-                              ) : isCompleted ? (
-                                <CheckCircle2 className="w-6 h-6" />
-                              ) : (
-                                <Circle className="w-6 h-6" />
-                              )}
-                            </button>
-                            <div>
-                              <h4 className={cn(
-                                "text-lg font-serif mb-1 transition-colors",
-                                isCompleted ? "text-emerald-500" : "group-hover:text-primary"
-                              )}>
-                                {item.exercise.name}
-                              </h4>
-                              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                                <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
-                                  <Activity className="w-3 h-3 text-primary" />
-                                  {item.exercise.muscleGroup || "General"}
-                                </div>
-                                {item.exercise.equipment && (
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                            <div className="flex items-center gap-5">
+                              <button 
+                                onClick={() => handleToggleExercise(item.id)}
+                                disabled={isLoading}
+                                className={cn(
+                                  "w-12 h-12 rounded-2xl flex items-center justify-center transition-all border",
+                                  isCompleted 
+                                    ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-500" 
+                                    : "bg-white/5 border-white/5 text-muted-foreground hover:border-primary/30 hover:text-primary"
+                                )}
+                              >
+                                {isLoading ? (
+                                  <Loader2 className="w-6 h-6 animate-spin" />
+                                ) : isCompleted ? (
+                                  <CheckCircle2 className="w-6 h-6" />
+                                ) : (
+                                  <Circle className="w-6 h-6" />
+                                )}
+                              </button>
+                              <div>
+                                <h4 className={cn(
+                                  "text-lg font-serif mb-1 transition-colors",
+                                  isCompleted ? "text-emerald-500" : "group-hover:text-primary"
+                                )}>
+                                  {item.exercise.name}
+                                </h4>
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                                   <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
-                                    <Dumbbell className="w-3 h-3 text-accent" />
-                                    {item.exercise.equipment}
+                                    <Activity className="w-3 h-3 text-primary" />
+                                    {item.exercise.muscleGroup || "General"}
+                                  </div>
+                                  {item.exercise.equipment && (
+                                    <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+                                      <Dumbbell className="w-3 h-3 text-accent" />
+                                      {item.exercise.equipment}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-4 md:gap-8 md:text-right">
+                              <div className="space-y-1">
+                                <p className="text-xl font-sans font-light">{item.sets} <span className="text-[10px] uppercase text-muted-foreground tracking-widest">Series</span></p>
+                                <p className="text-sm font-medium">{item.reps} <span className="text-[10px] uppercase text-muted-foreground tracking-widest font-normal">Reps</span></p>
+                              </div>
+                              
+                              <div className="w-px h-10 bg-white/5 hidden md:block" />
+                              
+                              <div className="space-y-2 min-w-[120px]">
+                                {isEditing ? (
+                                  <div className="flex items-center gap-2 animate-in fade-in zoom-in-95 duration-300">
+                                    <div className="space-y-1">
+                                      <Input 
+                                        className="h-8 w-16 text-xs bg-white/10 border-white/10 p-1 text-center"
+                                        placeholder="Kg"
+                                        value={editValues[item.id]?.weight || ""}
+                                        onChange={(e) => setEditValues(prev => ({ 
+                                          ...prev, 
+                                          [item.id]: { ...prev[item.id], weight: e.target.value } 
+                                        }))}
+                                      />
+                                      <Input 
+                                        className="h-8 w-16 text-xs bg-white/10 border-white/10 p-1 text-center"
+                                        placeholder="Reps"
+                                        value={editValues[item.id]?.reps || ""}
+                                        onChange={(e) => setEditValues(prev => ({ 
+                                          ...prev, 
+                                          [item.id]: { ...prev[item.id], reps: e.target.value } 
+                                        }))}
+                                      />
+                                    </div>
+                                    <Button 
+                                      size="icon" 
+                                      className="size-8 rounded-lg bg-primary text-primary-foreground"
+                                      onClick={() => handleUpdateLogs(item.id)}
+                                      disabled={isLoading}
+                                    >
+                                      {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div 
+                                    className="space-y-1 cursor-pointer hover:opacity-70 transition-opacity"
+                                    onClick={() => setEditValues(prev => ({ 
+                                      ...prev, 
+                                      [item.id]: { 
+                                        weight: log?.weightUsed || item.weight || "", 
+                                        reps: log?.repsDone || item.reps || "" 
+                                      } 
+                                    }))}
+                                  >
+                                    <p className="text-sm font-bold text-primary">
+                                      {log?.weightUsed || item.weight || "0 kg"}
+                                    </p>
+                                    <p className="text-[10px] uppercase text-muted-foreground font-medium">
+                                      Log: {log?.repsDone || item.reps || "0"} reps
+                                    </p>
+                                  </div>
+                                )}
+                                
+                                {item.rest && !isEditing && (
+                                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground md:justify-end">
+                                    <Clock className="w-3 h-3" />
+                                    {item.rest} desc.
                                   </div>
                                 )}
                               </div>
+
+                              {item.exercise.demoUrl && (
+                                <button className="p-2 rounded-full hover:bg-primary/20 text-primary transition-all">
+                                  <PlayCircle className="w-6 h-6" />
+                                </button>
+                              )}
                             </div>
                           </div>
-
-                          <div className="flex items-center gap-8 md:text-right">
-                            <div className="space-y-1">
-                              <p className="text-xl font-sans font-light">{item.sets} <span className="text-[10px] uppercase text-muted-foreground tracking-widest">Series</span></p>
-                              <p className="text-sm font-medium">{item.reps} <span className="text-[10px] uppercase text-muted-foreground tracking-widest font-normal">Reps</span></p>
-                            </div>
-                            
-                            <div className="w-px h-10 bg-white/5 hidden md:block" />
-                            
-                            <div className="space-y-1 min-w-[80px]">
-                              {item.weight && (
-                                <p className="text-sm font-bold text-primary">{item.weight}</p>
-                              )}
-                              {item.rest && (
-                                <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground md:justify-end">
-                                  <Clock className="w-3 h-3" />
-                                  {item.rest} desc.
+                          
+                          {(item.notes || isCompleted) && (
+                            <div className="mt-4 pt-4 border-t border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                              <p className="text-xs text-muted-foreground italic">
+                                {item.notes ? `Nota: ${item.notes}` : ""}
+                              </p>
+                              {isCompleted && (
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[9px] uppercase font-bold">
+                                    Log: {log.weightUsed || "0kg"} / {log.repsDone || "0"} reps
+                                  </Badge>
+                                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[9px] uppercase font-bold">
+                                    Completado hoy
+                                  </Badge>
                                 </div>
                               )}
                             </div>
-
-                            {item.exercise.demoUrl && (
-                              <button className="p-2 rounded-full hover:bg-primary/20 text-primary transition-all">
-                                <PlayCircle className="w-6 h-6" />
-                              </button>
-                            )}
-                          </div>
+                          )}
                         </div>
-                        
-                        {(item.notes || isCompleted) && (
-                          <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center">
-                            <p className="text-xs text-muted-foreground italic">
-                              {item.notes ? `Nota: ${item.notes}` : ""}
-                            </p>
-                            {isCompleted && (
-                              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[10px] uppercase font-bold">
-                                Completado hoy
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                 </div>
               )}
             </div>

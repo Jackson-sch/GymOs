@@ -1,8 +1,13 @@
 "use server";
 
-import { prisma } from "../../../prisma";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { verifySession } from "@/lib/security";
+import { 
+  processExpiringMembershipsAction, 
+  processExpiredMembershipsAction,
+  processEquipmentMaintenanceAction 
+} from "./cron-actions";
 
 export async function getSystemConfigAction() {
   try {
@@ -59,5 +64,31 @@ export async function updateConfigsAction(configs: { key: string; value: string;
   } catch (error) {
     console.error("Error updating configs:", error);
     return { success: false, error: "Error al actualizar configuraciones" };
+  }
+}
+
+export async function triggerCronJobsAction() {
+  try {
+    const session = await verifySession(["SUPER_ADMIN", "ADMIN"]);
+    
+    const results = await Promise.all([
+      processExpiringMembershipsAction(),
+      processExpiredMembershipsAction(),
+      processEquipmentMaintenanceAction()
+    ]);
+
+    await prisma.auditLog.create({
+      data: {
+        userId: session.user.id,
+        action: "CRON_TRIGGER",
+        entity: "SYSTEM",
+        ipAddress: "manual-trigger"
+      }
+    });
+
+    return { success: true, data: results };
+  } catch (error: any) {
+    console.error("Error triggering cron:", error);
+    return { success: false, error: error.message || "Error al disparar jobs" };
   }
 }

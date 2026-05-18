@@ -1,18 +1,14 @@
 "use client";
 
 import React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
-import { Badge } from "@/components/ui/badge";
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
@@ -20,38 +16,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { MemberCombobox } from "@/components/shared/MemberCombobox";
 import { createPaymentAction } from "@/lib/actions/payments-actions";
 import { toast } from "sonner";
 import {
   Loader2,
   CreditCard,
-  ChevronsUpDown,
-  Check,
   RefreshCw,
-  User,
   Zap,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import { Input } from "@/components/ui/input";
 
 const paymentSchema = z.object({
   memberId: z.string().min(1, "Socio requerido"),
   planId: z.string().min(1, "Plan requerido"),
   amount: z.string().min(1, "Monto requerido"),
-  method: z.enum(["CASH", "CARD", "TRANSFER", "OTHER"]),
+  method: z.enum(["CASH", "CARD", "TRANSFER", "YAPE", "PLIN", "OTHER"]),
   reference: z.string().optional(),
+  referralTrainerId: z.string().optional(),
 });
 
 type PaymentFormValues = z.infer<typeof paymentSchema>;
@@ -59,27 +51,27 @@ type PaymentFormValues = z.infer<typeof paymentSchema>;
 interface PaymentFormProps {
   members: any[];
   plans: any[];
+  trainers: any[];
   onSuccess: () => void;
 }
 
-export function PaymentForm({ members, plans, onSuccess }: PaymentFormProps) {
+export function PaymentForm({ members, plans, trainers, onSuccess }: PaymentFormProps) {
   const [loading, setLoading] = React.useState(false);
-  const [comboOpen, setComboOpen] = React.useState(false);
   const [selectedMember, setSelectedMember] = React.useState<any>(null);
   const [changingPlan, setChangingPlan] = React.useState(false);
+  const [comboOpen, setComboOpen] = React.useState(false);
 
-  const {
-    handleSubmit,
-    setValue,
-    watch,
-    register,
-    formState: { errors },
-  } = useForm<PaymentFormValues>({
+  const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
       method: "CASH",
+      amount: "",
+      memberId: "",
+      planId: "",
     },
   });
+
+  const { setValue, watch, control } = form;
 
   // Derive the active membership from the selected member
   const activeMembership = React.useMemo(() => {
@@ -126,113 +118,51 @@ export function PaymentForm({ members, plans, onSuccess }: PaymentFormProps) {
 
   const onSubmit = async (values: PaymentFormValues) => {
     setLoading(true);
-    const result = await createPaymentAction(values);
-    if (result.success) {
-      toast.success("Pago y Membresía registrados");
-      onSuccess();
-    } else {
-      toast.error(result.error);
+    try {
+      const result = await createPaymentAction(values);
+      if (result.success) {
+        toast.success("Pago y Membresía registrados");
+        onSuccess();
+      } else {
+        toast.error(result.error);
+      }
+    } catch (error) {
+      toast.error("Error al procesar el pago");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const selectedPlanId = watch("planId");
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Member Combobox */}
-      <div className="space-y-2">
-        <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
-          Seleccionar Socio
-        </Label>
-        <Popover open={comboOpen} onOpenChange={setComboOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={comboOpen}
-              className="w-full justify-between bg-white/5 border-white/10 h-11 hover:bg-white/8 text-left font-normal"
-            >
-              {selectedMember ? (
-                <span className="flex items-center gap-2 truncate">
-                  <User className="w-4 h-4 text-primary shrink-0" />
-                  <span className="font-medium truncate">
-                    {selectedMember.fullName}
-                  </span>
-                  <span className="text-muted-foreground text-xs">
-                    ({selectedMember.dni})
-                  </span>
-                </span>
-              ) : (
-                <span className="text-muted-foreground/50">
-                  Buscar por nombre o DNI...
-                </span>
-              )}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-[var(--radix-popover-trigger-width)] p-0 bg-black/95 backdrop-blur-2xl border-white/10"
-            align="start"
-          >
-            <Command className="bg-transparent">
-              <CommandInput placeholder="Nombre, DNI o teléfono..." />
-              <CommandList className="max-h-56">
-                <CommandEmpty className="text-muted-foreground">
-                  Sin resultados.
-                </CommandEmpty>
-                <CommandGroup>
-                  {members.map((member) => {
-                    const membership = member.memberships?.[0];
-                    const planName = membership?.plan?.name;
-                    return (
-                      <CommandItem
-                        key={member.id}
-                        value={`${member.fullName} ${member.dni || ""}`}
-                        onSelect={() => handleMemberSelect(member.id)}
-                        data-checked={
-                          selectedMember?.id === member.id ? "true" : undefined
-                        }
-                        className="flex items-center gap-3 py-2.5"
-                      >
-                        <div className="flex flex-col min-w-0 flex-1">
-                          <span className="font-medium text-sm truncate">
-                            {member.fullName}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground">
-                            DNI: {member.dni || "—"}
-                            {planName && (
-                              <>
-                                {" · "}
-                                <span className="text-primary/80">
-                                  {planName}
-                                </span>
-                              </>
-                            )}
-                          </span>
-                        </div>
-                        {membership?.status === "ACTIVE" && (
-                          <Badge
-                            variant="outline"
-                            className="text-[8px] border-emerald-500/30 text-emerald-400 shrink-0"
-                          >
-                            Activo
-                          </Badge>
-                        )}
-                      </CommandItem>
-                    );
-                  })}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-        {errors.memberId && (
-          <p className="text-[10px] text-rose-500 font-bold uppercase">
-            {errors.memberId.message}
-          </p>
-        )}
-      </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Member Selection */}
+        <FormField
+          control={control}
+          name="memberId"
+          render={({ field }) => (
+            <FormItem className="space-y-2">
+              <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1">
+                Seleccionar Socio
+              </FormLabel>
+              <FormControl>
+                <MemberCombobox 
+                  members={members} 
+                  value={field.value}
+                  open={comboOpen}
+                  onOpenChange={setComboOpen}
+                  onChange={(val) => {
+                    field.onChange(val);
+                    handleMemberSelect(val);
+                  }} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
       {/* Current Plan Indicator + Change Option */}
       {selectedMember && (
@@ -277,9 +207,9 @@ export function PaymentForm({ members, plans, onSuccess }: PaymentFormProps) {
           ) : (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1">
                   {changingPlan ? "Nuevo Plan" : "Plan a Adquirir"}
-                </Label>
+                </FormLabel>
                 {changingPlan && activePlan && (
                   <Button
                     type="button"
@@ -296,111 +226,183 @@ export function PaymentForm({ members, plans, onSuccess }: PaymentFormProps) {
                   </Button>
                 )}
               </div>
-              <Select
-                value={selectedPlanId}
-                onValueChange={handlePlanChange}
-              >
-                <SelectTrigger className="bg-white/5 border-white/10 h-11">
-                  <SelectValue placeholder="Seleccionar plan..." />
-                </SelectTrigger>
-                <SelectContent className="glass-card bg-black/90 text-white">
-                  {plans.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      <span className="flex items-center gap-2">
-                        {p.name}
-                        <span className="text-muted-foreground">
-                          — S/. {p.price}
-                        </span>
-                        {activePlan?.id === p.id && (
-                          <Badge
-                            variant="outline"
-                            className="text-[7px] border-primary/30 text-primary ml-1"
-                          >
-                            Actual
-                          </Badge>
-                        )}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormField
+                control={control}
+                name="planId"
+                render={({ field }) => (
+                  <FormItem>
+                    <Select
+                      value={field.value}
+                      onValueChange={(val) => {
+                        field.onChange(val);
+                        handlePlanChange(val);
+                      }}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-white/5 border-white/10 h-11">
+                          <SelectValue placeholder="Seleccionar plan..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="glass-card bg-black/90 text-white">
+                        {plans.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>
+                            <span className="flex items-center gap-2">
+                              {p.name}
+                              <span className="text-muted-foreground">
+                                — S/. {p.price}
+                              </span>
+                              {activePlan?.id === p.id && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[7px] border-primary/30 text-primary ml-1"
+                                >
+                                  Actual
+                                </Badge>
+                              )}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           )}
         </div>
       )}
 
-      {/* Amount + Method Row */}
-      {selectedMember && (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              Monto
-            </Label>
-            <InputGroup className="bg-white/5 border-white/10 h-11">
-              <InputGroupAddon>S/.</InputGroupAddon>
-              <InputGroupInput
-                {...register("amount")}
-                type="number"
-                step="0.01"
-                className="font-bold text-lg font-mono"
-              />
-            </InputGroup>
-            {errors.amount && (
-              <p className="text-[10px] text-rose-500 font-bold uppercase">
-                {errors.amount.message}
-              </p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              Método de Pago
-            </Label>
-            <Select
-              onValueChange={(v: any) => setValue("method", v)}
-              defaultValue="CASH"
-            >
-              <SelectTrigger className="bg-white/5 border-white/10 h-10 w-full">
-                <SelectValue placeholder="Seleccionar..." />
-              </SelectTrigger>
-              <SelectContent className="glass-card bg-black/90 text-white">
-                <SelectItem value="CASH">Efectivo</SelectItem>
-                <SelectItem value="CARD">Tarjeta (POS)</SelectItem>
-                <SelectItem value="TRANSFER">Transferencia</SelectItem>
-                <SelectItem value="OTHER">Otro</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      )}
+        {/* Amount + Method Row */}
+        {selectedMember && (
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1">
+                    Monto
+                  </FormLabel>
+                  <FormControl>
+                    <InputGroup className="bg-white/5 border-white/10 h-11">
+                      <InputGroupAddon>S/.</InputGroupAddon>
+                      <InputGroupInput
+                        {...field}
+                        type="number"
+                        step="0.01"
+                        className="font-bold text-lg font-mono"
+                      />
+                    </InputGroup>
+                  </FormControl>
+                  <FormMessage />
+                  {selectedPlanId && field.value && Number(field.value) < (plans.find(p => p.id === selectedPlanId)?.price || 0) && (
+                    <div className="flex items-center gap-1.5 text-[9px] text-rose-400 font-bold uppercase animate-pulse ml-1">
+                      Saldo Pendiente: S/. {(plans.find(p => p.id === selectedPlanId)!.price - Number(field.value)).toFixed(2)}
+                    </div>
+                  )}
+                </FormItem>
+              )}
+            />
 
-      {/* Reference */}
-      {selectedMember && (
-        <div className="space-y-2">
-          <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            Referencia / N° Op. (Opcional)
-          </Label>
-          <Input
-            {...register("reference")}
-            className="bg-white/5 border-white/10 h-10"
-            placeholder="Ej. 123456"
-          />
-        </div>
-      )}
-
-      <Button
-        type="submit"
-        disabled={loading || !selectedMember}
-        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12 rounded-xl font-bold uppercase tracking-widest gap-2 disabled:opacity-40"
-      >
-        {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <CreditCard className="w-4 h-4" />
+            <FormField
+              control={control}
+              name="method"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1">
+                    Método de Pago
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="bg-white/5 border-white/10 h-11 w-full">
+                        <SelectValue placeholder="Seleccionar..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="glass-card bg-black/90 text-white">
+                      <SelectItem value="CASH">Efectivo</SelectItem>
+                      <SelectItem value="YAPE">Yape</SelectItem>
+                      <SelectItem value="PLIN">Plin</SelectItem>
+                      <SelectItem value="CARD">Tarjeta (POS)</SelectItem>
+                      <SelectItem value="TRANSFER">Transferencia</SelectItem>
+                      <SelectItem value="OTHER">Otro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         )}
-        {changingPlan
-          ? "Confirmar Cambio de Plan y Pago"
-          : "Confirmar Pago y Renovar Membresía"}
-      </Button>
-    </form>
+
+        {/* Reference & Referral */}
+        {selectedMember && (
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={control}
+              name="reference"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1">
+                    Referencia / N° Op. (Opcional)
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      className="bg-white/5 border-white/10 h-11"
+                      placeholder="Ej. 123456"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
+              name="referralTrainerId"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1">
+                    Vendido por (Comisión)
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-white/5 border-white/10 h-11">
+                        <SelectValue placeholder="Sin asignar" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="glass-card bg-black/90 text-white">
+                      <SelectItem value="none">Ninguno</SelectItem>
+                      {(trainers || []).map((t: any) => (
+                        <SelectItem key={t.id} value={t.id}>{t.fullName}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
+
+        <Button
+          type="submit"
+          disabled={loading || !selectedMember}
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12 rounded-xl font-bold uppercase tracking-widest gap-2 disabled:opacity-40"
+        >
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <CreditCard className="w-4 h-4" />
+          )}
+          {changingPlan
+            ? "Confirmar Cambio de Plan y Pago"
+            : "Confirmar Pago y Renovar Membresía"}
+        </Button>
+      </form>
+    </Form>
   );
 }

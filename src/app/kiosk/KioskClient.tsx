@@ -31,36 +31,7 @@ export function KioskClient() {
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!code.trim() || status === "LOADING") return;
-
-    setStatus("LOADING");
-    
-    const res = await processKioskCheckInAction(code.trim());
-    
-    if (res.success && res.status === "GRANTED") {
-      setStatus("GRANTED");
-      setMemberInfo(res.member);
-      // Play success sound
-      playAudio("/sounds/success.mp3");
-    } else if (res.success && res.status === "DENIED") {
-      setStatus("DENIED");
-      setMemberInfo(res.member);
-      setReason(res.reason || "");
-      // Play error sound
-      playAudio("/sounds/error.mp3");
-    } else {
-      setStatus("NOT_FOUND");
-      setReason("Código o DNI no reconocido");
-      playAudio("/sounds/error.mp3");
-    }
-
-    // Reset after 4 seconds
-    setTimeout(() => {
-      setStatus("IDLE");
-      setCode("");
-      setMemberInfo(null);
-      setReason("");
-      setIsScanning(false);
-    }, 4000);
+    await submitCheckIn(code);
   };
 
   const handleScan = (decodedText: string) => {

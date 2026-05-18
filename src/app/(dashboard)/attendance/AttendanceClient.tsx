@@ -1,22 +1,14 @@
 "use client";
- 
-import React from "react";
-import { 
+
+import { useMemo, useState, useEffect, useReducer } from "react";
+import {
   Check,
   ChevronsUpDown,
-  Activity, 
-  History, 
-  Search, 
+  History,
   QrCode,
-  User,
-  ArrowRight,
   UserCheck,
-  Users,
-  Cake,
-  Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -25,7 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { 
+import {
   Command,
   CommandEmpty,
   CommandGroup,
@@ -40,47 +32,82 @@ import {
 } from "@/components/ui/popover";
 import { registerAttendanceAction } from "@/lib/actions/attendance-actions";
 import { toast } from "sonner";
-import { format, formatDistanceToNow } from "date-fns";
-import { es } from "date-fns/locale";
 import { QRScanner } from "@/components/shared/QRScanner";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { LiveStatusMonitor } from "./components/LiveStatusMonitor";
+import AttendanceFeed from "./components/AttendanceFeed";
 
+const initialState = {
+  isCheckInOpen: false,
+  isQRScannerOpen: false,
+  loading: false,
+  selectedMember: "",
+  open: false,
+};
 
-export function AttendanceClient({ 
-  history, 
-  members, 
+function attendanceReducer(state: any, action: any) {
+  switch (action.type) {
+    case "SET_CHECKIN_OPEN":
+      return { ...state, isCheckInOpen: action.payload };
+    case "SET_QR_OPEN":
+      return { ...state, isQRScannerOpen: action.payload };
+    case "SET_LOADING":
+      return { ...state, loading: action.payload };
+    case "SET_SELECTED_MEMBER":
+      return { ...state, selectedMember: action.payload };
+    case "SET_OPEN":
+      return { ...state, open: action.payload };
+    case "RESET_FORMS":
+      return {
+        ...state,
+        isCheckInOpen: false,
+        isQRScannerOpen: false,
+        selectedMember: "",
+      };
+    default:
+      return state;
+  }
+}
+
+export function AttendanceClient({
+  history,
+  members,
   occupancy,
-  stats
-}: { 
-  history: any[], 
-  members: any[], 
-  occupancy: number,
-  stats: any
+  stats,
+}: {
+  history: any[];
+  members: any[];
+  occupancy: number;
+  stats: any;
 }) {
-  const [isCheckInOpen, setIsCheckInOpen] = React.useState(false);
-  const [isQRScannerOpen, setIsQRScannerOpen] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
-  const [selectedMember, setSelectedMember] = React.useState("");
-  const [open, setOpen] = React.useState(false);
+  const [state, dispatch] = useReducer(attendanceReducer, initialState);
+  const { isCheckInOpen, isQRScannerOpen, loading, selectedMember, open } =
+    state;
+  const [mounted, setMounted] = useState(false);
 
-  const handleCheckIn = async (memberId: string, method: "QR" | "MANUAL" = "MANUAL") => {
-    setLoading(true);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleCheckIn = async (
+    memberId: string,
+    method: "QR" | "MANUAL" = "MANUAL",
+  ) => {
+    dispatch({ type: "SET_LOADING", payload: true });
     const result = await registerAttendanceAction(memberId, method);
     if (result.success) {
       toast.success("Check-in exitoso");
-      setIsCheckInOpen(false);
-      setIsQRScannerOpen(false);
-      setSelectedMember("");
+      dispatch({ type: "RESET_FORMS" });
     } else {
       toast.error(result.error);
     }
-    setLoading(false);
+    dispatch({ type: "SET_LOADING", payload: false });
   };
 
   // Pre-sort history to ensure newest is at the top
-  const sortedHistory = React.useMemo(() => {
-    return [...history].sort((a, b) => {
+  const sortedHistory = useMemo(() => {
+    return history.toSorted((a: any, b: any) => {
       const dateA = new Date(a.checkIn).getTime();
       const dateB = new Date(b.checkIn).getTime();
       return dateB - dateA;
@@ -91,16 +118,23 @@ export function AttendanceClient({
     <div className="space-y-12">
       {/* Header Actions */}
       <div className="flex justify-end gap-4">
-        <Dialog open={isQRScannerOpen} onOpenChange={setIsQRScannerOpen}>
+        <Dialog
+          open={isQRScannerOpen}
+          onOpenChange={(val) =>
+            dispatch({ type: "SET_QR_OPEN", payload: val })
+          }
+        >
           <DialogTrigger asChild>
             <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-6 h-12 font-sans font-semibold tracking-wide shadow-lg shadow-primary/20 interactive-hover gap-2">
-              <QrCode className="w-5 h-5" />
+              <QrCode className="size-5" />
               Escanear QR
             </Button>
           </DialogTrigger>
           <DialogContent className="glass-card border-white/10 bg-black/95 backdrop-blur-2xl max-w-lg">
             <DialogHeader>
-              <DialogTitle className="text-3xl font-serif">Escáner de Acceso</DialogTitle>
+              <DialogTitle className="text-3xl font-serif">
+                Escáner de Acceso
+              </DialogTitle>
               <DialogDescription className="text-xs uppercase tracking-widest text-muted-foreground">
                 Apunta la cámara al código QR del socio para validar su entrada.
               </DialogDescription>
@@ -112,17 +146,27 @@ export function AttendanceClient({
             </div>
           </DialogContent>
         </Dialog>
-        
-        <Dialog open={isCheckInOpen} onOpenChange={setIsCheckInOpen}>
+
+        <Dialog
+          open={isCheckInOpen}
+          onOpenChange={(val) =>
+            dispatch({ type: "SET_CHECKIN_OPEN", payload: val })
+          }
+        >
           <DialogTrigger asChild>
-            <Button variant="outline" className="bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl px-6 h-12 font-sans font-semibold tracking-wide gap-2">
-              <UserCheck className="w-5 h-5" />
+            <Button
+              variant="outline"
+              className="bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl px-6 h-12 font-sans font-semibold tracking-wide gap-2"
+            >
+              <UserCheck className="size-5" />
               Check-in Manual
             </Button>
           </DialogTrigger>
           <DialogContent className="glass-card border-white/10 bg-black/95 backdrop-blur-2xl max-w-lg">
             <DialogHeader>
-              <DialogTitle className="text-3xl font-serif">Registrar Acceso</DialogTitle>
+              <DialogTitle className="text-3xl font-serif">
+                Registrar Acceso
+              </DialogTitle>
               <DialogDescription className="text-xs uppercase tracking-widest text-muted-foreground">
                 Selecciona al socio para validar su entrada.
               </DialogDescription>
@@ -130,45 +174,77 @@ export function AttendanceClient({
             {isCheckInOpen && (
               <div className="space-y-6 pt-4">
                 <div className="space-y-2">
-                  <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Socio</Label>
-                  <Popover open={open} onOpenChange={setOpen}>
+                  <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                    Socio
+                  </Label>
+                  <Popover
+                    open={open}
+                    onOpenChange={(val) =>
+                      dispatch({ type: "SET_OPEN", payload: val })
+                    }
+                  >
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         role="combobox"
                         aria-expanded={open}
+                        aria-controls="member-selection-list"
                         className="w-full justify-between bg-white/5 border-white/10 h-12 text-left font-normal hover:bg-white/10"
                       >
                         {selectedMember
-                          ? members.find((m) => m.id === selectedMember)?.fullName
+                          ? members.find((m) => m.id === selectedMember)
+                              ?.fullName
                           : "Seleccionar socio..."}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-0 glass-card bg-black/95 border-white/10" align="start">
-                      <Command className="bg-transparent text-white">
-                        <CommandInput placeholder="Buscar por nombre o DNI..." className="h-12 border-none focus:ring-0" />
+                    <PopoverContent
+                      className="w-full p-0 glass-card bg-black/95 border-white/10"
+                      align="start"
+                    >
+                      <Command
+                        id="member-selection-list"
+                        className="bg-transparent text-white"
+                      >
+                        <CommandInput
+                          placeholder="Buscar por nombre o DNI..."
+                          className="h-12 border-none focus:ring-0"
+                        />
                         <CommandList className="max-h-[300px] custom-scrollbar">
-                          <CommandEmpty className="py-6 text-center text-xs text-muted-foreground">No se encontraron socios.</CommandEmpty>
+                          <CommandEmpty className="py-6 text-center text-xs text-muted-foreground">
+                            No se encontraron socios.
+                          </CommandEmpty>
                           <CommandGroup>
                             {members.map((m) => (
                               <CommandItem
                                 key={m.id}
                                 value={`${m.fullName} ${m.dni}`}
                                 onSelect={() => {
-                                  setSelectedMember(m.id);
-                                  setOpen(false);
+                                  dispatch({
+                                    type: "SET_SELECTED_MEMBER",
+                                    payload: m.id,
+                                  });
+                                  dispatch({
+                                    type: "SET_OPEN",
+                                    payload: false,
+                                  });
                                 }}
                                 className="flex items-center justify-between py-3 px-4 aria-selected:bg-white/10 cursor-pointer"
                               >
                                 <div className="flex flex-col">
-                                  <span className="text-sm font-medium">{m.fullName}</span>
-                                  <span className="text-[10px] text-muted-foreground">{m.dni}</span>
+                                  <span className="text-sm font-medium">
+                                    {m.fullName}
+                                  </span>
+                                  <span className="text-[10px] text-muted-foreground">
+                                    {m.dni}
+                                  </span>
                                 </div>
                                 <Check
                                   className={cn(
-                                    "ml-auto h-4 w-4 text-primary",
-                                    selectedMember === m.id ? "opacity-100" : "opacity-0"
+                                    "ml-auto size-4 text-primary",
+                                    selectedMember === m.id
+                                      ? "opacity-100"
+                                      : "opacity-0",
                                   )}
                                 />
                               </CommandItem>
@@ -179,8 +255,8 @@ export function AttendanceClient({
                     </PopoverContent>
                   </Popover>
                 </div>
-                <Button 
-                  onClick={() => handleCheckIn(selectedMember, "MANUAL")} 
+                <Button
+                  onClick={() => handleCheckIn(selectedMember, "MANUAL")}
                   disabled={loading || !selectedMember}
                   className="w-full bg-emerald-500 hover:bg-emerald-600 text-white h-12 rounded-xl font-bold uppercase tracking-widest"
                 >
@@ -194,110 +270,18 @@ export function AttendanceClient({
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Live Status Monitor */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="glass-card p-8 border-white/5 bg-linear-to-br from-emerald-500/5 to-transparent">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-sm uppercase tracking-widest text-muted-foreground font-bold">Ocupación Actual</h3>
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-            </div>
-            
-            <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-6xl font-serif leading-none">{occupancy}</span>
-              <span className="text-muted-foreground font-sans text-sm uppercase tracking-widest">Socios en sala</span>
-            </div>
-            <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-1000 ease-out" 
-                style={{ width: `${Math.min((occupancy / 100) * 100, 100)}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Estadísticas de Hoy */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
-              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
-                <Users className="w-4 h-4" />
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Total Hoy</p>
-                <p className="text-2xl font-serif">{stats.totalToday}</p>
-              </div>
-            </div>
-            
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
-              <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-500">
-                <Cake className="w-4 h-4" />
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Cumpleaños</p>
-                <p className="text-2xl font-serif">{stats.birthdaysToday}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Distribución por Plan */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-6">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-emerald-500" />
-              <h3 className="text-xs uppercase tracking-[0.2em] font-bold">Distribución</h3>
-            </div>
-            
-            <div className="space-y-4">
-              {stats.planDistribution.length > 0 ? (
-                stats.planDistribution.map((plan: any, i: number) => (
-                  <div key={i} className="space-y-2">
-                    <div className="flex justify-between text-[10px] uppercase tracking-widest font-medium">
-                      <span className="text-muted-foreground">{plan.name}</span>
-                      <span>{plan.value}</span>
-                    </div>
-                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-emerald-500/50 rounded-full" 
-                        style={{ width: `${Math.min((plan.value / occupancy) * 100, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-[10px] text-muted-foreground uppercase italic text-center py-4">Esperando socios...</p>
-              )}
-            </div>
-          </div>
-        </div>
+        <LiveStatusMonitor occupancy={occupancy} stats={stats} />
 
         {/* Attendance Feed */}
         <div className="lg:col-span-8 glass-card p-8 border-white/5 relative">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
-              <History className="w-5 h-5 text-primary" />
+              <History className="size-5 text-primary" />
               <h2 className="text-2xl font-serif">Feed de Actividad</h2>
             </div>
           </div>
 
-          <div className="space-y-1.5 max-h-[650px] overflow-y-auto pr-2 custom-scrollbar">
-            {sortedHistory.map((entry: any) => (
-              <div key={entry.id} className="group flex items-center justify-between p-2.5 rounded-xl hover:bg-white/3 transition-all border border-transparent hover:border-white/5 cursor-default">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 transition-all duration-300 group-hover:bg-emerald-500">
-                    <UserCheck className="w-4.5 h-4.5 text-emerald-500 group-hover:text-white transition-colors" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs font-medium">{entry.member.fullName}</p>
-                      <Badge variant="outline" className="text-[7px] h-3.5 px-1 uppercase tracking-tighter bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
-                        {entry.member.memberships?.[0]?.plan?.name || "ACTIVO"}
-                      </Badge>
-                    </div>
-                    <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">
-                      {entry.method} • HACE {formatDistanceToNow(new Date(entry.checkIn), { locale: es, addSuffix: false })}
-                    </p>
-                  </div>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/20 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
-              </div>
-            ))}
-          </div>
+          <AttendanceFeed history={sortedHistory} mounted={mounted} />
         </div>
       </div>
     </div>

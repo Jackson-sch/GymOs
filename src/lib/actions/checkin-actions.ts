@@ -1,17 +1,32 @@
 "use server";
 
-import { prisma } from "../../../prisma";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { differenceInDays } from "date-fns";
+import { differenceInDays, startOfDay, endOfDay } from "date-fns";
+import { verifySession } from "@/lib/security";
 
-export async function processCheckIn(qrCode: string, method: "QR" | "NFC" | "PIN" | "MANUAL" = "QR") {
-  const member = await prisma.member.findUnique({
-    where: { qrCode },
-    include: { memberships: { where: { status: "ACTIVE" }, take: 1 } },
-  });
+export async function processCheckIn(identifier: string, method: "QR" | "NFC" | "PIN" | "MANUAL" = "QR") {
+  let member;
+  
+  if (method === "PIN") {
+    member = await prisma.member.findUnique({
+      where: { pin: identifier },
+      include: { memberships: { where: { status: "ACTIVE" }, take: 1 } },
+    });
+  } else if (method === "MANUAL") {
+    member = await prisma.member.findUnique({
+      where: { id: identifier },
+      include: { memberships: { where: { status: "ACTIVE" }, take: 1 } },
+    });
+  } else {
+    member = await prisma.member.findUnique({
+      where: { qrCode: identifier },
+      include: { memberships: { where: { status: "ACTIVE" }, take: 1 } },
+    });
+  }
   
   if (!member) {
-    return { success: false, error: "Código QR no válido" };
+    return { success: false, error: method === "PIN" ? "PIN de acceso incorrecto" : "Identificador no válido" };
   }
   
   if (member.status !== "ACTIVE") {
@@ -32,8 +47,8 @@ export async function processCheckIn(qrCode: string, method: "QR" | "NFC" | "PIN
   }
   
   const today = new Date();
-  const todayStart = new Date(today.setHours(0, 0, 0, 0));
-  const todayEnd = new Date(today.setHours(23, 59, 59, 999));
+  const todayStart = startOfDay(today);
+  const todayEnd = endOfDay(today);
   
   const existingAttendance = await prisma.attendance.findFirst({
     where: { 
@@ -77,9 +92,10 @@ export async function processCheckIn(qrCode: string, method: "QR" | "NFC" | "PIN
 }
 
 export async function getCheckInStats() {
+  await verifySession();
   const today = new Date();
-  const todayStart = new Date(today.setHours(0, 0, 0, 0));
-  const todayEnd = new Date(today.setHours(23, 59, 59, 999));
+  const todayStart = startOfDay(today);
+  const todayEnd = endOfDay(today);
   
   const [checkedIn, totalActive, pendingPayments] = await Promise.all([
     prisma.attendance.count({
@@ -95,4 +111,30 @@ export async function getCheckInStats() {
     pendingPayments,
     occupancyRate: totalActive > 0 ? ((checkedIn / totalActive) * 100).toFixed(1) : "0",
   };
+}
+
+export async function assignMemberPin(memberId: string, pin: string) {
+  const session = await verifySession();
+  
+  if (!pin || pin.length < 4 || pin.length > 6 || !/^\d+$/.test(pin)) {
+    return { success: false, error: "El PIN debe contener entre 4 y 6 números" };
+  }
+  
+  // Verificar si otro miembro ya tiene este PIN
+  const existing = await prisma.member.findUnique({
+    where: { pin },
+  });
+  
+  if (existing && existing.id !== memberId) {
+    return { success: false, error: "Este PIN ya está en uso por otro socio" };
+  }
+  
+  await prisma.member.update({
+    where: { id: memberId },
+    data: { pin },
+  });
+  
+  revalidatePath("/members");
+  revalidatePath("/kiosk");
+  return { success: true, message: "PIN de acceso asignado exitosamente" };
 }

@@ -5,12 +5,14 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { serialize } from "@/lib/utils";
+import { verifySession } from "@/lib/security";
 
 /**
  * Obtiene todos los ejercicios en la biblioteca
  */
 export async function getExercisesAction() {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     const exercises = await prisma.exercise.findMany({
       orderBy: { name: 'asc' }
     });
@@ -31,6 +33,7 @@ export async function createExerciseAction(data: {
   demoUrl?: string;
 }) {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     const exercise = await prisma.exercise.create({
       data
     });
@@ -46,6 +49,7 @@ export async function createExerciseAction(data: {
  */
 export async function getMembersForRoutineAction() {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     const members = await prisma.member.findMany({
       where: { status: "ACTIVE" },
       select: {
@@ -81,6 +85,7 @@ export async function assignRoutineAction(data: {
   }[];
 }) {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     const { exercises, ...routineData } = data;
 
     const routine = await prisma.routine.create({
@@ -105,16 +110,24 @@ export async function assignRoutineAction(data: {
  */
 export async function getAllAssignedRoutinesAction() {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     const routines = await prisma.routine.findMany({
       include: {
-        member: { select: { fullName: true } },
+        member: { select: { id: true, fullName: true, dni: true } },
         trainer: { select: { fullName: true } },
+        exercises: {
+          include: {
+            exercise: { select: { name: true } }
+          },
+          orderBy: { order: 'asc' }
+        },
         _count: { select: { exercises: true } }
       },
       orderBy: { createdAt: 'desc' }
     });
     return { success: true, data: serialize(routines) };
   } catch (error) {
+    console.error("Error fetching routines:", error);
     return { success: false, error: "Error al obtener rutinas asignadas" };
   }
 }
@@ -124,6 +137,7 @@ export async function getAllAssignedRoutinesAction() {
  */
 export async function getTrainersForRoutineAction() {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     const trainers = await prisma.trainer.findMany({
       select: {
         id: true,
@@ -134,5 +148,33 @@ export async function getTrainersForRoutineAction() {
     return { success: true, data: serialize(trainers) };
   } catch (error) {
     return { success: false, error: "Error al obtener entrenadores" };
+  }
+}
+
+/**
+ * Obtiene estadísticas generales de rutinas
+ */
+export async function getRoutinesStatsAction() {
+  try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
+    const [totalRoutines, totalExercises, totalAssignedMembers] = await Promise.all([
+      prisma.routine.count(),
+      prisma.exercise.count(),
+      prisma.routine.groupBy({
+        by: ['memberId'],
+        _count: true
+      })
+    ]);
+
+    return {
+      success: true,
+      data: {
+        totalRoutines,
+        totalExercises,
+        membersWithRoutines: totalAssignedMembers.length
+      }
+    };
+  } catch (error) {
+    return { success: false, error: "Error al obtener estadísticas" };
   }
 }

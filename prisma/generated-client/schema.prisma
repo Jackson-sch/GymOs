@@ -19,15 +19,20 @@ model User {
   image         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-
   // Custom GymOS fields
-  role     UserRole @default(RECEPTIONIST)
-  isActive Boolean  @default(true)
+  role          UserRole @default(RECEPTIONIST)
+  isActive      Boolean  @default(true)
+  banned        Boolean  @default(false)
 
   sessions      Session[]
   accounts      Account[]
   auditLogs     AuditLog[]
   configUpdates SystemConfig[]
+  member        Member?
+  trainer       Trainer?
+
+  banReason  String?
+  banExpires DateTime?
 
   @@map("user")
 }
@@ -43,7 +48,10 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  impersonatedBy String?
+
   @@unique([token])
+  @@index([userId])
   @@map("session")
 }
 
@@ -63,6 +71,7 @@ model Account {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
+  @@index([userId])
   @@map("account")
 }
 
@@ -74,6 +83,7 @@ model Verification {
   createdAt  DateTime? @default(now())
   updatedAt  DateTime? @updatedAt
 
+  @@index([identifier])
   @@map("verification")
 }
 
@@ -82,6 +92,7 @@ enum UserRole {
   ADMIN
   RECEPTIONIST
   TRAINER
+  MEMBER
 }
 
 // ─────────────────────────────────────────
@@ -97,19 +108,26 @@ model Member {
   birthDate        DateTime?
   gender           Gender?
   photo            String?
+  photoPosition    Int          @default(50)
+  address          String?
   qrCode           String       @unique @default(cuid())
+  pin              String?      @unique
   status           MemberStatus @default(ACTIVE)
   emergencyContact String?
   emergencyPhone   String?
   notes            String?
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
+  userId           String?      @unique
 
+  user          User?             @relation(fields: [userId], references: [id])
   memberships   Membership[]
   attendances   Attendance[]
   payments      Payment[]
   bodyMetrics   BodyMetric[]
   classBookings ClassBooking[]
+  notifications AppNotification[]
+  routines      Routine[]
 
   @@map("members")
 }
@@ -128,15 +146,18 @@ enum Gender {
 }
 
 model BodyMetric {
-  id         String   @id @default(cuid())
-  memberId   String
-  weight     Float?
-  height     Float?
-  bmi        Float?
-  bodyFat    Float?
-  muscle     Float?
-  notes      String?
-  measuredAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  memberId      String
+  weight        Float?
+  height        Float?
+  bmi           Float?
+  bodyFat       Float?
+  muscle        Float?
+  notes         String?
+  photoFrontUrl String?
+  photoBackUrl  String?
+  photoSideUrl  String?
+  measuredAt    DateTime @default(now())
 
   member Member @relation(fields: [memberId], references: [id])
 
@@ -185,6 +206,10 @@ model Membership {
   member   Member    @relation(fields: [memberId], references: [id])
   plan     Plan      @relation(fields: [planId], references: [id])
   payments Payment[]
+
+  // Referido por (para comisiones)
+  referralTrainerId String?
+  referralTrainer   Trainer? @relation("TrainerReferrals", fields: [referralTrainerId], references: [id])
 
   @@map("memberships")
 }
@@ -319,6 +344,7 @@ enum BookingStatus {
   CANCELLED
   ATTENDED
   NO_SHOW
+  WAITLISTED
 }
 
 // ─────────────────────────────────────────
@@ -329,18 +355,43 @@ model Trainer {
   id            String   @id @default(cuid())
   fullName      String
   email         String   @unique
+  dni           String?  @unique
   phone         String
   photo         String?
+  photoPosition Int      @default(50)
   specialties   String[]
   bio           String?
   commissionPct Decimal? @db.Decimal(5, 2)
+  baseSalary    Decimal? @db.Decimal(10, 2)
+  perClassRate  Decimal? @db.Decimal(10, 2)
+  userId        String?  @unique
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  classes Class[]
+  user      User?        @relation(fields: [userId], references: [id])
+  classes   Class[]
+  payrolls  Payroll[]
+  routines  Routine[]
+  referrals Membership[] @relation("TrainerReferrals")
 
   @@map("trainers")
+}
+
+model Payroll {
+  id          String   @id @default(cuid())
+  trainerId   String
+  amount      Decimal  @db.Decimal(10, 2)
+  periodStart DateTime
+  periodEnd   DateTime
+  status      String   @default("PAID")
+  expenseId   String?  @unique
+  createdAt   DateTime @default(now())
+
+  trainer Trainer  @relation(fields: [trainerId], references: [id])
+  expense Expense? @relation(fields: [expenseId], references: [id])
+
+  @@map("payrolls")
 }
 
 // ─────────────────────────────────────────
@@ -363,6 +414,20 @@ model Equipment {
   updatedAt       DateTime        @updatedAt
 
   @@map("equipment")
+}
+
+model AppNotification {
+  id        String   @id @default(cuid())
+  memberId  String
+  title     String
+  message   String
+  type      String   @default("INFO")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  member Member @relation(fields: [memberId], references: [id])
+
+  @@map("app_notifications")
 }
 
 enum EquipmentStatus {
@@ -420,43 +485,126 @@ model AuditLog {
 }
 
 // ─────────────────────────────────────────
-// NOTIFICACIONES
+// EGRESOS (Caja Chica y Gastos Operativos)
 // ─────────────────────────────────────────
 
-model Notification {
-  id        String              @id @default(cuid())
-  memberId  String?
-  type      NotificationType
-  channel   NotificationChannel
-  status    NotificationStatus  @default(PENDING)
-  subject   String?
-  body      String
-  sentAt    DateTime?
-  error     String?
-  createdAt DateTime            @default(now())
+model ExpenseCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  color       String?  @default("#94a3b8")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@map("notifications")
+  expenses Expense[]
+
+  @@map("expense_categories")
 }
 
-enum NotificationType {
-  WELCOME
-  MEMBERSHIP_EXPIRING
-  MEMBERSHIP_EXPIRED
-  PAYMENT_RECEIPT
-  PAYMENT_OVERDUE
-  CLASS_REMINDER
-  CLASS_CANCELLED
-  CUSTOM
+model Expense {
+  id          String        @id @default(cuid())
+  amount      Decimal       @db.Decimal(10, 2)
+  description String
+  date        DateTime      @default(now())
+  categoryId  String
+  receiptUrl  String?
+  reference   String?
+  status      ExpenseStatus @default(COMPLETED)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  category ExpenseCategory @relation(fields: [categoryId], references: [id])
+  payroll  Payroll?
+
+  @@map("expenses")
 }
 
-enum NotificationChannel {
-  EMAIL
-  SMS
-  BOTH
-}
-
-enum NotificationStatus {
+enum ExpenseStatus {
   PENDING
-  SENT
-  FAILED
+  COMPLETED
+  CANCELLED
+}
+
+// ─────────────────────────────────────────
+// RUTINAS DE ENTRENAMIENTO
+// ─────────────────────────────────────────
+
+model Routine {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  memberId    String
+  trainerId   String
+  startDate   DateTime  @default(now())
+  endDate     DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  member      Member            @relation(fields: [memberId], references: [id])
+  trainer     Trainer           @relation(fields: [trainerId], references: [id])
+  exercises   RoutineExercise[]
+  workoutLogs WorkoutLog[]
+
+  @@map("routines")
+}
+
+model Exercise {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   @default("STRENGTH")
+  equipment   String?
+  muscleGroup String?
+  demoUrl     String? // Video o GIF
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  routineExercises RoutineExercise[]
+
+  @@map("exercises")
+}
+
+model RoutineExercise {
+  id         String  @id @default(cuid())
+  routineId  String
+  exerciseId String
+  day        String  @default("Lunes") // Lunes, Martes, etc o Día 1, Día 2
+  order      Int     @default(0)
+  sets       Int     @default(3)
+  reps       String? // Ej: "12", "10-12", "Al fallo"
+  weight     String?
+  rest       String? // Ej: "60s"
+  notes      String?
+
+  routine             Routine              @relation(fields: [routineId], references: [id])
+  exercise            Exercise             @relation(fields: [exerciseId], references: [id])
+  workoutExerciseLogs WorkoutExerciseLog[]
+
+  @@map("routine_exercises")
+}
+
+model WorkoutLog {
+  id        String               @id @default(cuid())
+  routineId String
+  date      DateTime             @default(now())
+  notes     String?
+  exercises WorkoutExerciseLog[]
+
+  routine Routine @relation(fields: [routineId], references: [id])
+
+  @@map("workout_logs")
+}
+
+model WorkoutExerciseLog {
+  id                String          @id @default(cuid())
+  workoutLogId      String
+  routineExerciseId String
+  completed         Boolean         @default(true)
+  weightUsed        String?
+  repsDone          String?
+  workoutLog        WorkoutLog      @relation(fields: [workoutLogId], references: [id])
+  routineExercise   RoutineExercise @relation(fields: [routineExerciseId], references: [id])
+
+  @@map("workout_exercise_logs")
 }

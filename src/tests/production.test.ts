@@ -1,4 +1,4 @@
-import { expect, test, describe } from "bun:test";
+import { expect, test, describe } from "vitest";
 
 describe("Production Smoke Tests", () => {
   test("Health check endpoint returns 200", async () => {
@@ -8,7 +8,7 @@ describe("Production Smoke Tests", () => {
     
     // We can't guarantee the server is running during the test, but if it is:
     try {
-      const response = await fetch(`${baseUrl}/api/health`);
+      const response = await fetch(`${baseUrl}/api/health`, { signal: AbortSignal.timeout(1000) });
       // Since tests can run without the dev server running, we only assert if we got a response.
       if (response.ok) {
         expect(response.status).toBe(200);

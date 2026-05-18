@@ -1,6 +1,7 @@
 import React from "react";
 import { renderToBuffer, Document, Page, View, Text, StyleSheet, Svg, Rect, Circle } from "@react-pdf/renderer";
 import { getConfig, getConfigMap } from "./config";
+import { formatCurrency, formatPaymentMethod } from "./formats";
 
 export interface PDFPaymentData {
   invoiceNumber: string;
@@ -388,16 +389,6 @@ function formatTime(date: Date): string {
   });
 }
 
-function translateMethod(method: string): string {
-  const map: Record<string, string> = {
-    CASH: "Efectivo",
-    CARD: "Tarjeta",
-    TRANSFER: "Transferencia",
-    YAPE: "Yape",
-    PLIN: "Plin",
-  };
-  return map[method?.toUpperCase()] || method;
-}
 
 // ─── Brand Logo (SVG) ───────────────────────────────────────────────
 const BrandLogo = () => (
@@ -473,7 +464,7 @@ const InvoiceDocument = ({
           </View>
           <View style={s.metaItemRight}>
             <Text style={s.metaLabel}>Método de Pago</Text>
-            <Text style={s.metaValue}>{translateMethod(payment.method)}</Text>
+            <Text style={s.metaValue}>{formatPaymentMethod(payment.method)}</Text>
           </View>
         </View>
 
@@ -889,7 +880,7 @@ const TicketDocument = ({
 
         {/* ── Method badge ────────────────────────── */}
         <View style={tk.methodBadge}>
-          <Text style={tk.methodBadgeText}>Pagado con {translateMethod(payment.method)}</Text>
+          <Text style={tk.methodBadgeText}>MÉTODO: {formatPaymentMethod(payment.method)}</Text>
         </View>
 
         <View style={tk.dashedLine} />

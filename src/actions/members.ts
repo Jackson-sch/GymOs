@@ -1,8 +1,9 @@
 "use server";
 
-import { prisma } from "../../prisma";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { verifySession } from "@/lib/security";
 
 const memberSchema = z.object({
   fullName: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
@@ -18,6 +19,7 @@ const memberSchema = z.object({
 
 export async function createMember(data: z.infer<typeof memberSchema>) {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"]);
     const validatedData = memberSchema.parse(data);
     
     const member = await prisma.member.create({
@@ -39,6 +41,7 @@ export async function createMember(data: z.infer<typeof memberSchema>) {
 }
 
 export async function getMembers(query?: string) {
+  await verifySession();
   return prisma.member.findMany({
     where: query ? {
       OR: [
@@ -53,6 +56,7 @@ export async function getMembers(query?: string) {
 }
 
 export async function getMemberById(id: string) {
+  await verifySession();
   return prisma.member.findUnique({
     where: { id },
     include: {

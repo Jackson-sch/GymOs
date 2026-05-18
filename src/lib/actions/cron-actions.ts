@@ -1,10 +1,15 @@
 "use server";
 
-import { prisma } from "../../../prisma";
+import { prisma } from "@/lib/prisma";
 import { addDays, differenceInDays } from "date-fns";
-import { sendEmail } from "@/lib/email";
-import { sendSMS } from "@/lib/sms";
-import { getExpirationEmailTemplate, getExpiredEmailTemplate } from "@/lib/templates";
+import { sendEmailWithLog } from "@/lib/email";
+import { sendSMSWithLog } from "@/lib/sms";
+import { ExpirationWarningEmail } from "@/components/emails/ExpirationWarningEmail";
+import { ExpiredEmail } from "@/components/emails/ExpiredEmail";
+import { getConfig } from "@/lib/config";
+import React from "react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 export async function processExpiringMembershipsAction() {
   const today = new Date();
@@ -27,36 +32,35 @@ export async function processExpiringMembershipsAction() {
       },
     });
     
+    const [gymName, gymLogo] = await Promise.all([
+      getConfig("GYM_NAME"),
+      getConfig("GYM_LOGO"),
+    ]);
+    
     for (const membership of expiringMemberships) {
       const member = membership.member;
       const daysLeft = differenceInDays(membership.endDate, today);
       
       try {
-        const emailTemplate = await getExpirationEmailTemplate({
-          memberName: member.fullName,
-          planName: membership.plan.name,
-          endDate: membership.endDate.toLocaleDateString("es-PE"),
-          daysLeft,
-        });
-        
-        await sendEmail({
-          to: member.email || "",
-          subject: emailTemplate.subject,
-          html: emailTemplate.html,
-        });
-        
-        await prisma.appNotification.create({
-          data: {
-            memberId: member.id,
-            type: "WARNING",
-            title: emailTemplate.subject,
-            message: `Membresía vence en ${daysLeft} días`,
-          },
-        });
-        
-        notificationsSent.email++;
+        if (member.email) {
+          await sendEmailWithLog({
+            to: member.email,
+            subject: `Tu membresía vence en ${daysLeft} día(s)`,
+            react: React.createElement(ExpirationWarningEmail, {
+              memberName: member.fullName,
+              planName: membership.plan.name,
+              endDate: format(membership.endDate, "PPP", { locale: es }),
+              daysLeft,
+              gymName: gymName || undefined,
+              gymLogo: gymLogo || undefined,
+            }),
+            text: `Hola ${member.fullName}, tu membresía ${membership.plan.name} vence en ${daysLeft} días (${format(membership.endDate, "PPP", { locale: es })}). ¡Renueva pronto!`
+          }, member.id, "WARNING");
+          
+          notificationsSent.email++;
+        }
       } catch (emailErr: any) {
-        console.error("Error sending email:", emailErr.message);
+        console.error("Error sending expiration email:", emailErr.message);
         notificationsSent.errors++;
       }
     }
@@ -84,6 +88,11 @@ export async function processExpiredMembershipsAction() {
       },
     });
     
+    const [gymName, gymLogo] = await Promise.all([
+      getConfig("GYM_NAME"),
+      getConfig("GYM_LOGO"),
+    ]);
+
     for (const membership of expiredMemberships) {
       const member = membership.member;
       
@@ -100,25 +109,17 @@ export async function processExpiredMembershipsAction() {
 
       try {
         if (member.email) {
-          const emailTemplate = await getExpiredEmailTemplate({
-            memberName: member.fullName,
-            planName: membership.plan.name,
-          });
-          
-          await sendEmail({
+          await sendEmailWithLog({
             to: member.email,
-            subject: emailTemplate.subject,
-            html: emailTemplate.html,
-          });
-          
-          await prisma.appNotification.create({
-            data: {
-              memberId: member.id,
-              type: "ERROR",
-              title: emailTemplate.subject,
-              message: `Plan ${membership.plan.name} vencido`,
-            },
-          });
+            subject: `Tu membresía en ${gymName || 'GymOS'} ha vencido`,
+            react: React.createElement(ExpiredEmail, {
+              memberName: member.fullName,
+              planName: membership.plan.name,
+              gymName: gymName || undefined,
+              gymLogo: gymLogo || undefined,
+            }),
+            text: `Hola ${member.fullName}, tu membresía ${membership.plan.name} ha vencido. ¡Te esperamos para renovar!`
+          }, member.id, "ERROR");
           
           notificationsSent.email++;
         }
@@ -128,17 +129,10 @@ export async function processExpiredMembershipsAction() {
       
       if (member.phone) {
         try {
-          const message = `Hola ${member.fullName}, tu membresía ${membership.plan.name} ha vencido. Visítanos para renovar.`;
-          await sendSMS({ to: member.phone, body: message });
-          
-          await prisma.appNotification.create({
-            data: {
-              memberId: member.id,
-              type: "ERROR",
-              title: "SMS Enviado",
-              message: message,
-            },
-          });
+          await sendSMSWithLog({
+            to: member.phone,
+            body: `Hola ${member.fullName}, tu membresía ${membership.plan.name} ha vencido. Visítanos en ${gymName || 'GymOS'} para renovar.`
+          }, member.id, "ERROR");
           
           notificationsSent.sms++;
         } catch (smsErr: any) {
@@ -148,6 +142,61 @@ export async function processExpiredMembershipsAction() {
     }
     
     return { success: true, processed: expiredMemberships.length, notifications: notificationsSent };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+async function ensureSystemUser() {
+  let user = await prisma.user.findUnique({ where: { id: "system" } });
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        id: "system",
+        name: "Sistema GymOS",
+        email: "system@gymos.local",
+        role: "SUPER_ADMIN"
+      }
+    });
+  }
+  return user;
+}
+
+export async function processEquipmentMaintenanceAction() {
+  const today = new Date();
+  const sevenDaysFromNow = addDays(today, 7);
+
+  try {
+    const pendingMaintenance = await prisma.equipment.findMany({
+      where: {
+        status: "OPERATIONAL",
+        nextMaintenance: {
+          gte: today,
+          lte: sevenDaysFromNow,
+        },
+      },
+    });
+
+    if (pendingMaintenance.length > 0) {
+      await ensureSystemUser();
+    }
+
+    for (const item of pendingMaintenance) {
+      await prisma.auditLog.create({
+        data: {
+          userId: "system",
+          action: "MAINTENANCE_ALERT",
+          entity: "EQUIPMENT",
+          entityId: item.id,
+          newData: {
+            name: item.name,
+            nextMaintenance: item.nextMaintenance,
+          },
+        },
+      });
+    }
+
+    return { success: true, processed: pendingMaintenance.length };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

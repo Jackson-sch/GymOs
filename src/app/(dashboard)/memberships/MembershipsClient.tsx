@@ -35,6 +35,8 @@ import { PlanForm } from "@/components/shared/forms/PlanForm";
 import { deletePlanAction, getPlanMembersAction } from "@/lib/actions/plans-actions";
 import { toast } from "sonner";
 
+import { formatCurrency } from "@/lib/formats";
+
 export function MembershipsClient({ data }: { data: any[] }) {
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
   const [editingPlan, setEditingPlan] = React.useState<any>(null);
@@ -134,7 +136,7 @@ export function MembershipsClient({ data }: { data: any[] }) {
               </div>
 
               <div className="flex items-baseline gap-1 mb-8">
-                <span className="text-4xl font-sans font-light tracking-tighter">S/. {Number(plan.price).toFixed(2)}</span>
+                <span className="text-4xl font-sans font-light tracking-tighter">{formatCurrency(plan.price)}</span>
                 <span className="text-xs text-muted-foreground uppercase tracking-widest">/ {plan.durationDays} días</span>
               </div>
 

@@ -45,21 +45,41 @@ export async function sendSMS({ to, body }: SendSMSOptions) {
 }
 
 export async function sendSMSWithLog(options: SendSMSOptions, memberId?: string, type?: string) {
-  const result: any = await sendSMS(options);
-  
-  if (memberId) {
-    const { prisma } = await import("../lib/prisma");
-    await prisma.appNotification.create({
-      data: {
-        memberId,
-        type: (type as any) || "INFO",
-        title: "SMS Enviado",
-        message: options.body,
-      },
-    });
+  try {
+    const result: any = await sendSMS(options);
+    
+    if (memberId) {
+      const { prisma } = await import("../lib/prisma");
+      await prisma.appNotification.create({
+        data: {
+          memberId,
+          type: (type as any) || "INFO",
+          title: "SMS Enviado",
+          message: options.body,
+        },
+      });
+    }
+    
+    return result;
+  } catch (error: any) {
+    console.error("[SMS Error]: Fallo al enviar SMS", error);
+    if (memberId) {
+      try {
+        const { prisma } = await import("../lib/prisma");
+        await prisma.appNotification.create({
+          data: {
+            memberId,
+            type: "ERROR",
+            title: "Fallo de Envío SMS",
+            message: `No se pudo enviar el SMS (${error?.message || "Error de red"})`,
+          },
+        });
+      } catch (dbErr) {
+        console.error("No se pudo registrar notificación de error SMS:", dbErr);
+      }
+    }
+    return { success: false, error: error?.message || "Fallo al enviar SMS" };
   }
-  
-  return result;
 }
 
 export async function sendWhatsApp({ to, body }: SendSMSOptions) {

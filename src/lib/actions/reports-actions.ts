@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "../../../prisma";
+import { prisma } from "@/lib/prisma";
 import { 
   startOfMonth, 
   endOfMonth, 
@@ -14,8 +14,10 @@ import {
   format,
   isWithinInterval
 } from "date-fns";
+import { verifySession } from "@/lib/security";
 
 export async function getDashboardKPIs() {
+  await verifySession();
   const now = new Date();
   const monthStart = startOfMonth(now);
   const monthEnd = endOfMonth(now);
@@ -113,13 +115,17 @@ export async function getDashboardKPIs() {
   };
 }
 
-export async function getRevenueByMonth(months = 12) {
-  const now = new Date();
+export async function getRevenueByMonth(startDate?: Date, endDate?: Date) {
+  await verifySession();
+  const end = endDate || new Date();
+  const start = startDate || subMonths(end, 11);
   const data = [];
   
-  for (let i = months - 1; i >= 0; i--) {
-    const monthStart = startOfMonth(subMonths(now, i));
-    const monthEnd = endOfMonth(subMonths(now, i));
+  // Calculate months between start and end
+  let current = startOfMonth(start);
+  while (current <= end) {
+    const monthStart = startOfMonth(current);
+    const monthEnd = endOfMonth(current);
     
     const [revenueResult, expenseResult] = await Promise.all([
       prisma.payment.aggregate({
@@ -141,21 +147,24 @@ export async function getRevenueByMonth(months = 12) {
       grossRevenue: revenue,
       expenses: expenses,
     });
+
+    current = new Date(current.getFullYear(), current.getMonth() + 1, 1);
   }
   
   return data;
 }
 
-export async function getAttendanceByDay(days = 30) {
-  const now = new Date();
-  const start = subDays(now, days - 1);
+export async function getAttendanceByDay(startDate?: Date, endDate?: Date) {
+  await verifySession();
+  const end = endDate || new Date();
+  const start = startDate || subDays(end, 29);
   
   const attendances = await prisma.attendance.findMany({
-    where: { checkIn: { gte: start } },
+    where: { checkIn: { gte: start, lte: end } },
     select: { checkIn: true },
   });
   
-  const daysData = eachDayOfInterval({ start, end: now });
+  const daysData = eachDayOfInterval({ start, end });
   
   return daysData.map(day => {
     const dayStart = startOfDay(day);
@@ -173,6 +182,7 @@ export async function getAttendanceByDay(days = 30) {
 }
 
 export async function getMembershipsByPlan() {
+  await verifySession();
   const memberships = await prisma.membership.findMany({
     where: { status: "ACTIVE" },
     include: { plan: true },
@@ -198,6 +208,7 @@ export async function getMembershipsByPlan() {
 }
 
 export async function getMembersByStatus() {
+  await verifySession();
   const [active, inactive, suspended] = await Promise.all([
     prisma.member.count({ where: { status: "ACTIVE" } }),
     prisma.member.count({ where: { status: "INACTIVE" } }),
@@ -211,13 +222,14 @@ export async function getMembersByStatus() {
   ];
 }
 
-export async function getTopMembers(limit = 10) {
-  const thisMonth = startOfMonth(new Date());
-  const now = new Date();
+export async function getTopMembers(limit = 10, startDate?: Date, endDate?: Date) {
+  await verifySession();
+  const start = startDate || startOfMonth(new Date());
+  const end = endDate || new Date();
   
   const attendances = await prisma.attendance.groupBy({
     by: ["memberId"],
-    where: { checkIn: { gte: thisMonth } },
+    where: { checkIn: { gte: start, lte: end } },
     _count: { id: true },
     orderBy: { _count: { id: "desc" } },
     take: limit,
@@ -237,6 +249,7 @@ export async function getTopMembers(limit = 10) {
 }
 
 export async function getClassStats() {
+  await verifySession();
   const now = new Date();
   const weekStart = startOfWeek(now);
   const weekEnd = endOfWeek(now);

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter, Cormorant_Garamond } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "./globals.css";
@@ -22,10 +22,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#0a0a0a",
+};
+
 export const metadata: Metadata = {
   title: "GymOS | Elite Fitness Management",
-  description:
-    "Sistema de gestión de gimnasios de alto rendimiento con diseño premium.",
+  description: "Sistema de gestión de gimnasios de alto rendimiento con diseño premium.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "GymOS",
+  },
+  icons: {
+    apple: "/icons/icon-192x192.png",
+  },
 };
 
 import { TooltipProvider } from "@/components/ui/tooltip";

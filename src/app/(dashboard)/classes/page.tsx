@@ -1,5 +1,6 @@
 import React from "react";
-import { getClassesAction, getTrainersAction } from "@/lib/actions/classes-actions";
+import { getClassesAction } from "@/lib/actions/classes-actions";
+import { getTrainersAction } from "@/lib/actions/trainers-actions";
 import { Calendar } from "lucide-react";
 import { ClassesClient } from "./ClassesClient";
 

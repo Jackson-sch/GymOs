@@ -6,7 +6,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { createMemberAction, updateMemberAction } from "@/lib/actions/members-actions";
 import { toast } from "sonner";
 import { Loader2, Save } from "lucide-react";
@@ -17,8 +31,10 @@ const memberSchema = z.object({
   phone: z.string().min(7, "Teléfono inválido"),
   dni: z.string().min(8, "DNI debe tener 8 dígitos"),
   address: z.string().optional(),
+  pin: z.string().optional(),
   photo: z.string().optional(),
   birthDate: z.string().optional(),
+  status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED", "DELETED"]),
 });
 
 type MemberFormValues = z.infer<typeof memberSchema>;
@@ -31,12 +47,29 @@ interface MemberFormProps {
 export function MemberForm({ initialData, onSuccess }: MemberFormProps) {
   const [loading, setLoading] = React.useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<MemberFormValues>({
+  const form = useForm<MemberFormValues>({
     resolver: zodResolver(memberSchema),
     defaultValues: initialData ? {
-      ...initialData,
-      birthDate: initialData.birthDate ? new Date(initialData.birthDate).toISOString().split('T')[0] : ""
-    } : {}
+      fullName: initialData.fullName || "",
+      email: initialData.email || "",
+      phone: initialData.phone || "",
+      dni: initialData.dni || "",
+      address: initialData.address || "",
+      pin: initialData.pin || "",
+      photo: initialData.photo || "",
+      birthDate: initialData.birthDate ? new Date(initialData.birthDate).toISOString().split('T')[0] : "",
+      status: initialData.status || "ACTIVE"
+    } : {
+      fullName: "",
+      email: "",
+      phone: "",
+      dni: "",
+      address: "",
+      pin: "",
+      photo: "",
+      birthDate: "",
+      status: "ACTIVE"
+    }
   });
 
   const onSubmit = async (values: MemberFormValues) => {
@@ -55,51 +88,142 @@ export function MemberForm({ initialData, onSuccess }: MemberFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="grid grid-cols-2 gap-4 pt-4">
-        <div className="space-y-2">
-          <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Nombre Completo</Label>
-          <Input {...register("fullName")} className="bg-white/5 border-white/10" placeholder="Ej. Juan Pérez" />
-          {errors.fullName && <p className="text-[10px] text-rose-500 font-bold uppercase">{errors.fullName.message}</p>}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid grid-cols-2 gap-4 pt-4">
+          <FormField
+            control={form.control}
+            name="fullName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Nombre Completo</FormLabel>
+                <FormControl>
+                  <Input className="bg-white/5 border-white/10" placeholder="Ej. Juan Pérez" {...field} />
+                </FormControl>
+                <FormMessage className="text-[10px] font-bold uppercase" />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="dni"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">DNI / Documento</FormLabel>
+                <FormControl>
+                  <Input className="bg-white/5 border-white/10" placeholder="88888888" {...field} />
+                </FormControl>
+                <FormMessage className="text-[10px] font-bold uppercase" />
+              </FormItem>
+            )}
+          />
         </div>
-        <div className="space-y-2">
-          <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">DNI / Documento</Label>
-          <Input {...register("dni")} className="bg-white/5 border-white/10" placeholder="88888888" />
-          {errors.dni && <p className="text-[10px] text-rose-500 font-bold uppercase">{errors.dni.message}</p>}
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Email Personal</FormLabel>
+                <FormControl>
+                  <Input type="email" className="bg-white/5 border-white/10" placeholder="juan@ejemplo.com" {...field} />
+                </FormControl>
+                <FormMessage className="text-[10px] font-bold uppercase" />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Teléfono</FormLabel>
+                <FormControl>
+                  <Input className="bg-white/5 border-white/10" placeholder="+51 999..." {...field} />
+                </FormControl>
+                <FormMessage className="text-[10px] font-bold uppercase" />
+              </FormItem>
+            )}
+          />
         </div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Email Personal</Label>
-          <Input {...register("email")} type="email" className="bg-white/5 border-white/10" placeholder="juan@ejemplo.com" />
-          {errors.email && <p className="text-[10px] text-rose-500 font-bold uppercase">{errors.email.message}</p>}
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Dirección (Opcional)</FormLabel>
+                <FormControl>
+                  <Input className="bg-white/5 border-white/10" placeholder="Calle Ejemplo 123..." {...field} />
+                </FormControl>
+                <FormMessage className="text-[10px] font-bold uppercase" />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="pin"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">PIN de Acceso (4-6 dígitos)</FormLabel>
+                <FormControl>
+                  <Input type="password" maxLength={6} className="bg-white/5 border-white/10 tracking-widest font-mono" placeholder="••••" {...field} />
+                </FormControl>
+                <FormMessage className="text-[10px] font-bold uppercase" />
+              </FormItem>
+            )}
+          />
         </div>
-        <div className="space-y-2">
-          <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Teléfono</Label>
-          <Input {...register("phone")} className="bg-white/5 border-white/10" placeholder="+51 999..." />
-          {errors.phone && <p className="text-[10px] text-rose-500 font-bold uppercase">{errors.phone.message}</p>}
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="birthDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Fecha de Nacimiento</FormLabel>
+                <FormControl>
+                  <Input type="date" className="bg-white/5 border-white/10" {...field} />
+                </FormControl>
+                <FormMessage className="text-[10px] font-bold uppercase" />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Estado</FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger className="bg-white/5 border-white/10 h-12 w-full">
+                      <SelectValue placeholder="Seleccionar estado" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="bg-black/95 border-white/10 backdrop-blur-xl">
+                    <SelectItem value="ACTIVE">Activo</SelectItem>
+                    <SelectItem value="INACTIVE">Inactivo</SelectItem>
+                    <SelectItem value="SUSPENDED">Suspendido</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage className="text-[10px] font-bold uppercase" />
+              </FormItem>
+            )}
+          />
         </div>
-      </div>
 
-      <div className="space-y-2">
-        <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Dirección (Opcional)</Label>
-        <Input {...register("address")} className="bg-white/5 border-white/10" placeholder="Calle Ejemplo 123..." />
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Fecha de Nacimiento</Label>
-        <Input {...register("birthDate")} type="date" className="bg-white/5 border-white/10" />
-      </div>
-
-      <Button 
-        type="submit" 
-        disabled={loading}
-        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12 rounded-xl font-bold uppercase tracking-widest gap-2"
-      >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-        {initialData ? "Actualizar Socio" : "Registrar Socio"}
-      </Button>
-    </form>
+        <Button 
+          type="submit" 
+          disabled={loading}
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12 font-bold uppercase tracking-widest gap-2"
+        >
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          {initialData ? "Actualizar Socio" : "Registrar Socio"}
+        </Button>
+      </form>
+    </Form>
   );
 }

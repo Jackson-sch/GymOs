@@ -2,6 +2,7 @@ import React from "react";
 import { getRecentPaymentsAction, getFinancialStatsAction } from "@/lib/actions/payments-actions";
 import { getMembersAction } from "@/lib/actions/members-actions";
 import { getPlansAction } from "@/lib/actions/plans-actions";
+import { getTrainersAction } from "@/lib/actions/trainers-actions";
 import { Wallet } from "lucide-react";
 import { PaymentsClient } from "./PaymentsClient";
 import { getConfigMap } from "@/lib/config";
@@ -10,11 +11,12 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function PaymentsPage() {
-  const [paymentsRes, statsRes, membersRes, plansRes, configMap] = await Promise.all([
+  const [paymentsRes, statsRes, membersRes, plansRes, trainersRes, configMap] = await Promise.all([
     getRecentPaymentsAction(),
     getFinancialStatsAction(),
     getMembersAction(),
     getPlansAction(),
+    getTrainersAction(),
     getConfigMap(["RECEIPT_FORMAT"])
   ]);
 
@@ -22,6 +24,7 @@ export default async function PaymentsPage() {
   const chartData = statsRes.success ? (statsRes.data as any[]) : [];
   const members = membersRes.success ? (membersRes.data as any[]) : [];
   const plans = plansRes.success ? (plansRes.data as any[]) : [];
+  const trainers = trainersRes.success ? (trainersRes.data as any[]) : [];
   const defaultReceiptFormat = configMap["RECEIPT_FORMAT"] || "A4";
 
   return (
@@ -46,6 +49,7 @@ export default async function PaymentsPage() {
         chartData={chartData} 
         members={members}
         plans={plans}
+        trainers={trainers}
         defaultReceiptFormat={defaultReceiptFormat}
       />
     </div>

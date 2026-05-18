@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { PortalSidebar } from "@/components/shared/PortalSidebar";
 import { NotificationCenter } from "@/components/shared/NotificationCenter";
+import { getConfigMap } from "@/lib/config";
 
 export default async function PortalLayout({
   children,
@@ -18,12 +19,11 @@ export default async function PortalLayout({
     redirect("/login");
   }
 
-  // Basic check: if user is not a member but is an admin, maybe allow? 
-  // For now, assume any logged in user can see it but we might restrict later.
+  const branding = await getConfigMap(["GYM_NAME", "GYM_LOGO"]);
 
   return (
     <div className="flex min-h-screen bg-background premium-gradient overflow-x-hidden">
-      <PortalSidebar />
+      <PortalSidebar branding={branding} />
       <main className="flex-1 md:ml-72 transition-all duration-500">
         <header className="flex h-20 items-center justify-end px-8 gap-4">
           <NotificationCenter />

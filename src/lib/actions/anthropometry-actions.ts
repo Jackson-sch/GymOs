@@ -1,7 +1,8 @@
 "use server";
 
-import { prisma } from "../../../prisma";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { verifySession } from "@/lib/security";
 
 export async function addBodyMetricAction(data: {
   memberId: string;
@@ -16,6 +17,7 @@ export async function addBodyMetricAction(data: {
   photoSideUrl?: string;
 }) {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER", "RECEPTIONIST"]);
     const metric = await prisma.bodyMetric.create({
       data: {
         memberId: data.memberId,
@@ -41,6 +43,7 @@ export async function addBodyMetricAction(data: {
 
 export async function getBodyMetricsAction(memberId: string) {
   try {
+    await verifySession();
     const metrics = await prisma.bodyMetric.findMany({
       where: { memberId },
       orderBy: { measuredAt: "asc" }

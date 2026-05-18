@@ -8,8 +8,9 @@ export const memberSchema = z.object({
   address: z.string().optional().nullable(),
   photo: z.string().optional().nullable(),
   photoPosition: z.number().optional().default(50),
+  pin: z.string().optional().nullable(),
   birthDate: z.string().optional().nullable(),
-  status: z.enum(["ACTIVE", "INACTIVE", "BLOCKED"]).optional().default("ACTIVE"),
+  status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED", "DELETED"]).optional().default("ACTIVE"),
 });
 
-export type MemberInput = z.infer<typeof memberSchema>;
+export type MemberInput = z.input<typeof memberSchema>;

@@ -34,8 +34,13 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const queryId = searchParams.get("id");
+    
     const body = await request.json();
-    const { id, ...data } = body;
+    const { id: bodyId, ...data } = body;
+    
+    const id = bodyId || queryId;
     
     if (!id) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });

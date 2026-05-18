@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 import { verifySession } from "@/lib/security";
 
 export async function getPortalDashboardData() {
-  const { session }: any = await verifySession();
+  const session = await verifySession();
 
   const member = await prisma.member.findUnique({
     where: { userId: session.user.id },
@@ -40,6 +40,8 @@ export async function getPortalDashboardData() {
   const activeMembership = member.memberships[0];
   const daysLeft = activeMembership ? differenceInDays(activeMembership.endDate, new Date()) : 0;
 
+  const plans = await prisma.plan.findMany({ where: { isActive: true }, orderBy: { price: "asc" } });
+
   return {
     success: true,
     data: serialize({
@@ -47,6 +49,7 @@ export async function getPortalDashboardData() {
       membership: activeMembership,
       daysLeft,
       nextClass: member.classBookings[0],
+      plans,
       weightHistory: member.bodyMetrics.reverse().map(m => ({
         key: m.measuredAt.toLocaleDateString(),
         value: m.weight
@@ -56,7 +59,7 @@ export async function getPortalDashboardData() {
 }
 
 export async function getPortalMemberAction() {
-  const { session }: any = await verifySession();
+  const session = await verifySession();
 
   const member = await prisma.member.findUnique({
     where: { userId: session.user.id },
@@ -66,7 +69,7 @@ export async function getPortalMemberAction() {
 }
 
 export async function getPortalClassesAction() {
-  const { session }: any = await verifySession();
+  const session = await verifySession();
 
   const member = await prisma.member.findUnique({
     where: { userId: session.user.id },
@@ -98,7 +101,13 @@ export async function getPortalClassesAction() {
         memberId: member.id,
         class: { startTime: { gte: today } }
       },
-      include: { class: true }
+      include: { 
+        class: {
+          include: {
+            _count: { select: { bookings: { where: { status: "WAITLISTED" } } } }
+          }
+        } 
+      }
     })
   ]);
 
@@ -113,7 +122,7 @@ export async function getPortalClassesAction() {
 }
 
 export async function bookPortalClassAction(classId: string) {
-  const { session }: any = await verifySession();
+  const session = await verifySession();
 
   const member = await prisma.member.findUnique({
     where: { userId: session.user.id },
@@ -129,6 +138,10 @@ export async function bookPortalClassAction(classId: string) {
   });
 
   if (!classItem) return { success: false, error: "Clase no encontrada" };
+
+  if (new Date(classItem.startTime) < new Date()) {
+    return { success: false, error: "Esta clase ya ha comenzado o ha finalizado" };
+  }
 
   // Check if already booked
   const existing = await prisma.classBooking.findFirst({
@@ -160,12 +173,15 @@ export async function bookPortalClassAction(classId: string) {
 }
 
 export async function cancelPortalBookingAction(bookingId: string) {
-  const { session }: any = await verifySession();
+  const session = await verifySession();
 
   try {
     const booking = await prisma.classBooking.findUnique({
       where: { id: bookingId },
-      include: { member: true }
+      include: { 
+        member: true,
+        class: true
+      }
     });
 
     if (!booking) return { success: false, error: "Reserva no encontrada" };
@@ -202,8 +218,8 @@ export async function cancelPortalBookingAction(bookingId: string) {
           data: {
             memberId: nextInLine.memberId,
             title: "¡Ya tienes cupo!",
-            message: `Has sido promovido de la lista de espera para una clase.`,
-            type: "WAITLIST_PROMOTED"
+            message: `Tu reserva para la clase '${booking.class.name}' ha sido confirmada desde la lista de espera.`,
+            type: "SUCCESS"
           }
         });
       }
@@ -217,7 +233,7 @@ export async function cancelPortalBookingAction(bookingId: string) {
 }
 
 export async function getPortalProgressAction() {
-  const { session }: any = await verifySession();
+  const session = await verifySession();
 
   const member = await prisma.member.findUnique({
     where: { userId: session.user.id },
@@ -229,23 +245,47 @@ export async function getPortalProgressAction() {
       attendances: {
         orderBy: { checkIn: "desc" },
         take: 30
-      },
-      workoutLogs: {
-        include: { _count: { select: { exercises: true } } },
-        orderBy: { date: "desc" },
-        take: 15
       }
     }
   });
 
   if (!member) return { success: false, error: "Socio no encontrado" };
 
+  const workoutLogs = await prisma.workoutLog.findMany({
+    where: { routine: { memberId: member.id } },
+    include: { _count: { select: { exercises: true } } },
+    orderBy: { date: "desc" },
+    take: 15
+  });
+
   return {
     success: true,
     data: serialize({
       bodyMetrics: member.bodyMetrics,
       attendances: member.attendances,
-      workoutLogs: member.workoutLogs
+      workoutLogs
     })
   };
+}
+
+export async function regeneratePortalQRAction() {
+  const session = await verifySession();
+
+  const member = await prisma.member.findUnique({
+    where: { userId: session.user.id },
+    select: { id: true }
+  });
+
+  if (!member) return { success: false, error: "Socio no encontrado" };
+
+  // Generate a new unique CUID-like string
+  const newQrCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+  await prisma.member.update({
+    where: { id: member.id },
+    data: { qrCode: newQrCode }
+  });
+
+  revalidatePath("/portal/qr");
+  return { success: true, message: "Código QR regenerado con éxito" };
 }

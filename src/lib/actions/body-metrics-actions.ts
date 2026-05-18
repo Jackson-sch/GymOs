@@ -1,8 +1,9 @@
 "use server";
 
-import { prisma } from "../../../prisma";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { verifySession } from "@/lib/security";
 
 const bodyMetricSchema = z.object({
   memberId: z.string(),
@@ -12,6 +13,9 @@ const bodyMetricSchema = z.object({
   bodyFat: z.number().min(0).max(100).optional(),
   muscle: z.number().min(0).max(100).optional(),
   notes: z.string().optional(),
+  photoFrontUrl: z.string().optional().nullable(),
+  photoBackUrl: z.string().optional().nullable(),
+  photoSideUrl: z.string().optional().nullable(),
 });
 
 function calculateBMI(weight: number, height: number): number {
@@ -20,6 +24,7 @@ function calculateBMI(weight: number, height: number): number {
 }
 
 export async function getBodyMetrics(memberId: string) {
+  await verifySession();
   return await prisma.bodyMetric.findMany({
     where: { memberId },
     orderBy: { measuredAt: "desc" },
@@ -27,6 +32,7 @@ export async function getBodyMetrics(memberId: string) {
 }
 
 export async function getLatestBodyMetric(memberId: string) {
+  await verifySession();
   return await prisma.bodyMetric.findFirst({
     where: { memberId },
     orderBy: { measuredAt: "desc" },
@@ -40,7 +46,11 @@ export async function createBodyMetric(data: {
   bodyFat?: number;
   muscle?: number;
   notes?: string;
+  photoFrontUrl?: string | null;
+  photoBackUrl?: string | null;
+  photoSideUrl?: string | null;
 }) {
+  await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER", "RECEPTIONIST"]);
   const parsed = bodyMetricSchema.parse(data);
   
   const bmi = parsed.weight && parsed.height 
@@ -59,6 +69,7 @@ export async function createBodyMetric(data: {
 }
 
 export async function updateBodyMetric(id: string, data: Partial<z.infer<typeof bodyMetricSchema>>) {
+  await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
   const parsed = bodyMetricSchema.partial().parse(data);
   
   const existing = await prisma.bodyMetric.findUnique({ where: { id } });
@@ -81,6 +92,7 @@ export async function updateBodyMetric(id: string, data: Partial<z.infer<typeof 
 }
 
 export async function deleteBodyMetric(id: string) {
+  await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
   const existing = await prisma.bodyMetric.findUnique({ where: { id } });
   if (!existing) {
     return { success: false, error: "Métrica no encontrada" };

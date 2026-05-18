@@ -24,3 +24,10 @@ export function serialize<T>(data: T): T {
     return value;
   }));
 }
+
+/**
+ * Helper seguro para obtener el rol del usuario desde cualquier sesión (cliente o servidor).
+ */
+export function getUserRole(session: any): string {
+  return session?.user?.role || "MEMBER";
+}

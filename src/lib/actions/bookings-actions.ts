@@ -1,11 +1,21 @@
 "use server";
 
-import { prisma } from "../../../prisma";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createNotification } from "./notification-actions";
+import { sendEmailWithLog } from "@/lib/email";
+import { sendSMSWithLog } from "@/lib/sms";
+import { ClassReminderEmail } from "@/components/emails/ClassReminderEmail";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { getConfig } from "@/lib/config";
+import React from "react";
+import { serialize } from "@/lib/utils";
+import { verifySession } from "@/lib/security";
 
 export async function getBookings(classId?: string, memberId?: string) {
+  await verifySession();
   return await prisma.classBooking.findMany({
     where: {
       ...(classId && { classId }),
@@ -17,6 +27,7 @@ export async function getBookings(classId?: string, memberId?: string) {
 }
 
 export async function getBookingById(id: string) {
+  await verifySession();
   return await prisma.classBooking.findUnique({
     where: { id },
     include: { class: true, member: true },
@@ -24,6 +35,7 @@ export async function getBookingById(id: string) {
 }
 
 export async function createBooking(data: { classId: string; memberId: string }) {
+  await verifySession();
   const existing = await prisma.classBooking.findFirst({
     where: { classId: data.classId, memberId: data.memberId, status: "CONFIRMED" },
   });
@@ -73,12 +85,53 @@ export async function createBooking(data: { classId: string; memberId: string })
   }
   
   await prisma.classBooking.create({ data });
+
+  // 4. Enviar Confirmación (Email y SMS)
+  try {
+    const fullClass = await prisma.class.findUnique({
+      where: { id: data.classId },
+      include: { trainer: true }
+    });
+
+    if (fullClass && member.email) {
+      const [gymName, gymLogo] = await Promise.all([
+        getConfig("GYM_NAME"),
+        getConfig("GYM_LOGO"),
+      ]);
+
+      // Email
+      await sendEmailWithLog({
+        to: member.email,
+        subject: `Reserva Confirmada: ${fullClass.name}`,
+        react: React.createElement(ClassReminderEmail, {
+          memberName: member.fullName,
+          className: fullClass.name,
+          trainerName: fullClass.trainer.fullName,
+          startTime: format(fullClass.startTime, "PPPP p", { locale: es }),
+          gymName: gymName || undefined,
+          gymLogo: gymLogo || undefined,
+        }),
+        text: `¡Reserva Confirmada! Te esperamos en ${fullClass.name} con ${fullClass.trainer.fullName} hoy a las ${format(fullClass.startTime, "p", { locale: es })}.`
+      }, data.memberId, "SUCCESS");
+
+      // SMS
+      if (member.phone) {
+        await sendSMSWithLog({
+          to: member.phone,
+          body: `GymOS: Reserva confirmada para ${fullClass.name} hoy a las ${format(fullClass.startTime, "p", { locale: es })}. ¡Te esperamos!`
+        }, data.memberId, "SUCCESS");
+      }
+    }
+  } catch (notifError) {
+    console.error("Error sending booking notifications:", notifError);
+  }
   
   revalidatePath("/classes");
   return { success: true };
 }
 
 export async function cancelBooking(id: string) {
+  await verifySession();
   const existing = await prisma.classBooking.findUnique({ 
     where: { id },
     include: { class: true }
@@ -123,6 +176,7 @@ export async function cancelBooking(id: string) {
 }
 
 export async function markAttended(id: string) {
+  await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER", "RECEPTIONIST"]);
   await prisma.classBooking.update({
     where: { id },
     data: { status: "ATTENDED" },
@@ -133,6 +187,7 @@ export async function markAttended(id: string) {
 }
 
 export async function markNoShow(id: string) {
+  await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER", "RECEPTIONIST"]);
   await prisma.classBooking.update({
     where: { id },
     data: { status: "NO_SHOW" },

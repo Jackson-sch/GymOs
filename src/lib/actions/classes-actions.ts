@@ -1,18 +1,14 @@
 "use server";
 
-import { prisma } from "../../../prisma";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-
-// Función de utilidad para serialización profunda y segura de tipos complejos de Prisma
-function serialize<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data, (key, value) => 
-    typeof value === 'bigint' ? value.toString() : value
-  ));
-}
+import { verifySession } from "@/lib/security";
+import { serialize } from "@/lib/utils";
 
 // --- CLASES ---
 export async function getClassesAction() {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     const classes = await prisma.class.findMany({
       include: {
         trainer: true,
@@ -26,27 +22,74 @@ export async function getClassesAction() {
   }
 }
 
-export async function createClassAction(data: any) {
+import { type ClassStatus, type BookingStatus } from "@prisma/client";
+
+export interface ClassInput {
+  name: string;
+  description?: string | null;
+  startTime: string | Date;
+  durationMins: string | number;
+  maxCapacity: string | number;
+  trainerId: string;
+  location?: string | null;
+  status?: ClassStatus | string;
+  isRecurring?: boolean;
+  recurrenceWeeks?: string | number;
+}
+
+export async function createClassAction(data: ClassInput) {
   try {
-    const duration = parseInt(data.durationMins);
-    const capacity = parseInt(data.maxCapacity);
-    const date = new Date(data.startTime);
+    await verifySession(["ADMIN", "SUPER_ADMIN"]);
+    const duration = typeof data.durationMins === 'string' ? parseInt(data.durationMins) : data.durationMins;
+    const capacity = typeof data.maxCapacity === 'string' ? parseInt(data.maxCapacity) : data.maxCapacity;
+    const startDate = new Date(data.startTime);
 
     if (isNaN(duration) || isNaN(capacity)) {
       return { success: false, error: "Duración o capacidad inválida" };
     }
 
-    if (isNaN(date.getTime())) {
+    if (isNaN(startDate.getTime())) {
       return { success: false, error: "Fecha y hora inválida" };
     }
 
-    const endTime = new Date(date.getTime() + duration * 60000);
+    // Lógica de Recurrencia
+    if (data.isRecurring && data.recurrenceWeeks) {
+      const weeks = typeof data.recurrenceWeeks === 'string' ? parseInt(data.recurrenceWeeks) : data.recurrenceWeeks;
+      const createdClasses = [];
 
+      for (let i = 0; i < weeks; i++) {
+        const currentStartTime = new Date(startDate.getTime() + (i * 7 * 24 * 60 * 60 * 1000));
+        const currentEndTime = new Date(currentStartTime.getTime() + duration * 60000);
+
+        const newClass = await prisma.class.create({
+          data: {
+            name: data.name,
+            description: data.description,
+            startTime: currentStartTime,
+            endTime: currentEndTime,
+            durationMins: duration,
+            maxCapacity: capacity,
+            trainerId: data.trainerId,
+            location: data.location || "Sala Principal",
+            status: "SCHEDULED",
+            isRecurring: true,
+            recurrence: { index: i, total: weeks }
+          }
+        });
+        createdClasses.push(newClass);
+      }
+
+      revalidatePath("/classes");
+      return { success: true, data: serialize(createdClasses[0]), count: createdClasses.length };
+    }
+
+    // Creación Individual (Estándar)
+    const endTime = new Date(startDate.getTime() + duration * 60000);
     const newClass = await prisma.class.create({
       data: {
         name: data.name,
         description: data.description,
-        startTime: date,
+        startTime: startDate,
         endTime: endTime,
         durationMins: duration,
         maxCapacity: capacity,
@@ -64,10 +107,11 @@ export async function createClassAction(data: any) {
   }
 }
 
-export async function updateClassAction(id: string, data: any) {
+export async function updateClassAction(id: string, data: ClassInput) {
   try {
-    const duration = parseInt(data.durationMins);
-    const capacity = parseInt(data.maxCapacity);
+    await verifySession(["ADMIN", "SUPER_ADMIN"]);
+    const duration = typeof data.durationMins === 'string' ? parseInt(data.durationMins) : data.durationMins;
+    const capacity = typeof data.maxCapacity === 'string' ? parseInt(data.maxCapacity) : data.maxCapacity;
     const date = new Date(data.startTime);
 
     if (isNaN(duration) || isNaN(capacity)) {
@@ -91,7 +135,7 @@ export async function updateClassAction(id: string, data: any) {
         maxCapacity: capacity,
         trainerId: data.trainerId,
         location: data.location,
-        status: data.status
+        status: data.status as ClassStatus | undefined
       }
     });
     revalidatePath("/classes");
@@ -102,8 +146,29 @@ export async function updateClassAction(id: string, data: any) {
   }
 }
 
+export async function completeClassAction(id: string) {
+  try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
+    
+    // Al completar, opcionalmente marcamos a todos los CONFIRMED como ATTENDED 
+    // si el staff no lo hizo manualmente, pero por ahora solo cambiamos el estado de la clase
+    const result = await prisma.class.update({
+      where: { id },
+      data: { status: "COMPLETED" }
+    });
+
+    revalidatePath("/classes");
+    revalidatePath(`/trainers/${result.trainerId}`);
+    return { success: true, data: serialize(result) };
+  } catch (error) {
+    console.error("Error completing class:", error);
+    return { success: false, error: "No se pudo finalizar la clase" };
+  }
+}
+
 export async function deleteClassAction(id: string) {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN"]);
     await prisma.class.delete({ where: { id } });
     revalidatePath("/classes");
     return { success: true };
@@ -112,57 +177,126 @@ export async function deleteClassAction(id: string) {
   }
 }
 
-// --- ENTRENADORES ---
-export async function getTrainersAction() {
+export async function getClassDetailWithBookingsAction(classId: string) {
   try {
-    const trainers = await prisma.trainer.findMany({
-      where: { isActive: true }
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
+    const gymClass = await prisma.class.findUnique({
+      where: { id: classId },
+      include: {
+        trainer: true,
+        bookings: {
+          include: {
+            member: {
+              select: {
+                id: true,
+                fullName: true,
+                photo: true,
+                dni: true
+              }
+            }
+          },
+          orderBy: { bookedAt: "desc" }
+        }
+      }
     });
-    return { success: true, data: serialize(trainers) };
+
+    if (!gymClass) return { success: false, error: "Clase no encontrada" };
+    return { success: true, data: serialize(gymClass) };
   } catch (error) {
-    return { success: false, error: "Error al cargar staff" };
+    return { success: false, error: "Error al obtener detalle de la clase" };
   }
 }
 
-export async function createTrainerAction(data: any) {
+// --- RESERVAS (BOOKINGS) ---
+
+export async function createBookingAction(classId: string, memberId: string) {
   try {
-    const trainer = await prisma.trainer.create({
-      data: {
-        fullName: data.fullName,
-        email: data.email,
-        phone: data.phone,
-        photo: data.photo,
-        specialties: data.specialties || [],
-        bio: data.bio,
-        isActive: true
-      }
+    await verifySession(["ADMIN", "SUPER_ADMIN", "RECEPTIONIST", "TRAINER"]);
+
+    // 1. Verificar capacidad
+    const gymClass = await prisma.class.findUnique({
+      where: { id: classId },
+      include: { _count: { select: { bookings: true } } }
     });
+
+    if (!gymClass) return { success: false, error: "Clase no encontrada" };
+    if (gymClass._count.bookings >= gymClass.maxCapacity) {
+      return { success: false, error: "La clase está llena" };
+    }
+
+    // 2. Verificar si ya existe
+    const existing = await prisma.classBooking.findUnique({
+      where: { classId_memberId: { classId, memberId } }
+    });
+
+    if (existing) {
+      if (existing.status === "CANCELLED") {
+        // Reactivar
+        await prisma.classBooking.update({
+          where: { id: existing.id },
+          data: { status: "CONFIRMED", bookedAt: new Date() }
+        });
+      } else {
+        return { success: false, error: "El socio ya está inscrito" };
+      }
+    } else {
+      // 3. Crear reserva
+      await prisma.classBooking.create({
+        data: { classId, memberId, status: "CONFIRMED" }
+      });
+    }
+
     revalidatePath("/classes");
-    return { success: true, data: serialize(trainer) };
+    return { success: true };
   } catch (error) {
-    console.error("Error creating trainer:", error);
-    return { success: false, error: "Error al registrar entrenador" };
+    console.error("Error creating booking:", error);
+    return { success: false, error: "Error al registrar reserva" };
   }
 }
 
-export async function updateTrainerAction(id: string, data: any) {
+export async function updateBookingStatusAction(bookingId: string, status: BookingStatus) {
   try {
-    const trainer = await prisma.trainer.update({
-      where: { id },
-      data: {
-        fullName: data.fullName,
-        email: data.email,
-        phone: data.phone,
-        photo: data.photo,
-        specialties: data.specialties || [],
-        bio: data.bio,
-        isActive: data.isActive ?? true
-      }
+    await verifySession(["ADMIN", "SUPER_ADMIN", "RECEPTIONIST", "TRAINER"]);
+    
+    await prisma.classBooking.update({
+      where: { id: bookingId },
+      data: { status }
     });
+
     revalidatePath("/classes");
-    return { success: true, data: serialize(trainer) };
+    return { success: true };
   } catch (error) {
-    console.error("Error updating trainer:", error);
-    return { success: false, error: "Error al actualizar entrenador" };
+    return { success: false, error: "Error al actualizar estado" };
+  }
+}
+
+export async function cancelBookingAction(bookingId: string) {
+  try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "RECEPTIONIST", "TRAINER"]);
+    
+    await prisma.classBooking.update({
+      where: { id: bookingId },
+      data: { status: "CANCELLED" }
+    });
+
+    revalidatePath("/classes");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Error al cancelar reserva" };
+  }
+}
+
+// Para el ComboBox de búsqueda de socios en el diálogo de clase
+export async function getMembersForBookingAction() {
+  try {
+    await verifySession();
+    const members = await prisma.member.findMany({
+      where: { status: "ACTIVE" },
+      select: { id: true, fullName: true, dni: true },
+      orderBy: { fullName: "asc" }
+    });
+    return { success: true, data: serialize(members) };
+  } catch (error) {
+    return { success: false, error: "Error al cargar socios" };
   }
 }

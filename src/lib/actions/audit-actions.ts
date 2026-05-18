@@ -59,3 +59,41 @@ export async function getAuditLogsAction(params?: {
     return { success: false, error: "Error al obtener logs de auditoría" };
   }
 }
+
+export async function getAuditStatsAction() {
+  try {
+    await verifySession(["ADMIN", "SUPER_ADMIN"]);
+    
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const [totalToday, uniqueUsers, topEntities] = await Promise.all([
+      prisma.auditLog.count({
+        where: { createdAt: { gte: startOfToday } }
+      }),
+      prisma.auditLog.groupBy({
+        by: ['userId'],
+        where: { createdAt: { gte: startOfToday } },
+        _count: true
+      }),
+      prisma.auditLog.groupBy({
+        by: ['entity'],
+        where: { createdAt: { gte: startOfToday } },
+        _count: { entity: true },
+        orderBy: { _count: { entity: 'desc' } },
+        take: 1
+      })
+    ]);
+
+    return {
+      success: true,
+      data: {
+        totalToday,
+        activeAdmins: uniqueUsers.length,
+        topEntity: topEntities[0]?.entity || "N/A"
+      }
+    };
+  } catch (error) {
+    return { success: false, error: "Error al obtener estadísticas" };
+  }
+}
