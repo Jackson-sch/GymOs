@@ -63,6 +63,13 @@ export async function getPortalMemberAction() {
 
   const member = await prisma.member.findUnique({
     where: { userId: session.user.id },
+    include: {
+      memberships: {
+        include: {
+          plan: true
+        }
+      }
+    }
   });
 
   return { success: true, data: serialize(member) };
@@ -289,3 +296,64 @@ export async function regeneratePortalQRAction() {
   revalidatePath("/portal/qr");
   return { success: true, message: "Código QR regenerado con éxito" };
 }
+
+export async function updatePortalMemberProfileAction(data: {
+  fullName?: string;
+  phone?: string;
+  birthDate?: string | null;
+  gender?: any;
+  address?: string | null;
+  emergencyContact?: string | null;
+  emergencyPhone?: string | null;
+  photo?: string | null;
+  photoPosition?: number;
+}) {
+  const session = await verifySession();
+
+  const member = await prisma.member.findUnique({
+    where: { userId: session.user.id },
+    select: { id: true }
+  });
+
+  if (!member) return { success: false, error: "Socio no encontrado" };
+
+  const updateData: any = {};
+  if (data.fullName !== undefined) updateData.fullName = data.fullName;
+  if (data.phone !== undefined) updateData.phone = data.phone;
+  if (data.birthDate !== undefined) updateData.birthDate = data.birthDate ? new Date(data.birthDate) : null;
+  if (data.gender !== undefined) updateData.gender = data.gender;
+  if (data.address !== undefined) updateData.address = data.address;
+  if (data.emergencyContact !== undefined) updateData.emergencyContact = data.emergencyContact;
+  if (data.emergencyPhone !== undefined) updateData.emergencyPhone = data.emergencyPhone;
+  if (data.photo !== undefined) updateData.photo = data.photo;
+  if (data.photoPosition !== undefined) updateData.photoPosition = data.photoPosition;
+
+  // Actualizar Socio
+  const updatedMember = await prisma.member.update({
+    where: { id: member.id },
+    data: updateData,
+    include: {
+      memberships: {
+        include: {
+          plan: true
+        }
+      }
+    }
+  });
+
+  // Mantener sincronizado el usuario en Better Auth
+  const userUpdates: any = {};
+  if (data.fullName !== undefined) userUpdates.name = data.fullName;
+  if (data.photo !== undefined) userUpdates.image = data.photo;
+
+  if (Object.keys(userUpdates).length > 0) {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: userUpdates
+    });
+  }
+
+  revalidatePath("/portal/profile");
+  return { success: true, message: "Perfil actualizado con éxito", data: serialize(updatedMember) };
+}
+

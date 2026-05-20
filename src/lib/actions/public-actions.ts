@@ -41,7 +41,10 @@ export async function registerPublicMemberAction(data: z.infer<typeof publicRegi
     // 2. Update User role to MEMBER
     await prisma.user.update({
       where: { id: user.id },
-      data: { role: "MEMBER" }
+      data: { 
+        role: "MEMBER",
+        ...(process.env.NODE_ENV === "development" ? { emailVerified: true } : {})
+      }
     });
 
     // 3. Verify if member already exists

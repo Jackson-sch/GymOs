@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { regeneratePortalQRAction } from "@/lib/actions/portal-actions";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 
 interface QRClientProps {
   member: any;
@@ -25,6 +26,7 @@ interface QRClientProps {
 export function QRClient({ member, planName, isActive }: QRClientProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const generateQR = async () => {
     try {
@@ -46,9 +48,12 @@ export function QRClient({ member, planName, isActive }: QRClientProps) {
     generateQR();
   }, [member.qrCode]);
 
-  const handleRegenerate = async () => {
-    if (!confirm("¿Estás seguro de que deseas regenerar tu código? El código anterior dejará de funcionar inmediatamente.")) return;
-    
+  const handleRegenerate = () => {
+    setIsConfirmOpen(true);
+  };
+
+  const handleRegenerateConfirm = async () => {
+    setIsConfirmOpen(false);
     setIsLoading(true);
     const res = await regeneratePortalQRAction();
     setIsLoading(false);
@@ -163,6 +168,18 @@ export function QRClient({ member, planName, isActive }: QRClientProps) {
           </p>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onOpenChange={setIsConfirmOpen}
+        onConfirm={handleRegenerateConfirm}
+        title="Regenerar Código QR"
+        description="¿Estás seguro de que deseas regenerar tu código de seguridad? Tu código QR anterior dejará de funcionar inmediatamente y tendrás que guardar el nuevo."
+        confirmText="Regenerar"
+        cancelText="Volver"
+        variant="warning"
+        isLoading={isLoading}
+      />
     </div>
   );
 }

@@ -17,7 +17,7 @@ import {
   ShieldCheck,
   KeyRound
 } from "lucide-react";
-import { enablePortalAccess } from "@/lib/actions/members-actions";
+import { enablePortalAccess, disablePortalAccess } from "@/lib/actions/members-actions";
 import { assignMemberPin } from "@/lib/actions/checkin-actions";
 import { isAfter, isBefore, startOfMonth, endOfMonth } from "date-fns";
 import { toast } from "sonner";
@@ -28,6 +28,7 @@ import { MemberActivityHistory } from "./MemberActivityHistory";
 import { MemberPlanDetails } from "./MemberPlanDetails";
 import { MemberIdentitySection, MemberFormData } from "./MemberIdentitySection";
 import { MemberPhotoSection } from "./MemberPhotoSection";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useDragReposition } from "@/hooks/use-drag-reposition";
 
 // Main reducer for profile state management
@@ -80,6 +81,12 @@ export function MemberProfileClient({ member }: { member: any }) {
   const [pinDialogOpen, setPinDialogOpen] = useState(false);
   const [newPin, setNewPin] = useState("");
   const [isAssigningPin, setIsAssigningPin] = useState(false);
+
+  const [isPhotoDeleteOpen, setIsPhotoDeleteOpen] = useState(false);
+  const [isPhotoDeleteLoading, setIsPhotoDeleteLoading] = useState(false);
+
+  const [isPortalRevokeOpen, setIsPortalRevokeOpen] = useState(false);
+  const [isPortalRevokeLoading, setIsPortalRevokeLoading] = useState(false);
 
   useEffect(() => {
     dispatch({ type: "SET_MOUNTED", payload: true });
@@ -188,12 +195,42 @@ export function MemberProfileClient({ member }: { member: any }) {
     }
   };
 
-  const deletePhoto = async () => {
-    const updates = { photo: "", photoPosition: 50 };
-    setFormData(prev => ({ ...prev, ...updates }));
-    await quickSave(updates);
-    dispatch({ type: "SET_PHOTO_CONTROLS", payload: false });
-    toast.success("Foto eliminada");
+  const deletePhoto = () => {
+    setIsPhotoDeleteOpen(true);
+  };
+
+  const deletePhotoConfirm = async () => {
+    setIsPhotoDeleteLoading(true);
+    try {
+      const updates = { photo: "", photoPosition: 50 };
+      setFormData(prev => ({ ...prev, ...updates }));
+      await quickSave(updates);
+      dispatch({ type: "SET_PHOTO_CONTROLS", payload: false });
+      toast.success("Foto eliminada correctamente");
+      setIsPhotoDeleteOpen(false);
+    } catch (error) {
+      toast.error("Error al intentar eliminar la foto");
+    } finally {
+      setIsPhotoDeleteLoading(false);
+    }
+  };
+
+  const handleDisablePortal = async () => {
+    setIsPortalRevokeLoading(true);
+    try {
+      const res = await disablePortalAccess(member.id);
+      if (res.success) {
+        toast.success(res.message);
+        setIsPortalRevokeOpen(false);
+        window.location.reload();
+      } else {
+        toast.error(res.error || "Error al revocar acceso");
+      }
+    } catch (err) {
+      toast.error("Error al conectar con el servidor");
+    } finally {
+      setIsPortalRevokeLoading(false);
+    }
   };
 
   const handleEnablePortal = async () => {
@@ -337,10 +374,21 @@ export function MemberProfileClient({ member }: { member: any }) {
                       </Button>
                       
                       {member.userId ? (
-                        <div className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] uppercase font-bold tracking-widest shadow-lg shadow-emerald-500/5 animate-in fade-in zoom-in">
-                          <ShieldCheck className="size-3.5 h-3.5" />
-                          Acceso Habilitado
-                        </div>
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsPortalRevokeOpen(true)}
+                          disabled={isPortalRevokeLoading}
+                          className="group/btn relative overflow-hidden bg-emerald-500/10 border-emerald-500/20 hover:bg-destructive/10 hover:border-destructive/20 text-emerald-500 hover:text-destructive h-12 px-6 rounded-xl font-bold transition-all duration-300 animate-in fade-in slide-in-from-right-4"
+                        >
+                          <span className="flex items-center gap-2 group-hover/btn:opacity-0 transition-all duration-200">
+                            <ShieldCheck className="size-4 text-emerald-500" />
+                            <span>Acceso Habilitado</span>
+                          </span>
+                          <span className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover/btn:opacity-100 transition-all duration-200 text-destructive">
+                            <X className="size-4 text-destructive" />
+                            <span>Revocar Acceso</span>
+                          </span>
+                        </Button>
                       ) : (
                         <Button 
                           onClick={handleEnablePortal} 
@@ -406,6 +454,30 @@ export function MemberProfileClient({ member }: { member: any }) {
           <MemberProgressTab member={member} />
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={isPhotoDeleteOpen}
+        onOpenChange={setIsPhotoDeleteOpen}
+        onConfirm={deletePhotoConfirm}
+        title="Eliminar Foto de Perfil"
+        description="¿Estás seguro de que deseas eliminar la foto de perfil de este socio? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        isLoading={isPhotoDeleteLoading}
+      />
+
+      <ConfirmDialog
+        isOpen={isPortalRevokeOpen}
+        onOpenChange={setIsPortalRevokeOpen}
+        onConfirm={handleDisablePortal}
+        title="Revocar Acceso al Portal"
+        description="¿Estás seguro de que deseas revocar el acceso al portal de este socio? Su cuenta de usuario será eliminada/desactivada y no podrá volver a iniciar sesión hasta que se le habilite el acceso nuevamente."
+        confirmText="Revocar Acceso"
+        cancelText="Mantener Acceso"
+        variant="danger"
+        isLoading={isPortalRevokeLoading}
+      />
     </div>
   );
 }

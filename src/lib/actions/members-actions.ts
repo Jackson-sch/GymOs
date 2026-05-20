@@ -12,7 +12,23 @@ import { z } from "zod";
 import crypto from "crypto";
 import { type MemberStatus } from "@prisma/client";
 
-
+function handlePrismaUniqueError(error: any, fallbackMessage: string): string {
+  if (error.code === 'P2002') {
+    const target = error.meta?.target;
+    if (Array.isArray(target)) {
+      if (target.includes("email")) return "El correo electrónico ya está registrado";
+      if (target.includes("dni")) return "El DNI ya está registrado";
+      if (target.includes("pin")) return "El PIN ya está en uso por otro socio";
+    }
+    const targetStr = typeof target === 'string' ? target : JSON.stringify(target || "");
+    if (targetStr.includes("email")) return "El correo electrónico ya está registrado";
+    if (targetStr.includes("dni")) return "El DNI ya está registrado";
+    if (targetStr.includes("pin")) return "El PIN ya está en uso por otro socio";
+    
+    return "El correo, DNI o PIN ingresado ya existe en otro socio";
+  }
+  return fallbackMessage;
+}
 
 export async function getMembersAction() {
   try {
@@ -104,7 +120,9 @@ export async function createMemberAction(data: MemberInput) {
     if (error instanceof z.ZodError) {
       return { success: false, error: error.issues.map(e => e.message).join(", ") };
     }
-    if (error.code === 'P2002') return { success: false, error: "El Email o DNI ya existe" };
+    if (error.code === 'P2002') {
+      return { success: false, error: handlePrismaUniqueError(error, "El correo, DNI o PIN ya existe") };
+    }
     return { success: false, error: "Error al crear socio" };
   }
 }
@@ -144,6 +162,9 @@ export async function updateMemberAction(id: string, data: MemberInput) {
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return { success: false, error: error.issues.map(e => e.message).join(", ") };
+    }
+    if (error.code === 'P2002') {
+      return { success: false, error: handlePrismaUniqueError(error, "El correo, DNI o PIN ya existe") };
     }
     return { success: false, error: "Error al actualizar socio" };
   }
@@ -236,28 +257,16 @@ export async function enablePortalAccess(memberId: string) {
 
     if (!user) {
       try {
-        // Generar una contraseña temporal aleatoria criptográficamente robusta
-        const secureRandomPassword = crypto.randomBytes(16).toString("hex") + "A1!";
+        // Usar el DNI como contraseña inicial para que el socio ingrese y luego cambie la clave
+        const initialPassword = member.dni || (crypto.randomBytes(16).toString("hex") + "A1!");
         const res = await auth.api.signUpEmail({
           body: {
             email: member.email,
-            password: secureRandomPassword,
+            password: initialPassword,
             name: member.fullName,
           }
         });
         user = res.user as any;
-
-        // Iniciar el flujo de reseteo de contraseña de forma inmediata para que el socio establezca su clave segura
-        try {
-          await auth.api.requestPasswordReset({
-            body: {
-              email: member.email,
-              redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password`,
-            }
-          });
-        } catch (resetErr) {
-          console.error("Aviso: No se pudo enviar correo de bienvenida/reset automático:", resetErr);
-        }
       } catch (err: any) {
         return { success: false, error: "El correo ya está registrado en otra cuenta o la contraseña es inválida" };
       }
@@ -265,10 +274,10 @@ export async function enablePortalAccess(memberId: string) {
 
     if (!user) return { success: false, error: "Error al crear usuario en el sistema de autenticación" };
 
-    // Asegurar rol MEMBER y link
+    // Asegurar rol MEMBER, link y forzar cambio de contraseña
     await prisma.user.update({
       where: { id: user.id },
-      data: { role: "MEMBER" }
+      data: { role: "MEMBER", mustChangePassword: true, emailVerified: true, isActive: true }
     });
 
     await prisma.member.update({
@@ -291,6 +300,59 @@ export async function enablePortalAccess(memberId: string) {
     return { success: false, error: error.message || "Error al habilitar acceso" };
   }
 }
+
+export async function disablePortalAccess(memberId: string) {
+  try {
+    await verifySession(["ADMIN", "SUPER_ADMIN"]);
+    const member = await prisma.member.findUnique({
+      where: { id: memberId }
+    });
+
+    if (!member) return { success: false, error: "Socio no encontrado" };
+    if (!member.userId) return { success: false, error: "El socio no tiene acceso habilitado" };
+
+    const userId = member.userId;
+
+    // Desvincular en el socio
+    await prisma.member.update({
+      where: { id: memberId },
+      data: { userId: null }
+    });
+
+    // Eliminar sesiones del usuario para cerrar la sesión
+    await prisma.session.deleteMany({
+      where: { userId }
+    });
+
+    // Eliminar el usuario de la base de datos si es posible, si no, desactivarlo
+    try {
+      await prisma.user.delete({
+        where: { id: userId }
+      });
+    } catch (err) {
+      console.warn("Could not delete user record, deactivating instead:", err);
+      await prisma.user.update({
+        where: { id: userId },
+        data: { isActive: false }
+      });
+    }
+
+    revalidatePath(`/members/${memberId}`);
+
+    await createAuditLog({
+      action: "DISABLE_PORTAL_ACCESS",
+      entity: "Member",
+      entityId: memberId,
+      newData: { userId: null, previousUserId: userId }
+    });
+
+    return { success: true, message: "Acceso al portal revocado correctamente" };
+  } catch (error: any) {
+    console.error("Error disabling portal access:", error);
+    return { success: false, error: error.message || "Error al revocar acceso" };
+  }
+}
+
 export async function getMembersStatsAction() {
   try {
     await verifySession();

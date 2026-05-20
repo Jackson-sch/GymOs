@@ -18,6 +18,7 @@ import {
   completeClassAction 
 } from "@/lib/actions/classes-actions";
 import { MemberCombobox } from "@/components/shared/MemberCombobox";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { toast } from "sonner";
 import { 
   Users, 
@@ -48,6 +49,7 @@ export function ClassDetailsDialog({ classId, onClose }: ClassDetailsDialogProps
   const [classData, setClassData] = useState<any>(null);
   const [members, setMembers] = useState<any[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState("");
+  const [isConfirmCompleteOpen, setIsConfirmCompleteOpen] = useState(false);
 
   const loadData = async () => {
     if (!classId) return;
@@ -60,6 +62,19 @@ export function ClassDetailsDialog({ classId, onClose }: ClassDetailsDialogProps
     if (classRes.success) setClassData(classRes.data);
     if (membersRes.success) setMembers(membersRes.data || []);
     setLoading(false);
+  };
+
+  const handleCompleteClassConfirm = async () => {
+    setIsConfirmCompleteOpen(false);
+    setSubmitting(true);
+    const res = await completeClassAction(classId!);
+    if (res.success) {
+      toast.success("Sesión finalizada");
+      loadData();
+    } else {
+      toast.error(res.error);
+    }
+    setSubmitting(false);
   };
 
   useEffect(() => {
@@ -128,19 +143,7 @@ export function ClassDetailsDialog({ classId, onClose }: ClassDetailsDialogProps
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        onClick={async () => {
-                          if (confirm("¿Finalizar sesión? Esto cerrará la asistencia y la contará para nómina.")) {
-                            setSubmitting(true);
-                            const res = await completeClassAction(classId!);
-                            if (res.success) {
-                              toast.success("Sesión finalizada");
-                              loadData();
-                            } else {
-                              toast.error(res.error);
-                            }
-                            setSubmitting(false);
-                          }
-                        }}
+                        onClick={() => setIsConfirmCompleteOpen(true)}
                         className="h-6 rounded-full text-[9px] uppercase font-bold tracking-tighter border-white/10 hover:bg-emerald-500 hover:text-white transition-all"
                       >
                         Finalizar Sesión
@@ -293,6 +296,18 @@ export function ClassDetailsDialog({ classId, onClose }: ClassDetailsDialogProps
           </div>
         )}
       </DialogContent>
+
+      <ConfirmDialog
+        isOpen={isConfirmCompleteOpen}
+        onOpenChange={setIsConfirmCompleteOpen}
+        onConfirm={handleCompleteClassConfirm}
+        title="Finalizar Clase Programada"
+        description="Esta acción cerrará la asistencia actual para esta sesión y la registrará para el cálculo de nómina. ¿Deseas continuar?"
+        confirmText="Finalizar Sesión"
+        cancelText="Volver"
+        variant="warning"
+        isLoading={submitting}
+      />
     </Dialog>
   );
 }

@@ -32,6 +32,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { PlanForm } from "@/components/shared/forms/PlanForm";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { deletePlanAction, getPlanMembersAction } from "@/lib/actions/plans-actions";
 import { toast } from "sonner";
 
@@ -43,12 +44,28 @@ export function MembershipsClient({ data }: { data: any[] }) {
   const [membersPlan, setMembersPlan] = React.useState<any>(null);
   const [planMembers, setPlanMembers] = React.useState<any[]>([]);
   const [loadingMembers, setLoadingMembers] = React.useState(false);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [isDeleteLoading, setIsDeleteLoading] = React.useState(false);
 
-  const handleDelete = async (id: string) => {
-    if (confirm("¿Estás seguro de eliminar este plan?")) {
-      const result = await deletePlanAction(id);
-      if (result.success) toast.success("Plan eliminado");
-      else toast.error(result.error);
+  const handleDelete = (id: string) => {
+    setDeletingId(id);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingId) return;
+    setIsDeleteLoading(true);
+    try {
+      const result = await deletePlanAction(deletingId);
+      if (result.success) {
+        toast.success("Plan eliminado");
+        setDeletingId(null);
+      } else {
+        toast.error(result.error);
+      }
+    } catch (error) {
+      toast.error("Error al intentar eliminar el plan");
+    } finally {
+      setIsDeleteLoading(false);
     }
   };
 
@@ -255,6 +272,18 @@ export function MembershipsClient({ data }: { data: any[] }) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        isOpen={!!deletingId}
+        onOpenChange={(open) => !open && setDeletingId(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Eliminar Plan Comercial"
+        description="¿Estás seguro de eliminar este plan comercial? Esta acción no se puede deshacer y desvinculará a los socios actuales con este plan."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        isLoading={isDeleteLoading}
+      />
     </div>
   );
 }

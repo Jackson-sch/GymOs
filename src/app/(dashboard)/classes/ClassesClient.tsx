@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ClassForm } from "@/components/shared/forms/ClassForm";
 import { TrainerForm } from "@/components/shared/forms/TrainerForm";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { deleteClassAction } from "@/lib/actions/classes-actions";
 import { toast } from "sonner";
 import { format, isSameDay } from "date-fns";
@@ -63,6 +64,9 @@ export function ClassesClient({ classes, trainers }: { classes: any[], trainers:
     mounted: false
   });
 
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [isDeleteLoading, setIsDeleteLoading] = React.useState(false);
+
   const { isCreateClassOpen, isCreateTrainerOpen, editingClass, selectedClassId, selectedDate, mounted } = state;
 
   React.useEffect(() => {
@@ -73,11 +77,25 @@ export function ClassesClient({ classes, trainers }: { classes: any[], trainers:
     isSameDay(new Date(session.startTime), selectedDate)
   );
 
-  const handleDelete = async (id: string) => {
-    if (confirm("¿Estás seguro de cancelar esta clase?")) {
-      const result = await deleteClassAction(id);
-      if (result.success) toast.success("Clase cancelada");
-      else toast.error(result.error);
+  const handleDelete = (id: string) => {
+    setDeletingId(id);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingId) return;
+    setIsDeleteLoading(true);
+    try {
+      const result = await deleteClassAction(deletingId);
+      if (result.success) {
+        toast.success("Clase cancelada");
+        setDeletingId(null);
+      } else {
+        toast.error(result.error);
+      }
+    } catch (error) {
+      toast.error("Error al intentar cancelar la clase");
+    } finally {
+      setIsDeleteLoading(false);
     }
   };
 
@@ -313,6 +331,18 @@ export function ClassesClient({ classes, trainers }: { classes: any[], trainers:
       <ClassDetailsDialog 
         classId={selectedClassId} 
         onClose={() => dispatch({ type: "SET_SELECTED_CLASS", payload: null })} 
+      />
+
+      <ConfirmDialog
+        isOpen={!!deletingId}
+        onOpenChange={(open) => !open && setDeletingId(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Cancelar Clase Programada"
+        description="¿Estás seguro de cancelar esta sesión? Esta acción no se puede deshacer y notificará a los socios inscritos en ella."
+        confirmText="Cancelar Clase"
+        cancelText="Volver"
+        variant="danger"
+        isLoading={isDeleteLoading}
       />
     </div>
   );

@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { TrainerPayrollTab } from "./TrainerPayrollTab";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 
 // New Component Imports
 import { PhotoManager } from "./components/PhotoManager";
@@ -250,6 +251,8 @@ export default function TrainerProfileClient({
   });
 
   const [mounted, setMounted] = React.useState(false);
+  const [isPhotoDeleteOpen, setIsPhotoDeleteOpen] = React.useState(false);
+  const [isPhotoDeleteLoading, setIsPhotoDeleteLoading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const router = useRouter();
@@ -330,10 +333,22 @@ export default function TrainerProfileClient({
     }
   };
 
-  const deletePhoto = async () => {
-    if (!confirm("¿Eliminar foto de perfil?")) return;
-    dispatch({ type: "UPDATE_FORM", payload: { photo: null } });
-    await handleSave({ ...formData, photo: null });
+  const deletePhoto = () => {
+    setIsPhotoDeleteOpen(true);
+  };
+
+  const deletePhotoConfirm = async () => {
+    setIsPhotoDeleteLoading(true);
+    try {
+      dispatch({ type: "UPDATE_FORM", payload: { photo: null } });
+      await handleSave({ ...formData, photo: null });
+      toast.success("Foto de perfil eliminada");
+      setIsPhotoDeleteOpen(false);
+    } catch (error) {
+      toast.error("Error al eliminar la foto");
+    } finally {
+      setIsPhotoDeleteLoading(false);
+    }
   };
 
   return (
@@ -480,6 +495,19 @@ export default function TrainerProfileClient({
         <ClassDetailsDialog 
           classId={selectedClassId}
           onClose={() => dispatch({ type: "SET_SELECTED_CLASS", payload: null })}
+        />
+
+        {/* Photo Deletion Confirm Dialog */}
+        <ConfirmDialog
+          isOpen={isPhotoDeleteOpen}
+          onOpenChange={setIsPhotoDeleteOpen}
+          onConfirm={deletePhotoConfirm}
+          title="¿Eliminar foto de perfil?"
+          description="Esta acción eliminará la imagen actual de tu perfil del staff técnico. Podrás subir una nueva imagen en cualquier momento."
+          confirmText="Eliminar Foto"
+          cancelText="Cancelar"
+          variant="danger"
+          isLoading={isPhotoDeleteLoading}
         />
 
         {/* Branding Footer */}

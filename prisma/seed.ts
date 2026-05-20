@@ -70,10 +70,10 @@ async function main() {
       const user = await prisma.user.findUnique({ where: { email: userEmail } });
 
       if (user) {
-        // 2. Asegurar que el rol sea TRAINER
+        // 2. Asegurar que el rol sea TRAINER y forzar cambio de password
         await prisma.user.update({
           where: { id: user.id },
-          data: { role: "TRAINER" }
+          data: { role: "TRAINER", mustChangePassword: true, emailVerified: true }
         });
 
         // 3. Crear el registro de Trainer vinculado
@@ -220,7 +220,7 @@ async function main() {
       });
       await prisma.user.update({
         where: { email: adminEmail },
-        data: { role: "ADMIN" }
+        data: { role: "ADMIN", mustChangePassword: true, emailVerified: true }
       });
     } catch (e) {
       console.log("Admin ya existe o error en signUp");

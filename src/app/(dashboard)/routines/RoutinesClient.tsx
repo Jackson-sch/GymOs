@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { 
   Plus, 
   Dumbbell, 
@@ -11,7 +11,9 @@ import {
   Edit,
   Video,
   LayoutGrid,
-  List
+  List,
+  Loader2,
+  ArrowUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -64,10 +66,50 @@ export function RoutinesClient({
   
   const ITEMS_PER_PAGE = 12;
 
+  const [exercisesVisibleCount, setExercisesVisibleCount] = useState(12);
+  const EXERCISES_PER_PAGE = 12;
+
+  // Reset exercise limit on search change
+  useEffect(() => {
+    setExercisesVisibleCount(12);
+  }, [searchTerm]);
+
   const filteredExercises = exercises.filter(ex => 
     ex.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     ex.muscleGroup?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const paginatedExercises = useMemo(() => {
+    return filteredExercises.slice(0, exercisesVisibleCount);
+  }, [filteredExercises, exercisesVisibleCount]);
+
+  const hasMoreExercises = exercisesVisibleCount < filteredExercises.length;
+
+  const exercisesObserverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!hasMoreExercises) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setExercisesVisibleCount((prev) => prev + EXERCISES_PER_PAGE);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentRef = exercisesObserverRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, [hasMoreExercises]);
 
   const filteredRoutines = routines.filter(routine => 
     routine.name.toLowerCase().includes(routineSearchTerm.toLowerCase()) ||
@@ -94,6 +136,55 @@ export function RoutinesClient({
 
   const paginatedGroups = groupedRoutines.slice(0, (routinesVisibleCount ?? 12));
   const hasMoreGroups = (routinesVisibleCount ?? 12) < groupedRoutines.length;
+
+  // Volver al inicio: detección de scroll
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 400) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  };
+
+  const routinesObserverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!hasMoreGroups) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setRoutinesVisibleCount((prev) => (prev ?? 12) + ITEMS_PER_PAGE);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentRef = routinesObserverRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, [hasMoreGroups, setRoutinesVisibleCount]);
 
   const activePlan = useMemo(() => 
     planName ? groupedRoutines.find(g => g.name === planName) : null
@@ -143,14 +234,17 @@ export function RoutinesClient({
           </div>
 
           {hasMoreGroups && (
-            <div className="flex justify-center pt-8">
+            <div className="space-y-4 pt-8 flex flex-col items-center">
+              {/* Elemento observado por IntersectionObserver para planes */}
+              <div ref={routinesObserverRef} className="h-4 w-full" />
+              
               <Button 
                 variant="outline" 
-                className="rounded-2xl px-12 h-14 border-white/10 hover:bg-white/5 group"
-                onClick={() => setRoutinesVisibleCount((routinesVisibleCount ?? 12) + ITEMS_PER_PAGE)}
+                className="rounded-2xl px-12 h-14 border-white/10 hover:bg-white/5 group gap-2"
+                onClick={() => setRoutinesVisibleCount((prev) => (prev ?? 12) + ITEMS_PER_PAGE)}
               >
                 Cargar más planes
-                <Plus className="size-4 ml-2 group-hover:rotate-90 transition-transform" />
+                <Loader2 className="size-4 animate-spin text-primary opacity-60 group-hover:opacity-100 transition-opacity" />
               </Button>
             </div>
           )}
@@ -257,7 +351,7 @@ export function RoutinesClient({
               ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" 
               : "space-y-3"
           )}>
-            {filteredExercises.map((ex) => (
+            {paginatedExercises.map((ex) => (
               <div 
                 key={ex.id} 
                 className={cn(
@@ -304,9 +398,36 @@ export function RoutinesClient({
               </div>
             ))}
           </div>
+
+          {/* Detector y Botón Manual para Cargar Más Ejercicios */}
+          {hasMoreExercises && (
+            <div className="space-y-4 pt-8 flex flex-col items-center">
+              {/* Elemento observado por IntersectionObserver */}
+              <div ref={exercisesObserverRef} className="h-4 w-full" />
+              
+              <Button 
+                variant="outline" 
+                className="rounded-2xl px-12 h-14 border-white/10 hover:bg-white/5 group gap-2"
+                onClick={() => setExercisesVisibleCount((prev) => prev + EXERCISES_PER_PAGE)}
+              >
+                Cargar más ejercicios
+                <Loader2 className="size-4 animate-spin text-primary opacity-60 group-hover:opacity-100 transition-opacity" />
+              </Button>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
+      {/* Botón flotante para volver arriba */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-50 p-4 rounded-full bg-zinc-950/90 backdrop-blur-2xl border border-white/10 hover:border-primary/50 text-muted-foreground hover:text-primary transition-all duration-300 shadow-2xl shadow-black/60 hover:scale-110 flex items-center justify-center cursor-pointer"
+          title="Volver al inicio"
+        >
+          <ArrowUp className="size-5" />
+        </button>
+      )}
     </div>
   );
 }

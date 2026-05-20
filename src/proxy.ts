@@ -53,6 +53,20 @@ export async function proxy(request: NextRequest) {
   // 2. Handle authenticated users
   if (session) {
     const role = getUserRole(session);
+    const user = session.user as any;
+
+    // Forzar cambio de contraseña si mustChangePassword es true
+    if (user.mustChangePassword && pathname !== "/force-change-password") {
+      return NextResponse.redirect(new URL("/force-change-password", request.url));
+    }
+
+    if (pathname === "/force-change-password") {
+      return NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      });
+    }
 
     // Redirect away from login if already authenticated
     if (isAuthPage) {

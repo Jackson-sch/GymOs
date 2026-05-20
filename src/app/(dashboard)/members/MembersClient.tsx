@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { MemberForm } from "@/components/shared/forms/MemberForm";
 import { RenewalForm } from "@/components/shared/forms/RenewalForm";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { deleteMemberAction, toggleMemberStatusAction } from "@/lib/actions/members-actions";
 import { toast } from "sonner";
 
@@ -26,14 +27,30 @@ export function MembersClient({ data, plans }: { data: any[], plans: any[] }) {
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
   const [editingMember, setEditingMember] = React.useState<any>(null);
   const [renewingMember, setRenewingMember] = React.useState<any>(null);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [isDeleteLoading, setIsDeleteLoading] = React.useState(false);
 
-  const handleDelete = React.useCallback(async (id: string) => {
-    if (confirm("¿Estás seguro de eliminar este socio?")) {
-      const result = await deleteMemberAction(id);
-      if (result.success) toast.success("Socio eliminado");
-      else toast.error(result.error);
-    }
+  const handleDelete = React.useCallback((id: string) => {
+    setDeletingId(id);
   }, []);
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingId) return;
+    setIsDeleteLoading(true);
+    try {
+      const result = await deleteMemberAction(deletingId);
+      if (result.success) {
+        toast.success("Socio eliminado");
+        setDeletingId(null);
+      } else {
+        toast.error(result.error);
+      }
+    } catch (error) {
+      toast.error("Error al eliminar el socio");
+    } finally {
+      setIsDeleteLoading(false);
+    }
+  };
 
   const handleStatusChange = React.useCallback(async (id: string, status: MemberStatus) => {
     const result = await toggleMemberStatusAction(id, status);
@@ -114,6 +131,18 @@ export function MembersClient({ data, plans }: { data: any[], plans: any[] }) {
           )}
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        isOpen={!!deletingId}
+        onOpenChange={(open) => !open && setDeletingId(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Eliminar Socio"
+        description="¿Estás seguro de eliminar este socio? Esta acción no se puede deshacer y borrará permanentemente sus datos y membresías."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        isLoading={isDeleteLoading}
+      />
     </div>
   );
 }

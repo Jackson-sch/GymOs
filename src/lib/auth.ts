@@ -43,7 +43,7 @@ export const auth = betterAuth({
     },
     emailAndPassword: {
         enabled: true,
-        requireEmailVerification: true,
+        requireEmailVerification: process.env.NODE_ENV !== "development",
         revokeSessionsOnPasswordReset: true,
         sendResetPassword: async ({ user, url }) => {
             if (process.env.NODE_ENV === "development") {
@@ -79,6 +79,10 @@ export const auth = betterAuth({
                 defaultValue: "RECEPTIONIST",
             },
             isActive: {
+                type: "boolean",
+                defaultValue: true,
+            },
+            mustChangePassword: {
                 type: "boolean",
                 defaultValue: true,
             }

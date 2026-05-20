@@ -32,7 +32,9 @@ export default function LoginPage() {
     } else {
       const { data: session } = await authClient.getSession();
       const user = session?.user as any;
-      if (user?.role === "MEMBER") {
+      if (user?.mustChangePassword) {
+        router.push("/force-change-password");
+      } else if (user?.role === "MEMBER") {
         router.push("/portal");
       } else {
         router.push("/");

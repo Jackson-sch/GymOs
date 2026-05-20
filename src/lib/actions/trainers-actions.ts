@@ -256,36 +256,28 @@ export async function enableTrainerPortalAccessAction(trainerId: string) {
     });
 
     if (!user) {
-      const secureRandomPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10) + "T1#";
+      // Usar el DNI como contraseña inicial para que el entrenador ingrese y luego cambie la clave
+      const initialPassword = trainer.dni || (Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10) + "T1#");
       const res = await auth.api.signUpEmail({
         body: {
           email: trainer.email,
-          password: secureRandomPassword,
+          password: initialPassword,
           name: trainer.fullName,
         }
       });
       user = res.user as any;
-
-      try {
-        await auth.api.requestPasswordReset({
-          body: {
-            email: trainer.email,
-            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password`,
-          }
-        });
-      } catch (resetErr) {
-        console.error("Aviso: No se pudo enviar correo de bienvenida/reset para staff:", resetErr);
-      }
     }
 
     if (!user) return { success: false, error: "Error al crear usuario" };
 
-    // Asegurar rol TRAINER y activar
+    // Asegurar rol TRAINER, activar y forzar cambio de contraseña
     await prisma.user.update({
       where: { id: user.id },
       data: { 
         role: "TRAINER",
-        isActive: true 
+        isActive: true,
+        mustChangePassword: true,
+        emailVerified: true
       }
     });
 

@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { EquipmentStatus } from "@prisma/client";
 import { EquipmentForm } from "@/components/shared/forms/EquipmentForm";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { deleteEquipmentAction } from "@/lib/actions/inventory-actions";
 import { MaintenanceSchedule } from "@/components/shared/MaintenanceSchedule";
 import Image from "next/image";
@@ -48,6 +49,8 @@ export function InventoryClient({ data }: { data: any[] }) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
   const filteredData = data.filter((item) => {
     const matchesSearch =
@@ -58,11 +61,25 @@ export function InventoryClient({ data }: { data: any[] }) {
     return matchesSearch && matchesStatus;
   });
 
-  const handleDelete = async (id: string) => {
-    if (confirm("¿Estás seguro de eliminar este equipo?")) {
-      const res = await deleteEquipmentAction(id);
-      if (res.success) toast.success("Equipo eliminado");
-      else toast.error(res.error);
+  const handleDelete = (id: string) => {
+    setDeletingId(id);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingId) return;
+    setIsDeleteLoading(true);
+    try {
+      const res = await deleteEquipmentAction(deletingId);
+      if (res.success) {
+        toast.success("Equipo eliminado");
+        setDeletingId(null);
+      } else {
+        toast.error(res.error);
+      }
+    } catch (error) {
+      toast.error("Error al intentar eliminar el equipo");
+    } finally {
+      setIsDeleteLoading(false);
     }
   };
 
@@ -358,6 +375,18 @@ export function InventoryClient({ data }: { data: any[] }) {
           )}
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        isOpen={!!deletingId}
+        onOpenChange={(open) => !open && setDeletingId(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Eliminar Activo del Inventario"
+        description="¿Estás seguro de eliminar este equipo de tu inventario? Esta acción no se puede deshacer y borrará de forma permanente sus registros e historial de mantenimiento."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        isLoading={isDeleteLoading}
+      />
     </div>
   );
 }

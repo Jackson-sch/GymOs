@@ -20,9 +20,10 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   // Custom GymOS fields
-  role          UserRole @default(RECEPTIONIST)
-  isActive      Boolean  @default(true)
-  banned        Boolean  @default(false)
+  role              UserRole @default(RECEPTIONIST)
+  isActive          Boolean  @default(true)
+  mustChangePassword Boolean @default(true)
+  banned            Boolean  @default(false)
 
   sessions      Session[]
   accounts      Account[]

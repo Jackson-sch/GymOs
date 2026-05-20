@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { 
   Dialog, 
   DialogContent, 
@@ -18,7 +18,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Plus, Trash2, UserPlus, Search, Dumbbell, UserCheck, ChevronsUpDown } from "lucide-react";
+import { Plus, Trash2, UserPlus, Dumbbell, UserCheck } from "lucide-react";
 import { assignRoutineAction } from "@/lib/actions/routine-management-actions";
 import { toast } from "sonner";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -110,7 +110,7 @@ export function RoutineAssignmentDialog({ members, trainers, exercises, onSucces
           Asignar Nueva Rutina
         </Button>
       </DialogTrigger>
-      <DialogContent className="glass-card border-white/10 max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <DialogContent className="glass-card border-white/10 sm:max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar">
         <DialogHeader>
           <DialogTitle className="text-3xl font-serif">Asignar Plan de Entrenamiento</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
@@ -210,7 +210,7 @@ export function RoutineAssignmentDialog({ members, trainers, exercises, onSucces
 
               <div className="space-y-3">
                 {fields.map((field, idx) => (
-                  <div key={field.id} className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] transition-colors grid grid-cols-1 md:grid-cols-12 gap-5 items-end animate-in fade-in slide-in-from-right-4 duration-300 group">
+                  <div key={field.id} className="p-5 rounded-2xl bg-white/3 border border-white/10 hover:bg-white/6 transition-colors grid grid-cols-1 md:grid-cols-12 gap-5 items-end animate-in fade-in slide-in-from-right-4 duration-300 group">
                     <div className="md:col-span-4 space-y-2">
                       <FormLabel className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Ejercicio</FormLabel>
                       <FormField

@@ -28,7 +28,7 @@ export default function GlobalError({
         </p>
         <button
           onClick={() => reset()}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:scale-105 active:scale-95"
+          className="flex items-center gap-2 rounded-xl bg-linear-to-r from-red-600 to-amber-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:scale-105 active:scale-95"
         >
           <RotateCcw className="h-4 w-4" />
           <span>Intentar de nuevo</span>

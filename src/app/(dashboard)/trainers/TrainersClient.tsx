@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { TrainerForm } from "@/components/shared/forms/TrainerForm";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { getColumns } from "./columns";
@@ -14,17 +15,30 @@ export function TrainersClient({ data }: { data: any[] }) {
   const router = useRouter();
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
   const [editingTrainer, setEditingTrainer] = React.useState<any>(null);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [isDeleteLoading, setIsDeleteLoading] = React.useState(false);
 
-  const handleDelete = async (id: string) => {
-    if (confirm("¿Estás seguro de eliminar este entrenador?")) {
-      const res = await fetch(`/api/trainers?id=${id}`, { method: "DELETE" });
+  const handleDelete = (id: string) => {
+    setDeletingId(id);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingId) return;
+    setIsDeleteLoading(true);
+    try {
+      const res = await fetch(`/api/trainers?id=${deletingId}`, { method: "DELETE" });
       const result = await res.json();
       if (result.success) {
         toast.success("Entrenador eliminado");
+        setDeletingId(null);
         window.location.reload();
       } else {
         toast.error(result.error);
       }
+    } catch (error) {
+      toast.error("Error al intentar eliminar el entrenador");
+    } finally {
+      setIsDeleteLoading(false);
     }
   };
 
@@ -85,6 +99,18 @@ export function TrainersClient({ data }: { data: any[] }) {
           </DialogContent>
         </Dialog>
       )}
+
+      <ConfirmDialog
+        isOpen={!!deletingId}
+        onOpenChange={(open) => !open && setDeletingId(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Eliminar Entrenador"
+        description="¿Estás seguro de eliminar este entrenador? Esta acción no se puede deshacer y borrará permanentemente su información y asignaciones."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        isLoading={isDeleteLoading}
+      />
     </div>
   );
 }

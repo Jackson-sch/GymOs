@@ -110,6 +110,8 @@ export function SettingsClient({ initialData }: { initialData: any[] }) {
     if (error) {
       toast.error(error.message || "Error al cambiar la contraseña");
     } else {
+      const { clearMustChangePasswordFlag } = await import("@/lib/actions/auth-actions");
+      await clearMustChangePasswordFlag();
       toast.success("Contraseña actualizada correctamente");
       dispatchPassword({ type: "RESET" });
     }
