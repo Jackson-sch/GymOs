@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { 
   Dumbbell, 
   Activity, 
@@ -108,9 +109,9 @@ export function TrainerMemberDetailClient({ member }: { member: any }) {
                 <div className="space-y-3">
                   {activeRoutine.exercises.map((item: any, idx: number) => (
                     <div key={item.id} className="glass-card p-4 border-white/5 flex items-center gap-4 hover:border-white/10 transition-all group">
-                      <div className="size-16 rounded-xl bg-white/5 overflow-hidden flex-shrink-0 border border-white/10">
+                      <div className="size-16 rounded-xl bg-white/5 overflow-hidden flex-shrink-0 border border-white/10 relative">
                         {item.exercise.demoUrl ? (
-                          <img src={item.exercise.demoUrl} alt={item.exercise.name} className="w-full h-full object-cover" />
+                          <Image src={item.exercise.demoUrl} alt={item.exercise.name} fill className="object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                             <Dumbbell className="size-6" />

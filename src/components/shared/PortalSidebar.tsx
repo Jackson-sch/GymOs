@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
@@ -64,7 +65,7 @@ export function PortalSidebar({ branding }: { branding?: Record<string, string> 
     <aside className="fixed left-4 top-4 bottom-4 w-64 z-40 glass-card border-white/5 hidden md:flex flex-col">
       <div className="p-8 flex items-center gap-3">
         {gymLogo ? (
-          <img src={gymLogo} alt={gymName} className="size-8 rounded-xl object-contain" />
+          <Image src={gymLogo} alt={gymName} width={32} height={32} className="size-8 rounded-xl object-contain" />
         ) : (
           <div className="bg-primary/20 p-2 rounded-xl border border-white/10">
             <Dumbbell className="size-6 text-primary" />
@@ -74,7 +75,7 @@ export function PortalSidebar({ branding }: { branding?: Record<string, string> 
       </div>
 
       <nav className="flex-1 px-4 space-y-8 overflow-y-auto no-scrollbar">
-        {/* Trainer Section */}
+        {/* Trainer Section */} 
         {isTrainer && (
           <div className="space-y-2">
             <p className="px-4 text-[10px] uppercase tracking-[0.2em] font-bold text-muted-foreground/50">Gestión Técnica</p>

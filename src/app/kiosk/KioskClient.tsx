@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { processKioskCheckInAction } from "@/lib/actions/attendance-actions";
 import { CheckCircle2, XCircle, ScanLine, User as UserIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -190,9 +191,9 @@ export function KioskClient() {
               <CheckCircle2 className="w-16 h-16 text-emerald-500" />
             </div>
             <div className="space-y-6 flex flex-col items-center">
-              <div className="w-48 h-48 rounded-full border-4 border-emerald-500/50 shadow-2xl overflow-hidden bg-muted/30">
+              <div className="w-48 h-48 rounded-full border-4 border-emerald-500/50 shadow-2xl overflow-hidden bg-muted/30 relative">
                 {memberInfo.photo ? (
-                  <img src={memberInfo.photo} className="w-full h-full object-cover" alt="Socio" />
+                  <Image src={memberInfo.photo} fill className="object-cover" alt="Socio" />
                 ) : (
                   <Avatar size={192} name={memberInfo.fullName} variant="beam" />
                 )}
@@ -219,9 +220,9 @@ export function KioskClient() {
             </div>
             <div className="space-y-6 flex flex-col items-center">
               {memberInfo && (
-                <div className="w-40 h-40 rounded-full border-4 border-destructive/50 overflow-hidden bg-muted/30 opacity-70 grayscale">
+                <div className="w-40 h-40 rounded-full border-4 border-destructive/50 overflow-hidden bg-muted/30 opacity-70 grayscale relative">
                   {memberInfo.photo ? (
-                    <img src={memberInfo.photo} className="w-full h-full object-cover" alt="Socio" />
+                    <Image src={memberInfo.photo} fill className="object-cover" alt="Socio" />
                   ) : (
                     <Avatar size={160} name={memberInfo.fullName} variant="beam" />
                   )}

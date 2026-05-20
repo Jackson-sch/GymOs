@@ -51,7 +51,7 @@ export function ClassDetailsDialog({ classId, onClose }: ClassDetailsDialogProps
   const [selectedMemberId, setSelectedMemberId] = useState("");
   const [isConfirmCompleteOpen, setIsConfirmCompleteOpen] = useState(false);
 
-  const loadData = async () => {
+  const loadData = React.useCallback(async () => {
     if (!classId) return;
     setLoading(true);
     const [classRes, membersRes] = await Promise.all([
@@ -62,7 +62,7 @@ export function ClassDetailsDialog({ classId, onClose }: ClassDetailsDialogProps
     if (classRes.success) setClassData(classRes.data);
     if (membersRes.success) setMembers(membersRes.data || []);
     setLoading(false);
-  };
+  }, [classId]);
 
   const handleCompleteClassConfirm = async () => {
     setIsConfirmCompleteOpen(false);
@@ -79,7 +79,7 @@ export function ClassDetailsDialog({ classId, onClose }: ClassDetailsDialogProps
 
   useEffect(() => {
     if (classId) loadData();
-  }, [classId]);
+  }, [classId, loadData]);
 
   const handleAddBooking = async () => {
     if (!selectedMemberId || !classId) return;

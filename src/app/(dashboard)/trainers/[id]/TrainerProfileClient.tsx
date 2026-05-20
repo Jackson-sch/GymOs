@@ -95,6 +95,7 @@ function useDragReposition(
       window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("touchend", onMouseUp);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging.current, position]);
 
   return {

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { 
   CreditCard, 
   Plus, 
@@ -246,9 +247,9 @@ export function MembershipsClient({ data }: { data: any[] }) {
               <div className="space-y-4">
                 {planMembers.map((member) => (
                   <div key={member.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
-                    <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                    <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden relative">
                       {member.photo ? (
-                        <img src={member.photo} alt="" className="w-full h-full object-cover" />
+                        <Image src={member.photo} alt="" fill className="object-cover" />
                       ) : (
                         <User className="w-5 h-5 text-muted-foreground/30" />
                       )}

@@ -6,10 +6,6 @@
 // Provides runtime theme overrides via React context.
 // Wrap a subtree in <PdfxThemeProvider theme={myTheme}> to override defaults.
 
-/* eslint-disable react-refresh/only-export-components */
-// Intentional: this module exports both a component and hooks/context.
-// Keeping a single import surface preserves the generated public API.
-
 import { type DependencyList, type ReactNode, createContext, useContext } from 'react';
 import { theme as defaultTheme } from './pdfx-theme';
 
@@ -53,7 +49,6 @@ export function usePdfxTheme(): PdfxTheme {
  * Calls factory() and returns the result.
  * The deps parameter is accepted for API compatibility with existing callers.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useSafeMemo<T>(factory: () => T, _deps: DependencyList): T {
   return factory();
 }

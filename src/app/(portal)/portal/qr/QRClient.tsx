@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import QRCode from "qrcode";
 import { 
   QrCode, 
@@ -28,7 +29,7 @@ export function QRClient({ member, planName, isActive }: QRClientProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  const generateQR = async () => {
+  const generateQR = React.useCallback(async () => {
     try {
       const url = await QRCode.toDataURL(member.qrCode, {
         width: 400,
@@ -42,11 +43,11 @@ export function QRClient({ member, planName, isActive }: QRClientProps) {
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [member.qrCode]);
 
   useEffect(() => {
     generateQR();
-  }, [member.qrCode]);
+  }, [member.qrCode, generateQR]);
 
   const handleRegenerate = () => {
     setIsConfirmOpen(true);
@@ -99,9 +100,11 @@ export function QRClient({ member, planName, isActive }: QRClientProps) {
           <div className="flex-1 flex flex-col items-center justify-center space-y-6">
             <div className="relative group p-4 bg-white rounded-3xl shadow-2xl transition-transform duration-500 hover:scale-105">
               {qrDataUrl ? (
-                <img 
+                <Image 
                   src={qrDataUrl} 
                   alt="QR Code" 
+                  width={256}
+                  height={256}
                   className={cn(
                     "w-64 h-64 transition-opacity duration-300",
                     !isActive && "opacity-20 grayscale"

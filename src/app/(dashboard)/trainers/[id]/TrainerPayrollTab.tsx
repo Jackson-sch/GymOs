@@ -43,7 +43,7 @@ export function TrainerPayrollTab({ trainer }: { trainer: any }) {
     setIsMounted(true);
   }, []);
 
-  const fetchPayrollData = async () => {
+  const fetchPayrollData = React.useCallback(async () => {
     setIsLoading(true);
     const res = await getTrainerPayrollData(trainer.id, new Date(startDate), new Date(endDate));
     if (res.success) {
@@ -52,19 +52,19 @@ export function TrainerPayrollTab({ trainer }: { trainer: any }) {
       toast.error(res.error);
     }
     setIsLoading(false);
-  };
+  }, [trainer.id, startDate, endDate]);
 
-  const fetchHistory = async () => {
+  const fetchHistory = React.useCallback(async () => {
     const res = await getTrainerPayrollHistory(trainer.id);
     if (res.success) {
       setHistory(res.data || []);
     }
-  };
+  }, [trainer.id]);
 
   useEffect(() => {
     fetchPayrollData();
     fetchHistory();
-  }, [trainer.id, startDate, endDate]);
+  }, [trainer.id, startDate, endDate, fetchPayrollData, fetchHistory]);
 
   const handleSettle = async () => {
     if (!payrollData) return;

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Image from "next/image";
 import { Dumbbell, User, LogIn, LogOut, Camera, Search, KeyRound } from "lucide-react";
 import { getCheckInStats } from "@/lib/actions/checkin-actions";
 
@@ -18,8 +19,6 @@ export default function CheckInPage({ initialStats }: { initialStats?: any }) {
   const [stats, setStats] = React.useState(initialStats || { checkedIn: 0, totalActive: 0, occupancyRate: 0 });
 
   React.useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
     const refreshStats = async () => {
       try {
         const res = await fetch("/api/checkin/stats");
@@ -35,7 +34,7 @@ export default function CheckInPage({ initialStats }: { initialStats?: any }) {
       } catch (e) {}
     };
     
-    interval = setInterval(refreshStats, 30000);
+    const interval = setInterval(refreshStats, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -149,7 +148,7 @@ export default function CheckInPage({ initialStats }: { initialStats?: any }) {
                   {result.member && (
                     <div className="flex items-center justify-center gap-3 mt-4 p-3 rounded-2xl bg-white/5 border border-white/10 max-w-xs mx-auto">
                       {result.member.photo ? (
-                        <img src={result.member.photo} alt="" className="w-12 h-12 rounded-full object-cover border border-primary/50 shadow-md" />
+                        <Image src={result.member.photo} alt="" width={48} height={48} className="w-12 h-12 rounded-full object-cover border border-primary/50 shadow-md" />
                       ) : (
                         <div className="w-12 h-12 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
                           <User className="w-6 h-6 text-primary" />
