@@ -148,17 +148,34 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
           <SelectContent className="bg-black/95 border-white/10 backdrop-blur-xl">
             {plans
               .filter((p) => p.isActive)
-              .map((plan) => (
-                <SelectItem key={plan.id} value={plan.id}>
-                  <div className="flex items-center gap-3">
-                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                    <span>{plan.name}</span>
-                    <span className="text-muted-foreground">
-                      — {formatCurrency(plan.price)} / {plan.durationDays}d
-                    </span>
-                  </div>
-                </SelectItem>
-              ))}
+              .map((plan) => {
+                const days = plan.durationDays;
+                const periodLabel =
+                  days >= 28 && days <= 31
+                    ? "Mensual"
+                    : days >= 85 && days <= 95
+                    ? "Trimestral"
+                    : days >= 175 && days <= 185
+                    ? "Semestral"
+                    : days >= 360
+                    ? "Anual"
+                    : `${days} días`;
+
+                return (
+                  <SelectItem key={plan.id} value={plan.id}>
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                      <span className="font-semibold">{plan.name}</span>
+                      <span className="text-[11px] font-bold text-primary px-2 py-0.5 rounded-md bg-primary/10">
+                        {periodLabel}
+                      </span>
+                      <span className="text-muted-foreground">
+                        — {formatCurrency(plan.price)} ({days} días)
+                      </span>
+                    </div>
+                  </SelectItem>
+                );
+              })}
           </SelectContent>
         </Select>
       </div>
@@ -193,7 +210,17 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
                 Duración
               </p>
-              <p className="font-medium">{selectedPlan.durationDays} días</p>
+              <p className="font-medium text-foreground">
+                {selectedPlan.durationDays >= 28 && selectedPlan.durationDays <= 31
+                  ? "Mensual (30 días)"
+                  : selectedPlan.durationDays >= 85 && selectedPlan.durationDays <= 95
+                  ? "Trimestral (90 días)"
+                  : selectedPlan.durationDays >= 175 && selectedPlan.durationDays <= 185
+                  ? "Semestral (180 días)"
+                  : selectedPlan.durationDays >= 360
+                  ? "Anual (365 días)"
+                  : `${selectedPlan.durationDays} días`}
+              </p>
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">

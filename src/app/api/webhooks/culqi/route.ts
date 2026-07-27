@@ -35,6 +35,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing metadata" }, { status: 400 });
     }
 
+    // Verify payment with Culqi API to prevent forgery
+    const culqiKey = (await getConfig("CULQI_PRIVATE_KEY")) || process.env.CULQI_PRIVATE_KEY;
+    if (!culqiKey) {
+      console.error("[Culqi Webhook] CULQI_PRIVATE_KEY no configurado");
+      return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+    }
+
+    const culqiRes = await fetch(`https://api.culqi.com/v2/charges/${chargeId}`, {
+      headers: { Authorization: `Bearer ${culqiKey}` },
+    });
+
+    if (!culqiRes.ok) {
+      console.error(`[Culqi Webhook] Falló al verificar cargo ${chargeId} en Culqi API`);
+      return NextResponse.json({ error: "Failed to verify charge with Culqi" }, { status: 400 });
+    }
+
+    const verifiedCharge = await culqiRes.json();
+    if (verifiedCharge.outcome?.type !== "venta_exitosa" && verifiedCharge.capture !== true && !verifiedCharge.paid) {
+      console.error(`[Culqi Webhook] Cargo ${chargeId} no está pagado exitosamente:`, verifiedCharge);
+      return NextResponse.json({ error: "Charge is not paid" }, { status: 400 });
+    }
+
     const existingPayment = await prisma.payment.findFirst({
       where: { reference: chargeId, method: "CULQI" }
     });

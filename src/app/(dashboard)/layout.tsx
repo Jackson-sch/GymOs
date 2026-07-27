@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { DashboardContent } from "./DashboardContent";
 import { getConfigMap } from "@/lib/config";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({
   children,
 }: {

@@ -9,8 +9,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    // 1. Verify session
-    await verifySession();
+    // 1. Verify session & authorization
+    const session = await verifySession();
 
     // 2. Fetch payment
     const payment = await prisma.payment.findUnique({
@@ -30,6 +30,14 @@ export async function GET(
     if (!payment.member) {
       console.error("Member data missing for payment:", payment.id);
       return NextResponse.json({ error: "Datos del socio no encontrados" }, { status: 400 });
+    }
+
+    // IDOR Protection: Members can only access their own payment receipts
+    const userRole = (session.user as any).role || "RECEPTIONIST";
+    if (userRole === "MEMBER") {
+      if (payment.member.userId !== session.user.id) {
+        return NextResponse.json({ error: "FORBIDDEN: Acceso no autorizado a este recibo" }, { status: 403 });
+      }
     }
 
     // 3. Determine format — ?format=ticket for 80mm, default is from system config

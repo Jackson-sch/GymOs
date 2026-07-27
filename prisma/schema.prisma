@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "./generated-client"
 }
 
 datasource db {
@@ -34,6 +33,11 @@ model User {
 
   banReason  String?
   banExpires DateTime?
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  branchId       String?
+  branch         Branch?       @relation(fields: [branchId], references: [id], onDelete: SetNull)
 
   @@map("user")
 }
@@ -130,6 +134,11 @@ model Member {
   notifications AppNotification[]
   routines      Routine[]
 
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  branchId       String?
+  branch         Branch?       @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
   @@index([fullName])
   @@index([phone])
   @@map("members")
@@ -188,6 +197,9 @@ model Plan {
 
   memberships Membership[]
 
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
   @@map("plans")
 }
 
@@ -238,8 +250,10 @@ model Attendance {
   classId  String?
   notes    String?
 
-  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  class  Class? @relation(fields: [classId], references: [id])
+  member Member  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  class  Class?  @relation(fields: [classId], references: [id])
+  branchId String?
+  branch Branch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
 
   @@index([checkIn])
   @@map("attendances")
@@ -273,6 +287,8 @@ model Payment {
 
   member     Member      @relation(fields: [memberId], references: [id], onDelete: Cascade)
   membership Membership? @relation(fields: [membershipId], references: [id])
+  branchId   String?
+  branch     Branch?     @relation(fields: [branchId], references: [id], onDelete: SetNull)
 
   @@map("payments")
 }
@@ -318,6 +334,8 @@ model Class {
   trainer     Trainer        @relation(fields: [trainerId], references: [id])
   bookings    ClassBooking[]
   attendances Attendance[]
+  branchId    String?
+  branch      Branch?        @relation(fields: [branchId], references: [id], onDelete: SetNull)
 
   @@map("classes")
 }
@@ -378,6 +396,11 @@ model Trainer {
   payrolls  Payroll[]
   routines  Routine[]
   referrals Membership[] @relation("TrainerReferrals")
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  branchId       String?
+  branch         Branch?       @relation(fields: [branchId], references: [id], onDelete: SetNull)
 
   @@map("trainers")
 }
@@ -441,26 +464,98 @@ enum EquipmentStatus {
 }
 
 // ─────────────────────────────────────────
-// CONFIGURACIÓN DEL SISTEMA (API Keys)
+// ORGANIZACIONES / TENANTS (SaaS Multi-gimnasio)
+// ─────────────────────────────────────────
+
+enum SaaSPlanTier {
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+model Organization {
+  id           String       @id @default(uuid())
+  name         String
+  slug         String       @unique
+  logo         String?
+  subdomain    String?      @unique
+  address      String?
+  phone        String?
+  email        String?
+  isActive     Boolean      @default(true)
+  planTier     SaaSPlanTier @default(PRO)
+  maxMembers   Int          @default(500)
+  maxTrainers  Int          @default(10)
+  monthlyPrice Decimal      @default(99.00)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  users         User[]
+  members       Member[]
+  trainers      Trainer[]
+  plans         Plan[]
+  systemConfigs SystemConfig[]
+  branches      Branch[]
+
+  @@map("organizations")
+}
+
+// ─────────────────────────────────────────
+// SEDES / SUCURSALES (Multi-Branch / Franquicias)
+// ─────────────────────────────────────────
+
+model Branch {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  slug           String
+  address        String?
+  phone          String?
+  email          String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  users       User[]
+  members     Member[]
+  trainers    Trainer[]
+  classes     Class[]
+  attendances Attendance[]
+  payments    Payment[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@map("branches")
+}
+
+// ─────────────────────────────────────────
+// CONFIGURACIÓN DEL SISTEMA (API Keys por Gimnasio - BYOK)
 // ─────────────────────────────────────────
 
 model SystemConfig {
-  key         String         @id
-  value       String
-  isEncrypted Boolean        @default(false)
-  category    ConfigCategory
-  description String?
-  updatedAt   DateTime       @updatedAt
-  updatedById String?
+  id             String         @id @default(uuid())
+  key            String
+  value          String
+  isEncrypted    Boolean        @default(false)
+  category       ConfigCategory
+  description    String?
+  organizationId String?
+  updatedAt      DateTime       @updatedAt
+  updatedById    String?
 
-  updatedBy User? @relation(fields: [updatedById], references: [id])
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  updatedBy    User?         @relation(fields: [updatedById], references: [id])
 
+  @@index([organizationId, key])
   @@map("system_configs")
 }
 
 enum ConfigCategory {
   TWILIO
   RESEND
+  WHATSAPP
   PAYMENT
   UPLOADTHING
   GENERAL

@@ -12,7 +12,7 @@ export async function getRecentAttendanceAction() {
   try {
     await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     const attendance = await prisma.attendance.findMany({
-      take: 50,
+      take: 300,
       orderBy: {
         checkIn: "desc",
       },

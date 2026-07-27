@@ -1,16 +1,58 @@
-import { getPortalClassesAction } from "@/lib/actions/portal-actions";
-import { ClassesClient } from "./ClassesClient";
+import React from "react";
+import { verifySession } from "@/lib/security";
+import { prisma } from "@/lib/prisma";
+import { PortalClassesClient } from "./PortalClassesClient";
+import { serialize } from "@/lib/utils";
 
-export default async function ClassesPage() {
-  const result = await getPortalClassesAction();
-  
-  if (!result.success) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-destructive">{result.error}</p>
-      </div>
-    );
-  }
+export const metadata = {
+  title: "Reserva de Clases Grupales | GymOS",
+};
 
-  return <ClassesClient initialData={result.data} />;
+export default async function PortalClassesPage() {
+  const session = await verifySession();
+  const user = session.user as any;
+
+  const member = await prisma.member.findFirst({
+    where: {
+      OR: [
+        { userId: user.id },
+        { email: user.email }
+      ]
+    }
+  });
+
+  const memberId = member?.id || "";
+
+  const classes = await prisma.class.findMany({
+    where: {
+      startTime: {
+        gte: new Date()
+      }
+    },
+    include: {
+      trainer: { select: { fullName: true } },
+      bookings: {
+        select: { id: true, memberId: true }
+      }
+    },
+    orderBy: { startTime: "asc" }
+  });
+
+  const formattedClasses = classes.map((c) => {
+    const myBooking = c.bookings.find((b) => b.memberId === memberId);
+    return {
+      id: c.id,
+      name: c.name,
+      description: c.description,
+      trainerName: c.trainer?.fullName,
+      capacity: c.maxCapacity,
+      bookedCount: c.bookings.length,
+      schedule: c.startTime,
+      isBookedByMe: !!myBooking,
+      myBookingId: myBooking?.id || null,
+      branchName: null
+    };
+  });
+
+  return <PortalClassesClient classes={serialize(formattedClasses)} memberId={memberId} />;
 }

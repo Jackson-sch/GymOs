@@ -50,14 +50,16 @@ export async function getEquipmentKPIs() {
   };
 }
 
-export async function getMaintenanceAlerts() {
+export async function getMaintenanceAlerts(branchId?: string) {
   try {
     await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     const today = new Date();
     const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-    
+    const bWhere = branchId && branchId !== "ALL" ? { branchId } : {};
+
     const overdue = await prisma.equipment.findMany({
       where: {
+        ...bWhere,
         OR: [
           { status: "MAINTENANCE" },
           { nextMaintenance: { lte: nextWeek } }

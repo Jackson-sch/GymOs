@@ -6,9 +6,10 @@ import {
 } from "@/lib/actions/cron-actions";
 
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return new Response('Unauthorized', { status: 401 });
+  const secret = process.env.CRON_SECRET;
+  const authHeader = req.headers.get("authorization");
+  if (!secret || secret.trim() === "" || authHeader !== `Bearer ${secret}`) {
+    return new Response("Unauthorized", { status: 401 });
   }
 
   try {
@@ -37,3 +38,4 @@ export async function GET(req: NextRequest) {
     }, { status: 500 });
   }
 }
+

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { verifySession } from "@/lib/security";
 import { serialize } from "@/lib/utils";
+import crypto from "crypto";
 
 const trainerSchema = z.object({
   fullName: z.string().min(2, "Nombre requerido"),
@@ -256,8 +257,8 @@ export async function enableTrainerPortalAccessAction(trainerId: string) {
     });
 
     if (!user) {
-      // Usar el DNI como contraseña inicial para que el entrenador ingrese y luego cambie la clave
-      const initialPassword = trainer.dni || (Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10) + "T1#");
+      // Usar el DNI como contraseña inicial o una clave aleatoria criptográficamente segura
+      const initialPassword = trainer.dni || (crypto.randomBytes(12).toString("hex") + "T1#");
       const res = await auth.api.signUpEmail({
         body: {
           email: trainer.email,

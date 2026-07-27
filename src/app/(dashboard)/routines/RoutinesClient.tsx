@@ -1,44 +1,59 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import { 
-  Plus, 
-  Dumbbell, 
-  Search, 
-  Library, 
-  ClipboardList, 
-  Trash2,
-  Edit,
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  Plus,
+  Dumbbell,
+  Search,
+  ClipboardList,
   Video,
   LayoutGrid,
   List,
   Loader2,
-  ArrowUp
+  Users,
+  Flame,
+  Play,
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from "@/components/ui/tabs";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
-import { createExerciseAction } from "@/lib/actions/routine-management-actions";
+import {
+  createExerciseAction,
+  seedOpenExerciseCatalogAction,
+} from "@/lib/actions/routine-management-actions";
 import { RoutineAssignmentDialog } from "./RoutineAssignmentDialog";
 import { useQueryState, parseAsInteger } from "nuqs";
 import { PlanDetail } from "./components/PlanDetail";
 import { PlanCard } from "./components/PlanCard";
+import { RoutineSimulator } from "./components/RoutineSimulator";
+import { PaginationBar } from "@/components/shared/PaginationBar";
 
 interface RoutinesClientProps {
   initialExercises: any[];
@@ -47,79 +62,143 @@ interface RoutinesClientProps {
   trainers: any[];
 }
 
-export function RoutinesClient({ 
-  initialExercises, 
+const MUSCLE_GROUPS = [
+  { id: "ALL", label: "Todos" },
+  { id: "Pecho", label: "Pecho" },
+  { id: "Espalda", label: "Espalda" },
+  { id: "Piernas", label: "Piernas" },
+  { id: "Brazos", label: "Brazos" },
+  { id: "Hombros", label: "Hombros" },
+  { id: "Core", label: "Core / Abs" },
+];
+
+export function RoutinesClient({
+  initialExercises,
   initialRoutines,
   members,
-  trainers
+  trainers,
 }: RoutinesClientProps) {
   const [exercises, setExercises] = useState(initialExercises);
   const [routines, setRoutines] = useState(initialRoutines);
-  
-  const [activeTab, setActiveTab] = useQueryState("tab", { defaultValue: "rutinas" });
+
+  const [activeTab, setActiveTab] = useQueryState("tab", {
+    defaultValue: "rutinas",
+  });
   const [planName, setPlanName] = useQueryState("plan");
-  const [searchTerm, setSearchTerm] = useQueryState("search", { defaultValue: "" });
-  const [routineSearchTerm, setRoutineSearchTerm] = useQueryState("q", { defaultValue: "" });
-  
+  const [searchTerm, setSearchTerm] = useQueryState("search", {
+    defaultValue: "",
+  });
+  const [routineSearchTerm, setRoutineSearchTerm] = useQueryState("q", {
+    defaultValue: "",
+  });
+  const [selectedMuscle, setSelectedMuscle] = useState("ALL");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [routinesVisibleCount, setRoutinesVisibleCount] = useQueryState("limit", parseAsInteger.withDefault(12));
-  
-  const ITEMS_PER_PAGE = 12;
 
-  const [exercisesVisibleCount, setExercisesVisibleCount] = useState(12);
-  const EXERCISES_PER_PAGE = 12;
+  // Exercise Pagination State
+  const [exercisePage, setExercisePage] = useQueryState(
+    "exPage",
+    parseAsInteger.withDefault(1),
+  );
+  const [exercisePageSize, setExercisePageSize] = useQueryState(
+    "exSize",
+    parseAsInteger.withDefault(12),
+  );
 
-  // Reset exercise limit on search change
+  // Plans Pagination State
+  const [plansPage, setPlansPage] = useQueryState(
+    "pPage",
+    parseAsInteger.withDefault(1),
+  );
+  const [plansPageSize, setPlansPageSize] = useQueryState(
+    "pSize",
+    parseAsInteger.withDefault(8),
+  );
+
+  // Simulator State
+  const [simulatingPlan, setSimulatingPlan] = useState<any | null>(null);
+
+  // Seeder State
+  const [isSeeding, setIsSeeding] = useState(false);
+
+  const handleSeedCatalog = async () => {
+    setIsSeeding(true);
+    toast.info("Conectando con el repositorio open-source para poblar catálogo...");
+    const res = await seedOpenExerciseCatalogAction();
+    setIsSeeding(false);
+
+    if (res.success && res.data) {
+      setExercises(res.data);
+      setExercisePage(1);
+      if (res.addedCount > 0) {
+        toast.success(
+          `¡Sincronizado! Se agregaron ${res.addedCount} nuevos ejercicios. Total: ${res.totalCount}`,
+        );
+      } else {
+        toast.success(
+          `El catálogo ya está actualizado con los ${res.totalCount} ejercicios.`,
+        );
+      }
+    } else {
+      toast.error(res.error || "Error al sincronizar el catálogo de ejercicios");
+    }
+  };
+
+  // New Exercise Form State
+  const [newExName, setNewExName] = useState("");
+  const [newExMuscle, setNewExMuscle] = useState("Pecho");
+  const [newExDesc, setNewExDesc] = useState("");
+  const [newExVideo, setNewExVideo] = useState("");
+  const [creatingEx, setCreatingEx] = useState(false);
+  const [isNewExOpen, setIsNewExOpen] = useState(false);
+
+  // Reset exercise page on filter change
   useEffect(() => {
-    setExercisesVisibleCount(12);
-  }, [searchTerm]);
+    setExercisePage(1);
+  }, [searchTerm, selectedMuscle, setExercisePage]);
 
-  const filteredExercises = exercises.filter(ex => 
-    ex.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    ex.muscleGroup?.toLowerCase().includes(searchTerm.toLowerCase())
+  // Reset plan page on search change
+  useEffect(() => {
+    setPlansPage(1);
+  }, [routineSearchTerm, setPlansPage]);
+
+  const filteredExercises = useMemo(() => {
+    return exercises.filter((ex) => {
+      const matchesSearch =
+        ex.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ex.muscleGroup?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesMuscle =
+        selectedMuscle === "ALL" ||
+        ex.muscleGroup?.toLowerCase().includes(selectedMuscle.toLowerCase());
+
+      return matchesSearch && matchesMuscle;
+    });
+  }, [exercises, searchTerm, selectedMuscle]);
+
+  const totalExercisePages = Math.ceil(
+    filteredExercises.length / (exercisePageSize || 16),
   );
 
   const paginatedExercises = useMemo(() => {
-    return filteredExercises.slice(0, exercisesVisibleCount);
-  }, [filteredExercises, exercisesVisibleCount]);
+    const p = exercisePage || 1;
+    const s = exercisePageSize || 16;
+    return filteredExercises.slice((p - 1) * s, p * s);
+  }, [filteredExercises, exercisePage, exercisePageSize]);
 
-  const hasMoreExercises = exercisesVisibleCount < filteredExercises.length;
+  const filteredRoutines = useMemo(() => {
+    return routines.filter((routine) => {
+      if (!routineSearchTerm.trim()) return true;
+      const term = routineSearchTerm.toLowerCase();
+      const planNameMatches = routine.name?.toLowerCase().includes(term);
+      const memberNameMatches = routine.member?.fullName?.toLowerCase().includes(term);
+      const trainerNameMatches = routine.trainer?.fullName?.toLowerCase().includes(term);
+      return Boolean(planNameMatches || memberNameMatches || trainerNameMatches);
+    });
+  }, [routines, routineSearchTerm]);
 
-  const exercisesObserverRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!hasMoreExercises) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setExercisesVisibleCount((prev) => prev + EXERCISES_PER_PAGE);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const currentRef = exercisesObserverRef.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
-
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
-    };
-  }, [hasMoreExercises]);
-
-  const filteredRoutines = routines.filter(routine => 
-    routine.name.toLowerCase().includes(routineSearchTerm.toLowerCase()) ||
-    routine.member.fullName.toLowerCase().includes(routineSearchTerm.toLowerCase()) ||
-    routine.trainer.fullName.toLowerCase().includes(routineSearchTerm.toLowerCase())
-  );
-
-  const groupedRoutines = React.useMemo(() => {
+  const groupedRoutines = useMemo(() => {
     const groups: Record<string, any> = {};
-    filteredRoutines.forEach(routine => {
+    filteredRoutines.forEach((routine) => {
       if (!groups[routine.name]) {
         groups[routine.name] = {
           name: routine.name,
@@ -127,6 +206,7 @@ export function RoutinesClient({
           exerciseCount: routine._count?.exercises || 0,
           trainer: routine.trainer?.fullName || "N/A",
           isActive: routine.isActive,
+          rawExercises: routine.exercises || [],
         };
       }
       groups[routine.name].routines.push(routine);
@@ -134,299 +214,523 @@ export function RoutinesClient({
     return Object.values(groups);
   }, [filteredRoutines]);
 
-  const paginatedGroups = groupedRoutines.slice(0, (routinesVisibleCount ?? 12));
-  const hasMoreGroups = (routinesVisibleCount ?? 12) < groupedRoutines.length;
+  const totalPlanPages = Math.ceil(
+    groupedRoutines.length / (plansPageSize || 12),
+  );
 
-  // Volver al inicio: detección de scroll
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  const paginatedGroups = useMemo(() => {
+    const p = plansPage || 1;
+    const s = plansPageSize || 12;
+    return groupedRoutines.slice((p - 1) * s, p * s);
+  }, [groupedRoutines, plansPage, plansPageSize]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 400) {
-        setShowScrollTop(true);
-      } else {
-        setShowScrollTop(false);
-      }
-    };
+  const activePlan = useMemo(
+    () =>
+      planName ? groupedRoutines.find((g) => g.name === planName) : null,
+    [planName, groupedRoutines],
+  );
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
-  };
-
-  const routinesObserverRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!hasMoreGroups) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setRoutinesVisibleCount((prev) => (prev ?? 12) + ITEMS_PER_PAGE);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const currentRef = routinesObserverRef.current;
-    if (currentRef) {
-      observer.observe(currentRef);
+  const handleCreateExerciseSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newExName.trim()) {
+      toast.error("Ingrese el nombre del ejercicio");
+      return;
     }
+    setCreatingEx(true);
+    const res = await createExerciseAction({
+      name: newExName,
+      muscleGroup: newExMuscle,
+      demoUrl: newExVideo,
+    });
+    setCreatingEx(false);
 
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
-    };
-  }, [hasMoreGroups, setRoutinesVisibleCount]);
-
-  const activePlan = useMemo(() => 
-    planName ? groupedRoutines.find(g => g.name === planName) : null
-  , [planName, groupedRoutines]);
+    if (res.success && res.data) {
+      toast.success("Ejercicio registrado en el catálogo");
+      setExercises((prev) => [res.data, ...prev]);
+      setNewExName("");
+      setNewExDesc("");
+      setNewExVideo("");
+      setIsNewExOpen(false);
+    } else {
+      toast.error(res.error || "Error al crear ejercicio");
+    }
+  };
 
   if (activePlan) {
     return <PlanDetail plan={activePlan} onBack={() => setPlanName(null)} />;
   }
 
+  const totalAssignedMembers = new Set(routines.map((r) => r.memberId)).size;
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <Tabs value={activeTab ?? "rutinas"} onValueChange={setActiveTab} className="space-y-8">
-        <TabsList className="bg-white/5 border border-white/10 p-1 h-14! rounded-2xl">
-          <TabsTrigger value="rutinas" className="rounded-xl px-8 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all uppercase text-[10px] font-black tracking-widest">
+    <div className="space-y-8 animate-in fade-in duration-500 w-full pb-8">
+      {/* Studio Header & Stats */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 glass-card p-6 sm:p-8 rounded-3xl border-white/10">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-primary">
+            <Flame className="size-4" />
+            <span className="text-[10px] uppercase tracking-[0.3em] font-bold">
+              Workout & Training Hub
+            </span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-serif tracking-tight">
+            Rutinas & Catálogo Deportivo
+          </h1>
+          <p className="text-xs text-muted-foreground font-sans max-w-lg">
+            Diseño de planes personalizados, prescripción de cargas e instrucción audiovisual para socios.
+          </p>
+        </div>
+
+        {/* Studio KPI Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full lg:w-auto">
+          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-[110px]">
+            <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
+              Planes
+            </p>
+            <p className="text-2xl font-serif font-bold text-primary">
+              {groupedRoutines.length}
+            </p>
+          </div>
+          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-[110px]">
+            <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
+              Ejercicios
+            </p>
+            <p className="text-2xl font-serif font-bold text-foreground">
+              {exercises.length}
+            </p>
+          </div>
+          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-[110px]">
+            <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
+              Socios
+            </p>
+            <p className="text-2xl font-serif font-bold text-emerald-400">
+              {totalAssignedMembers}
+            </p>
+          </div>
+          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-[110px]">
+            <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
+              Entrenadores
+            </p>
+            <p className="text-2xl font-serif font-bold text-amber-400">
+              {trainers.length}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Tabs Navigation */}
+      <Tabs
+        value={activeTab ?? "rutinas"}
+        onValueChange={setActiveTab}
+        className="space-y-8"
+      >
+        <TabsList className="bg-white/5 border border-white/10 p-1.5 rounded-2xl grid grid-cols-2 max-w-md">
+          <TabsTrigger
+            value="rutinas"
+            className="rounded-xl text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all uppercase tracking-wider"
+          >
+            <ClipboardList className="size-4" />
             Planes de Entrenamiento
           </TabsTrigger>
-          <TabsTrigger value="ejercicios" className="rounded-xl px-8 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all uppercase text-[10px] font-black tracking-widest">
+          <TabsTrigger
+            value="ejercicios"
+            className="rounded-xl text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all uppercase tracking-wider"
+          >
+            <Dumbbell className="size-4" />
             Catálogo de Ejercicios
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="rutinas" className="space-y-8 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass-card p-6 border-white/5 bg-white/5">
+        {/* ========================================== */}
+        {/* TAB 1: PLANES DE ENTRENAMIENTO */}
+        {/* ========================================== */}
+        <TabsContent
+          value="rutinas"
+          className="space-y-8 outline-none animate-in fade-in duration-300"
+        >
+          {/* Search & Actions Bar */}
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass-card p-4 rounded-3xl border-white/10">
             <div className="relative flex-1 max-w-md w-full">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input 
-                placeholder="Buscar plan por nombre..." 
-                className="pl-12 h-14 rounded-2xl bg-black/20 border-white/10 focus:ring-primary/20 transition-all text-sm"
+              <Input
+                placeholder="Buscar plan por nombre, socio o entrenador..."
+                className="pl-12 h-11 rounded-2xl bg-white/5 border-white/10 text-xs focus-visible:ring-primary/40"
                 value={routineSearchTerm ?? ""}
                 onChange={(e) => setRoutineSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <RoutineAssignmentDialog 
+            <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+              <RoutineAssignmentDialog
                 members={members}
                 trainers={trainers}
                 exercises={exercises}
-                onSuccess={(newRoutine) => setRoutines(prev => [newRoutine, ...prev])}
+                onSuccess={(newRoutine) =>
+                  setRoutines((prev) => [newRoutine, ...prev])
+                }
               />
             </div>
           </div>
 
+          {/* Routine Plans Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {paginatedGroups.map((group, idx) => (
-              <PlanCard key={idx} group={group} onSelect={setPlanName} />
+              <PlanCard
+                key={idx}
+                group={group}
+                onSelect={setPlanName}
+                onSimulate={(g) => setSimulatingPlan(g)}
+              />
             ))}
           </div>
 
-          {hasMoreGroups && (
-            <div className="space-y-4 pt-8 flex flex-col items-center">
-              {/* Elemento observado por IntersectionObserver para planes */}
-              <div ref={routinesObserverRef} className="h-4 w-full" />
-              
-              <Button 
-                variant="outline" 
-                className="rounded-2xl px-12 h-14 border-white/10 hover:bg-white/5 group gap-2"
-                onClick={() => setRoutinesVisibleCount((prev) => (prev ?? 12) + ITEMS_PER_PAGE)}
-              >
-                Cargar más planes
-                <Loader2 className="size-4 animate-spin text-primary opacity-60 group-hover:opacity-100 transition-opacity" />
-              </Button>
-            </div>
-          )}
-          
           {groupedRoutines.length === 0 && (
-            <div className="text-center py-20 glass-card border-dashed border-white/10">
-              <ClipboardList className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-20" />
-              <h3 className="text-xl font-serif text-muted-foreground">No se encontraron planes</h3>
-              <p className="text-sm text-muted-foreground/60 mt-1">Prueba con otro término de búsqueda o asigna uno nuevo.</p>
+            <div className="text-center py-16 glass-card rounded-3xl border-dashed border-white/10">
+              <ClipboardList className="size-12 text-muted-foreground mx-auto mb-3 opacity-30" />
+              <h3 className="text-xl font-serif text-foreground">
+                No se encontraron planes
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                Pruebe con otro término de búsqueda o asigne una nueva rutina a un alumno.
+              </p>
             </div>
           )}
+
+          {/* Plans Pagination Bar */}
+          <PaginationBar
+            currentPage={plansPage || 1}
+            totalPages={totalPlanPages}
+            pageSize={plansPageSize || 12}
+            totalItems={groupedRoutines.length}
+            onPageChange={(p) => setPlansPage(p)}
+            onPageSizeChange={(s) => setPlansPageSize(s)}
+            pageSizeOptions={[8, 12, 24, 48]}
+            itemLabel="planes"
+          />
         </TabsContent>
 
-        <TabsContent value="ejercicios" className="space-y-8 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-card p-6 border-white/5 bg-white/5">
-            <div className="relative flex-1 max-w-md w-full">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input 
-                placeholder="Buscar ejercicios por nombre o grupo muscular..." 
-                className="pl-12 h-14 rounded-2xl bg-black/20 border-white/10 focus:ring-primary/20 transition-all text-sm"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <div className="flex bg-black/20 border border-white/10 rounded-2xl p-1 h-14 flex-1 md:flex-none">
-                <button 
-                  onClick={() => setViewMode("grid")}
-                  className={cn(
-                    "flex-1 md:flex-none px-4 rounded-xl transition-all flex items-center justify-center",
-                    viewMode === "grid" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-white/5"
-                  )}
-                >
-                  <LayoutGrid className="size-4" />
-                </button>
-                <button 
-                  onClick={() => setViewMode("list")}
-                  className={cn(
-                    "flex-1 md:flex-none px-4 rounded-xl transition-all flex items-center justify-center",
-                    viewMode === "list" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-white/5"
-                  )}
-                >
-                  <List className="size-4" />
-                </button>
+        {/* ========================================== */}
+        {/* TAB 2: CATÁLOGO DE EJERCICIOS */}
+        {/* ========================================== */}
+        <TabsContent
+          value="ejercicios"
+          className="space-y-8 outline-none animate-in fade-in duration-300"
+        >
+          {/* Search, Muscle Group Pills & Controls */}
+          <div className="space-y-4 glass-card p-5 rounded-3xl border-white/10">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="relative flex-1 max-w-md w-full">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar ejercicio por nombre o grupo muscular..."
+                  className="pl-12 h-11 rounded-2xl bg-white/5 border-white/10 text-xs focus-visible:ring-primary/40"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="rounded-2xl gap-2 h-14 px-6 flex-1 md:flex-none">
-                    <Plus className="size-4" />
-                    Nuevo Ejercicio
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="glass-card border-white/10 max-w-lg">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-serif">Añadir Ejercicio</DialogTitle>
-                    <DialogDescription className="text-xs text-muted-foreground">
-                      Crea un nuevo ejercicio para que esté disponible en la biblioteca de rutinas.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <form className="space-y-6 py-4" action={async (formData) => {
-                    const result = await createExerciseAction({
-                      name: formData.get("name") as string,
-                      category: formData.get("category") as string,
-                      muscleGroup: formData.get("muscleGroup") as string,
-                      equipment: formData.get("equipment") as string,
-                      demoUrl: formData.get("demoUrl") as string,
-                    });
-                    if (result.success) {
-                      toast.success("Ejercicio añadido correctamente");
-                      setExercises(prev => [...prev, result.data]);
-                    } else {
-                      toast.error(result.error);
-                    }
-                  }}>
-                    <div className="space-y-4">
+
+              <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+                {/* View Mode Toggle */}
+                <div className="flex items-center p-1 rounded-xl bg-white/5 border border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("grid")}
+                    className={cn(
+                      "p-2 rounded-lg transition-all",
+                      viewMode === "grid"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                    title="Vista Cuadrícula"
+                  >
+                    <LayoutGrid className="size-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("list")}
+                    className={cn(
+                      "p-2 rounded-lg transition-all",
+                      viewMode === "list"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                    title="Vista Lista"
+                  >
+                    <List className="size-4" />
+                  </button>
+                </div>
+
+                {/* Seed Open Source Catalog Button */}
+                <Button
+                  variant="outline"
+                  onClick={handleSeedCatalog}
+                  disabled={isSeeding}
+                  className="rounded-2xl gap-2 h-11 px-4 font-bold text-xs uppercase tracking-wider border-white/10 bg-white/5 hover:bg-white/10 text-foreground"
+                  title="Importar catálogo open-source gratuito (+800 ejercicios)"
+                >
+                  {isSeeding ? (
+                    <Loader2 className="size-4 animate-spin text-primary" />
+                  ) : (
+                    <Sparkles className="size-4 text-amber-400" />
+                  )}
+                  {isSeeding ? "Sincronizando..." : "Poblar Catálogo (+800)"}
+                </Button>
+
+                {/* Add New Exercise Dialog */}
+                <Dialog open={isNewExOpen} onOpenChange={setIsNewExOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="rounded-2xl gap-2 h-11 px-5 font-bold text-xs uppercase tracking-wider bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20">
+                      <Plus className="size-4" />
+                      Nuevo Ejercicio
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-background/95 backdrop-blur-2xl border-white/10 text-foreground max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="text-xl font-serif">
+                        Registrar Nuevo Ejercicio
+                      </DialogTitle>
+                      <DialogDescription className="text-xs text-muted-foreground">
+                        Añada movimientos a la biblioteca del gimnasio con guía de ejecuciones.
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={handleCreateExerciseSubmit} className="space-y-4 py-2">
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Nombre del Ejercicio</label>
-                        <Input name="name" required placeholder="Ej: Press de Banca" className="h-12 rounded-2xl bg-white/5 border-white/10" />
+                        <Label className="text-xs font-semibold uppercase tracking-wider">
+                          Nombre del Ejercicio
+                        </Label>
+                        <Input
+                          value={newExName}
+                          onChange={(e) => setNewExName(e.target.value)}
+                          placeholder="Ej: Sentadilla Búlgara con Mancuernas"
+                          className="bg-white/5 border-white/10 h-11 text-xs"
+                        />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Grupo Muscular</label>
-                          <Input name="muscleGroup" placeholder="Ej: Pecho" className="h-12 rounded-2xl bg-white/5 border-white/10" />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Equipamiento</label>
-                          <Input name="equipment" placeholder="Ej: Barra" className="h-12 rounded-2xl bg-white/5 border-white/10" />
-                        </div>
-                      </div>
+
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">URL de Demo (Video/GIF)</label>
-                        <Input name="demoUrl" placeholder="https://..." className="h-12 rounded-2xl bg-white/5 border-white/10" />
+                        <Label className="text-xs font-semibold uppercase tracking-wider">
+                          Grupo Muscular Principal
+                        </Label>
+                        <Select
+                          value={newExMuscle}
+                          onValueChange={setNewExMuscle}
+                        >
+                          <SelectTrigger className="bg-white/5 border-white/10 h-11 text-xs">
+                            <SelectValue placeholder="Seleccionar grupo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Pecho">Pecho (Pectoral)</SelectItem>
+                            <SelectItem value="Espalda">Espalda (Dorsal/Trapecio)</SelectItem>
+                            <SelectItem value="Piernas">Piernas (Cuádriceps/Isquios)</SelectItem>
+                            <SelectItem value="Brazos">Brazos (Bíceps/Tríceps)</SelectItem>
+                            <SelectItem value="Hombros">Hombros (Deltoides)</SelectItem>
+                            <SelectItem value="Core">Core (Abdomen/Lumbar)</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                    </div>
-                    <Button type="submit" className="w-full h-14 rounded-2xl text-lg font-serif">Guardar en Biblioteca</Button>
-                  </form>
-                </DialogContent>
-              </Dialog>
+
+                      <div className="space-y-2">
+                        <Label className="text-xs font-semibold uppercase tracking-wider">
+                          URL de Demostración (Video YouTube / GIF)
+                        </Label>
+                        <Input
+                          value={newExVideo}
+                          onChange={(e) => setNewExVideo(e.target.value)}
+                          placeholder="https://youtube.com/watch?v=..."
+                          className="bg-white/5 border-white/10 h-11 text-xs font-mono"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-xs font-semibold uppercase tracking-wider">
+                          Instrucciones Técnicas de Ejecución
+                        </Label>
+                        <textarea
+                          value={newExDesc}
+                          onChange={(e) => setNewExDesc(e.target.value)}
+                          placeholder="Consejos de postura, respiración y recorrido del movimiento..."
+                          className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs h-24 focus:outline-none focus:border-primary/50 text-foreground"
+                        />
+                      </div>
+
+                      <div className="pt-2 flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => setIsNewExOpen(false)}
+                          className="text-xs uppercase font-bold"
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={creatingEx}
+                          className="bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider rounded-xl gap-2"
+                        >
+                          {creatingEx && <Loader2 className="size-3.5 animate-spin" />}
+                          Guardar Ejercicio
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+
+            {/* Muscle Group Quick Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground mr-1 shrink-0">
+                Grupo:
+              </span>
+              {MUSCLE_GROUPS.map((mg) => (
+                <button
+                  key={mg.id}
+                  type="button"
+                  onClick={() => setSelectedMuscle(mg.id)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+                    selectedMuscle === mg.id
+                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                      : "bg-white/5 text-muted-foreground hover:text-foreground hover:bg-white/10"
+                  }`}
+                >
+                  {mg.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className={cn(
-            viewMode === "grid" 
-              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" 
-              : "space-y-3"
-          )}>
-            {paginatedExercises.map((ex) => (
-              <div 
-                key={ex.id} 
-                className={cn(
-                  "glass-card border-white/5 hover:border-primary/20 transition-all group overflow-hidden",
-                  viewMode === "grid" ? "p-6 flex flex-col items-center text-center" : "p-4 flex items-center justify-between"
-                )}
-              >
-                <div className={cn(
-                  "flex items-center gap-4",
-                  viewMode === "grid" && "flex-col"
-                )}>
-                  <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                    <Dumbbell className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="font-serif text-lg">{ex.name}</h4>
-                    <div className={cn(
-                      "flex items-center gap-3 text-[10px] uppercase tracking-widest text-muted-foreground",
-                      viewMode === "grid" && "justify-center mt-1"
-                    )}>
-                      <span>{ex.muscleGroup || "General"}</span>
-                      <span className="w-1 h-1 rounded-full bg-white/10" />
-                      <span>{ex.equipment || "Libre"}</span>
+          {/* Exercises Presentation View */}
+          {viewMode === "grid" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              {paginatedExercises.map((ex) => (
+                <div
+                  key={ex.id}
+                  className="glass-card p-5 rounded-3xl border-white/10 hover:border-primary/30 transition-all group flex flex-col justify-between backdrop-blur-md bg-white/2"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="size-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-primary group-hover:border-primary/40 transition-colors">
+                        <Dumbbell className="size-5" />
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary border-primary/30"
+                      >
+                        {ex.muscleGroup || "General"}
+                      </Badge>
+                    </div>
+
+                    <div>
+                      <h4 className="text-base font-serif font-bold text-foreground leading-tight group-hover:text-primary transition-colors">
+                        {ex.name}
+                      </h4>
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
+                        {ex.description || "Sin descripción de postura cargada."}
+                      </p>
                     </div>
                   </div>
-                </div>
 
-                <div className={cn(
-                  "flex gap-2",
-                  viewMode === "grid" ? "mt-6 w-full" : ""
-                )}>
-                  {ex.demoUrl && (
-                    <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-all">
-                      <Video className="size-4" />
-                    </button>
-                  )}
-                  <button className="w-10 h-10 flex items-center justify-center rounded-xl border border-white/10 text-muted-foreground hover:text-primary hover:bg-white/5 transition-all">
-                    <Edit className="size-4" />
-                  </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-xl border border-white/10 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all">
-                    <Trash2 className="size-4" />
-                  </button>
+                  <div className="pt-4 mt-3 border-t border-white/5 flex items-center justify-between">
+                    {ex.demoUrl || ex.videoUrl ? (
+                      <a
+                        href={ex.demoUrl || ex.videoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1.5 hover:underline"
+                      >
+                        <Video className="size-3.5" /> Ver Demo Video
+                      </a>
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                        Guía Estándar
+                      </span>
+                    )}
+                    <span className="text-[10px] text-muted-foreground font-mono">
+                      ID #{ex.id.substring(0, 5)}
+                    </span>
+                  </div>
                 </div>
+              ))}
+            </div>
+          ) : (
+            <div className="glass-card border-white/10 rounded-3xl overflow-hidden backdrop-blur-md">
+              <div className="divide-y divide-white/5">
+                {paginatedExercises.map((ex) => (
+                  <div
+                    key={ex.id}
+                    className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-white/5 transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="size-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                        <Dumbbell className="size-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-sm font-bold text-foreground">
+                            {ex.name}
+                          </h4>
+                          <Badge
+                            variant="outline"
+                            className="text-[9px] font-bold uppercase bg-white/5 border-white/10"
+                          >
+                            {ex.muscleGroup || "General"}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                          {ex.description || "Sin descripción de ejecución."}
+                        </p>
+                      </div>
+                    </div>
+
+                    {(ex.demoUrl || ex.videoUrl) && (
+                      <a
+                        href={ex.demoUrl || ex.videoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1 hover:underline shrink-0"
+                      >
+                        <Video className="size-3.5" /> Demo Video
+                      </a>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-
-          {/* Detector y Botón Manual para Cargar Más Ejercicios */}
-          {hasMoreExercises && (
-            <div className="space-y-4 pt-8 flex flex-col items-center">
-              {/* Elemento observado por IntersectionObserver */}
-              <div ref={exercisesObserverRef} className="h-4 w-full" />
-              
-              <Button 
-                variant="outline" 
-                className="rounded-2xl px-12 h-14 border-white/10 hover:bg-white/5 group gap-2"
-                onClick={() => setExercisesVisibleCount((prev) => prev + EXERCISES_PER_PAGE)}
-              >
-                Cargar más ejercicios
-                <Loader2 className="size-4 animate-spin text-primary opacity-60 group-hover:opacity-100 transition-opacity" />
-              </Button>
             </div>
           )}
+
+          {filteredExercises.length === 0 && (
+            <div className="text-center py-16 glass-card rounded-3xl border-dashed border-white/10">
+              <Dumbbell className="size-12 text-muted-foreground mx-auto mb-3 opacity-30" />
+              <h3 className="text-xl font-serif text-foreground">
+                No se encontraron ejercicios
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                Pruebe filtrando por otro grupo muscular o agregue uno nuevo al catálogo.
+              </p>
+            </div>
+          )}
+
+          {/* Exercise Catalog Pagination Bar */}
+          <PaginationBar
+            currentPage={exercisePage || 1}
+            totalPages={totalExercisePages}
+            pageSize={exercisePageSize || 12}
+            totalItems={filteredExercises.length}
+            onPageChange={(p) => setExercisePage(p)}
+            onPageSizeChange={(s) => setExercisePageSize(s)}
+            pageSizeOptions={[8, 12, 24, 48]}
+            itemLabel="ejercicios"
+          />
         </TabsContent>
       </Tabs>
 
-      {/* Botón flotante para volver arriba */}
-      {showScrollTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-50 p-4 rounded-full bg-zinc-950/90 backdrop-blur-2xl border border-white/10 hover:border-primary/50 text-muted-foreground hover:text-primary transition-all duration-300 shadow-2xl shadow-black/60 hover:scale-110 flex items-center justify-center cursor-pointer"
-          title="Volver al inicio"
-        >
-          <ArrowUp className="size-5" />
-        </button>
+      {/* Routine Simulator Modal */}
+      {simulatingPlan && (
+        <RoutineSimulator
+          isOpen={!!simulatingPlan}
+          onClose={() => setSimulatingPlan(null)}
+          planName={simulatingPlan.name}
+          exercises={simulatingPlan.rawExercises || []}
+        />
       )}
     </div>
   );

@@ -50,9 +50,9 @@ export function RadialDonutChart({ data = defaultData }: { data?: DataItem[] }) 
   const arcs = pieGenerator(data);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-8 lg:gap-10 p-2 w-full h-full min-h-[350px]">
-      <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 w-full max-w-4xl mx-auto">
-        <div className="relative w-full max-w-[220px] lg:max-w-[340px] aspect-square flex items-center justify-center">
+    <div className="flex flex-col items-center justify-center gap-4 p-2 w-full h-full my-auto min-h-[260px]">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 w-full max-w-full mx-auto my-auto">
+        <div className="relative w-44 sm:w-48 max-w-[200px] aspect-square flex items-center justify-center shrink-0">
           {/* Enhanced Radial Glow - Fades out naturally */}
           <div 
             className="absolute inset-0 rounded-full scale-125 opacity-40 blur-[100px]" 

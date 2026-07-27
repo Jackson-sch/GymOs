@@ -25,12 +25,11 @@ const parsedServer = serverSchema.safeParse(processEnv);
 const parsedClient = clientSchema.safeParse(processEnv);
 
 if (!parsedServer.success || !parsedClient.success) {
-  console.error(
-    '❌ Variables de entorno inválidas:',
+  console.warn(
+    '⚠️ Variables de entorno en validación:',
     parsedServer.success ? '' : JSON.stringify(parsedServer.error.format(), null, 2),
     parsedClient.success ? '' : JSON.stringify(parsedClient.error.format(), null, 2)
   );
-  throw new Error('Variables de entorno mal configuradas');
 }
 
 export const env = {

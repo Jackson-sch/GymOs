@@ -1,66 +1,85 @@
-# 🏋️‍♂️ GymOS Platform - Sistema Integral de Gestión de Gimnasios y Centros Fitness
+# 🏋️‍♂️ GymOS Platform - Sistema Integral de Gestión de Gimnasios, Franquicias y Centros Fitness (Multi-Tenant SaaS)
 
-**GymOS** es una plataforma moderna, escalable y visualmente deslumbrante diseñada para la administración integral de gimnasios, clubes deportivos y centros de entrenamiento. Construida bajo los más altos estándares de desarrollo y arquitectura en el ecosistema **Next.js 16 (App Router)** y **Prisma**.
+**GymOS** es una plataforma moderna, escalable y visualmente deslumbrante diseñada para la administración integral de gimnasios, cadenas deportivas, clubes de entrenamiento y sistemas de franquicias. Construida bajo los más altos estándares del ecosistema **Next.js 16 (App Router)**, **TypeScript** y **Prisma ORM**.
 
 ---
 
 ## ✨ Características Principales
 
-### 1. 🌟 Diseño Visual Premium ("Liquid Glass")
-Toda la interfaz ha sido construida con una estética de vanguardia combinando elementos de **Glassmorphism**, desenfoques translúcidos, fondos vibrantes y micro-animaciones fluidas que brindan una experiencia de usuario altamente inmersiva y profesional tanto en escritorio como en dispositivos móviles.
+### 1. 🏢 SaaS Multi-Tenant & Torre de Control Super Admin (`/super-admin`)
+- **Gestión Ejecutiva de Gimnasios**: Registro, edición de slug/subdominio, cambio de planes SaaS y suspensión/activación de clientes.
+- **Tiers & Escalabilidad SaaS**: Planes `STARTER` ($49/mes), `PRO` ($99/mes) y `ENTERPRISE` ($199/mes) con cálculo automático de MRR (Ingreso Mensual Recurrente).
 
-### 2. 🔐 Seguridad y Control de Acceso (RBAC)
-Sistema de autenticación robusto potenciado por **Better Auth**, con soporte completo para control de acceso basado en roles (Super Admin, Admin, Entrenador y Socio) y protección estricta de Server Actions mediante esquemas de validación **Zod**.
+### 2. 🌐 Franquicias & Gestión Multisede Físicas (`/branches`)
+- **Control por Sucursal**: Alta y administración de sedes físicas (*Miraflores*, *San Isidro*, *Surco*, etc.).
+- **Selector de Sede Global (`BranchSwitcher`)**: Desplegable en la barra superior para alternar entre el consolidado global (`Todas las Sedes`) o una sede física individual.
+- **Scoping & RBAC por Sede**: Filtrado dinámico de socios, ingresos y asistencias según la ubicación asignada.
 
-### 3. 💳 Pasarelas de Pago Online y Kiosko Físico
-- **Pagos Online**: Integración nativa con **Mercado Pago** y **Culqi** para compra y renovación de membresías en tiempo real con webhooks seguros bidireccionales y envío automático de recibos PDF por correo.
-- **Kiosko de Auto-Checkin**: Terminal táctil para control de asistencia presencial mediante escaneo de código QR o autenticación por PIN numérico.
+### 3. 💳 Checkout de Auto-Inscripción Pública (`/join/[slug]`)
+- **Landing de Registro Online**: Cada gimnasio cuenta con su portal público en `/join/nombre-gimnasio`.
+- **Inscripción y Pago en 1-Click**: Los atletas eligen su plan, ingresan sus datos y pagan con **Tarjeta**, **Culqi**, **Mercado Pago**, **Yape** o **Plin**.
+- **Activación Instantánea**: Creación de usuario PWA y generación inmediata de credencial QR.
 
-### 4. 📊 Gestión Deportiva y Antropométrica
-- Control de asistencia en tiempo real con cálculo de aforo y ocupación.
-- Fichas antropométricas completas con historial de medidas corporales y galería visual con fotografías frontales, laterales y traseras alojadas en **Cloudinary**.
-- Gestión de rutinas de entrenamiento y asignación de entrenadores personalizados.
+### 4. ⚡ Motor de Automatizaciones & Alertas de Retención (`cron-actions.ts`)
+- **Recordatorios Preventivos de Vencimiento**: Alertas automáticas a 7, 3 y 1 días de vencer con botón de pago.
+- **Re-engagement por Inactividad**: Identificación automática de socios activos sin check-in en 14+ días con envío de mensajes de motivación.
+- **Centro de Pruebas de Automatizaciones**: Tab en `/settings` para probar los disparadores en tiempo real.
 
-### 5. 📬 Centro de Control de Comunicaciones
-Módulo de auditoría integral que monitorea en vivo el envío de notificaciones, correos electrónicos (vía **Resend**) y recordatorios de vencimiento de membresías.
+### 5. 📱 Portal PWA para Deportistas & Credencial QR Dinámica (`/portal`)
+- **Credencial QR Anti-Pantallazos (`/portal/qr`)**: Código QR que regenera su token de acceso cada 30 segundos de forma 100% offline.
+- **Ejecutor de Rutinas & Temporizador de Descanso (`/portal/routines`)**: Marcado de series en vivo con cronómetro de descanso inter-series (30s, 60s, 90s).
+- **Reserva de Clases Grupales (`/portal/classes`)**: Agendamiento en vivo con aforo disponible y cancelación en 1-tap.
+
+### 6. 🎨 Diseño Visual Premium ("Liquid Glass")
+- Estética **Glassmorphism** de vanguardia con desenfoques translúcidos, fondos oscuros vibrantes y micro-animaciones fluidas.
 
 ---
 
 ## 🛠️ Tecnologías Utilizadas
 
-- **Core**: Next.js 16 (App Router), React 19, TypeScript.
-- **Base de Datos y ORM**: Prisma ORM, PostgreSQL.
-- **Estilos y Componentes**: Tailwind CSS v4, Shadcn/ui, Lucide Icons.
-- **Servicios Externos**: Resend (Emails), Cloudinary (Media), Mercado Pago & Culqi (Pagos en vivo).
+- **Core**: Next.js 16 (App Router / Turbopack), React 19, TypeScript, Zustand.
+- **Base de Datos y ORM**: Prisma ORM v7.8, PostgreSQL.
+- **Autenticación & Seguridad**: Better Auth (Email/Password, RBAC).
+- **Estilos y UI**: Tailwind CSS v4, Shadcn/ui, Lucide Icons.
+- **Pagos & Servicios**: Culqi, Mercado Pago, Resend (Emails), QRCode.
 
 ---
 
-## 🚀 Guías de Configuración y Despliegue
-
-Para conocer todos los detalles arquitectónicos, planes de auditoría o llevar este proyecto a un entorno de producción en vivo, consulta las siguientes guías oficiales:
-
-- 📖 **[Guía de Despliegue en Producción (Checklist de Lanzamiento)](./PRODUCTION_DEPLOYMENT.md)**
-- 🗺️ **[Plan Arquitectónico y Roadmap del Proyecto](./GymOS-Plan.md)**
-
----
-
-## 💻 Desarrollo Local
+## 🚀 Desarrollo Local
 
 Para ejecutar el proyecto en tu entorno local:
 
 ```bash
-# 1. Instalar dependencias
+# 1. Instalar dependencias con Bun o PNPM
 bun install
 
-# 2. Generar cliente de base de datos
+# 2. Generar cliente de base de datos Prisma
 bunx prisma generate
 
-# 3. Ejecutar migraciones y poblar base de datos de prueba
-bunx prisma migrate dev
+# 3. Aplicar cambios a la base de datos PostgreSQL
+bunx prisma db push
+
+# 4. Poblar datos iniciales de prueba (Super Admin & Demo Gym)
 bun prisma/seed.ts
 
-# 4. Iniciar servidor de desarrollo
+# 5. Iniciar el servidor de desarrollo
 bun run dev
 ```
 
 Abre [http://localhost:3000](http://localhost:3000) en tu navegador para comenzar a explorar GymOS.
+
+---
+
+## 🧪 Pruebas y Compilación de Producción
+
+```bash
+# Ejecutar suite de pruebas Vitest (14 tests)
+bunx vitest run
+
+# Compilación optimizada de producción (49 rutas)
+bun run build
+```
+
+---
+
+Powered by **GymOS Platform** &copy; 2026

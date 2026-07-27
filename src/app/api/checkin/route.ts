@@ -26,6 +26,10 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
-  const stats = await getCheckInStats();
-  return NextResponse.json(stats);
+  try {
+    const stats = await getCheckInStats();
+    return NextResponse.json(stats);
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message || "No autorizado" }, { status: 401 });
+  }
 }

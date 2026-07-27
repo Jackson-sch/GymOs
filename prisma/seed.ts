@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { prisma } from "./index";
 import { auth } from "../src/lib/auth";
 import { Prisma } from "@prisma/client";
@@ -5,54 +6,126 @@ import { Prisma } from "@prisma/client";
 async function main() {
   console.log("🌱 Iniciando seeding masivo...");
 
-  // 1. Configuración Inicial
-  console.log("⚙️ Configurando sistema...");
-  await prisma.systemConfig.upsert({
-    where: { key: "GYM_NAME" },
-    update: {},
-    create: { key: "GYM_NAME", value: "GymOS - Elite Fitness", category: "GENERAL" },
-  });
-  await prisma.systemConfig.upsert({
-    where: { key: "MAX_CAPACITY" },
-    update: {},
-    create: { key: "MAX_CAPACITY", value: "50", category: "GENERAL", description: "Capacidad máxima del local" },
+  // 0. Organización Demostración (Tenant Inicial)
+  console.log("🏢 Creando gimnasio de prueba (Tenant)...");
+  const demoOrg = await prisma.organization.upsert({
+    where: { slug: "elite-fitness" },
+    update: { isActive: true },
+    create: {
+      name: "GymOS - Elite Fitness",
+      slug: "elite-fitness",
+      subdomain: "elite-fitness",
+      email: "contacto@elitefitness.com",
+      phone: "999888777",
+      address: "Av. Principal 123, Miraflores",
+      isActive: true,
+    },
   });
 
+  // 1. Configuración Inicial
+  console.log("⚙️ Configurando sistema...");
+  const existingGymName = await prisma.systemConfig.findFirst({ where: { organizationId: demoOrg.id, key: "GYM_NAME" } });
+  if (!existingGymName) {
+    await prisma.systemConfig.create({
+      data: { organizationId: demoOrg.id, key: "GYM_NAME", value: "GymOS - Elite Fitness", category: "GENERAL" },
+    });
+  }
+
+  const existingMaxCap = await prisma.systemConfig.findFirst({ where: { organizationId: demoOrg.id, key: "MAX_CAPACITY" } });
+  if (!existingMaxCap) {
+    await prisma.systemConfig.create({
+      data: { organizationId: demoOrg.id, key: "MAX_CAPACITY", value: "50", category: "GENERAL", description: "Capacidad máxima del local" },
+    });
+  }
+
   // 2. Planes de Membresía
-  console.log("📋 Creando planes...");
+  console.log("📋 Creando planes con beneficios diferenciados...");
   const plansData = [
-    { name: "Básico", price: 80, duration: 30, color: "oklch(50% 0.1 220)" },
-    { name: "Estándar", price: 120, duration: 30, color: "oklch(60% 0.12 250)" },
-    { name: "Premium", price: 180, duration: 30, color: "oklch(70% 0.15 280)" },
-    { name: "Anual VIP", price: 1200, duration: 365, color: "oklch(80% 0.2 300)" },
+    {
+      name: "Básico",
+      description: "Acceso esencial a sala de musculación y máquinas en horario regular.",
+      price: 80,
+      duration: 30,
+      maxFreezeDays: 0,
+      category: "ESENCIAL",
+      allowedClasses: false,
+      color: "oklch(50% 0.1 220)",
+    },
+    {
+      name: "Estándar",
+      description: "Acceso completo a máquinas, cardio y todas las clases grupales dirigidas.",
+      price: 120,
+      duration: 30,
+      maxFreezeDays: 7,
+      category: "RECOMENDADO",
+      allowedClasses: true,
+      color: "oklch(60% 0.12 250)",
+    },
+    {
+      name: "Premium",
+      description: "Pase VIP Todo Incluido: clases ilimitadas, 30 días congelación e invitados.",
+      price: 180,
+      duration: 30,
+      maxFreezeDays: 30,
+      category: "VIP",
+      allowedClasses: true,
+      color: "oklch(70% 0.15 280)",
+    },
+    {
+      name: "Anual VIP",
+      description: "Membresía anual exclusiva con tarifa con descuento y máximos beneficios.",
+      price: 1200,
+      duration: 365,
+      maxFreezeDays: 60,
+      category: "ANUAL VIP",
+      allowedClasses: true,
+      color: "oklch(80% 0.2 300)",
+    },
   ];
 
   const plans = await Promise.all(
-    plansData.map((p) =>
-      prisma.plan.upsert({
-        where: { name: p.name },
-        update: { color: p.color, price: new Prisma.Decimal(p.price) },
-        create: {
+    plansData.map(async (p) => {
+      const existing = await prisma.plan.findFirst({
+        where: { name: { equals: p.name, mode: "insensitive" } },
+      });
+      if (existing) {
+        return prisma.plan.update({
+          where: { id: existing.id },
+          data: {
+            color: p.color,
+            price: new Prisma.Decimal(p.price),
+            description: p.description,
+            category: p.category,
+            allowedClasses: p.allowedClasses,
+            maxFreezeDays: p.maxFreezeDays,
+            organizationId: demoOrg.id,
+          },
+        });
+      }
+      return prisma.plan.create({
+        data: {
           name: p.name,
-          description: `Acceso ${p.name}`,
+          description: p.description,
           price: new Prisma.Decimal(p.price),
           durationDays: p.duration,
+          maxFreezeDays: p.maxFreezeDays,
+          category: p.category,
+          allowedClasses: p.allowedClasses,
           color: p.color,
           isActive: true,
+          organizationId: demoOrg.id,
         },
-      })
-    )
+      });
+    })
   );
 
   // 3. Entrenadores
   console.log("💪 Creando entrenadores...");
   
-  // Función auxiliar para crear entrenador y su usuario
   async function createTrainerWithUser(data: { fullName: string, email: string, phone: string, specialties: string[], dni: string }) {
     try {
       const userEmail = data.email;
       
-      // Forzamos el recreado para asegurar que el DNI sea la contraseña
       const existingUser = await prisma.user.findUnique({ where: { email: userEmail } });
       if (existingUser) {
         console.log(`♻️ Recreando usuario para ${userEmail}...`);
@@ -62,7 +135,7 @@ async function main() {
       await auth.api.signUpEmail({
         body: { 
           email: userEmail, 
-          password: data.dni, // Usamos el DNI como contraseña
+          password: data.dni,
           name: data.fullName 
         }
       });
@@ -70,18 +143,17 @@ async function main() {
       const user = await prisma.user.findUnique({ where: { email: userEmail } });
 
       if (user) {
-        // 2. Asegurar que el rol sea TRAINER y forzar cambio de password
         await prisma.user.update({
           where: { id: user.id },
-          data: { role: "TRAINER", mustChangePassword: true, emailVerified: true }
+          data: { role: "TRAINER", mustChangePassword: true, emailVerified: true, organizationId: demoOrg.id }
         });
 
-        // 3. Crear el registro de Trainer vinculado
         return await prisma.trainer.upsert({
           where: { email: userEmail },
           update: { 
             userId: user.id,
-            dni: data.dni 
+            dni: data.dni,
+            organizationId: demoOrg.id
           },
           create: { 
             fullName: data.fullName, 
@@ -89,7 +161,8 @@ async function main() {
             phone: data.phone, 
             specialties: data.specialties,
             userId: user.id,
-            dni: data.dni
+            dni: data.dni,
+            organizationId: demoOrg.id
           },
         });
       }
@@ -128,19 +201,20 @@ async function main() {
 
     const member = await prisma.member.upsert({
       where: { dni },
-      update: {},
+      update: { organizationId: demoOrg.id },
       create: {
         fullName: `${fn} ${ln}`,
         email,
         phone: `9${Math.floor(100000000 + Math.random() * 900000000)}`,
         dni,
         status: Math.random() > 0.05 ? "ACTIVE" : "INACTIVE",
+        organizationId: demoOrg.id,
       },
     });
 
-    // Crear una membresía activa para la mayoría
     if (member.status === "ACTIVE") {
       const plan = plans[Math.floor(Math.random() * plans.length)];
+      if (!plan) continue;
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - Math.floor(Math.random() * 60));
       const endDate = new Date(startDate);
@@ -157,7 +231,6 @@ async function main() {
         },
       });
 
-      // Crear algunos pagos históricos (últimos 6 meses)
       const monthsToPay = Math.floor(Math.random() * 6) + 1;
       for (let m = 0; m < monthsToPay; m++) {
         const payDate = new Date();
@@ -176,17 +249,14 @@ async function main() {
         });
       }
 
-      // Asistencias (últimos 30 días)
       const attendancesCount = Math.floor(Math.random() * 20);
       for (let d = 0; d < attendancesCount; d++) {
         const attDate = new Date();
-        // Subtract random time: 0-30 days ago, then random hours within that day
         const daysAgo = Math.floor(Math.random() * 30);
-        const hoursAgo = Math.floor(Math.random() * 16) + 1; // 1-16 hours back
+        const hoursAgo = Math.floor(Math.random() * 16) + 1;
         const minutesAgo = Math.floor(Math.random() * 60);
         attDate.setTime(attDate.getTime() - (daysAgo * 86400000) - (hoursAgo * 3600000) - (minutesAgo * 60000));
 
-        // Decide if this person is "still in" (only if it's today and 10% chance)
         const isToday = daysAgo === 0;
         const isStillIn = isToday && Math.random() > 0.9;
         
@@ -204,27 +274,57 @@ async function main() {
     }
   }
 
-  // 5. Usuario Administrador
-  console.log("🔐 Asegurando usuario admin...");
+  // 5. Usuarios Administrador y Super Administrador
+  console.log("🔐 Asegurando usuarios administradores...");
+  
+  // 5.1 Super Admin (Plataforma SaaS Global)
+  const superAdminEmail = "superadmin@gymos.com";
+  const superAdminPassword = process.env.SEED_SUPER_ADMIN_PASSWORD || "superadmin123";
+  const existingSuperAdmin = await prisma.user.findUnique({ where: { email: superAdminEmail } });
+
+  if (!existingSuperAdmin) {
+    try {
+      await auth.api.signUpEmail({
+        body: { email: superAdminEmail, password: superAdminPassword, name: "Super Admin SaaS" },
+      });
+      await prisma.user.update({
+        where: { email: superAdminEmail },
+        data: { role: "SUPER_ADMIN", mustChangePassword: false, emailVerified: true }
+      });
+      console.log("✅ Super Admin creado: superadmin@gymos.com");
+    } catch (e) {
+      console.log("Super Admin ya existe o error al registrar");
+    }
+  } else {
+    await prisma.user.update({
+      where: { email: superAdminEmail },
+      data: { role: "SUPER_ADMIN" }
+    });
+  }
+
+  // 5.2 Admin Local del Gimnasio
   const adminEmail = "admin@gymos.com";
   const adminPassword = process.env.SEED_ADMIN_PASSWORD || "admin123";
   const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
   
   if (!existingAdmin) {
-    if (adminPassword === "admin123") {
-      console.warn("⚠️ [ADVERTENCIA DE SEGURIDAD]: Se está creando el usuario administrador con la contraseña por defecto 'admin123'. Asegúrese de cambiarla inmediatamente en producción o defina la variable SEED_ADMIN_PASSWORD en el entorno.");
-    }
     try {
       await auth.api.signUpEmail({
         body: { email: adminEmail, password: adminPassword, name: "Admin GymOS" },
       });
       await prisma.user.update({
         where: { email: adminEmail },
-        data: { role: "ADMIN", mustChangePassword: true, emailVerified: true }
+        data: { role: "ADMIN", mustChangePassword: true, emailVerified: true, organizationId: demoOrg.id }
       });
+      console.log("✅ Admin local creado: admin@gymos.com");
     } catch (e) {
       console.log("Admin ya existe o error en signUp");
     }
+  } else {
+    await prisma.user.update({
+      where: { email: adminEmail },
+      data: { organizationId: demoOrg.id }
+    });
   }
 
   

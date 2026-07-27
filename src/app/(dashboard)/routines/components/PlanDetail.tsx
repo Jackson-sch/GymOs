@@ -1,26 +1,32 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  ArrowLeft, 
-  Search, 
-  ChevronLeft, 
-  ChevronRight, 
+import {
+  ArrowLeft,
+  Search,
+  ChevronLeft,
+  ChevronRight,
   Dumbbell,
   Target,
-  Play
+  Play,
+  User,
+  Calendar,
+  Sparkles,
+  Timer,
+  Trophy,
+  ExternalLink,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { RoutineSimulator } from "./RoutineSimulator";
 
@@ -40,68 +46,112 @@ export function PlanDetail({ plan, onBack }: PlanDetailProps) {
     setMemberSearchTerm("");
   }, [plan]);
 
-  const filteredMembers = plan.routines.filter((r: any) => 
-    r.member.fullName.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
-    r.member.dni?.toLowerCase().includes(memberSearchTerm.toLowerCase())
-  );
+  const filteredMembers = (plan.routines || []).filter((r: any) => {
+    if (!memberSearchTerm.trim()) return true;
+    const memberName = r.member?.fullName || "";
+    const memberDni = r.member?.dni || "";
+    const term = memberSearchTerm.toLowerCase();
+    return (
+      memberName.toLowerCase().includes(term) ||
+      memberDni.toLowerCase().includes(term)
+    );
+  });
 
   const paginatedMembers = filteredMembers.slice(
-    (memberPage - 1) * MEMBERS_PER_PAGE, 
-    memberPage * MEMBERS_PER_PAGE
+    (memberPage - 1) * MEMBERS_PER_PAGE,
+    memberPage * MEMBERS_PER_PAGE,
   );
 
+  // Determine category badge based on plan name
+  const getPlanCategory = (name: string) => {
+    const n = name.toLowerCase();
+    if (n.includes("fuerza") || n.includes("power") || n.includes("5x5")) {
+      return { label: "Fuerza & Potencia", color: "bg-rose-500/10 text-rose-400 border-rose-500/30" };
+    }
+    if (n.includes("hipertrofia") || n.includes("volumen") || n.includes("muscle")) {
+      return { label: "Hipertrofia", color: "bg-primary/10 text-primary border-primary/30" };
+    }
+    if (n.includes("cardio") || n.includes("hiit") || n.includes("definicion")) {
+      return { label: "Definición & HIIT", color: "bg-amber-500/10 text-amber-400 border-amber-500/30" };
+    }
+    return { label: "Acondicionamiento", color: "bg-blue-500/10 text-blue-400 border-blue-500/30" };
+  };
+
+  const category = getPlanCategory(plan.name);
+
   return (
-    <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
+    <div className="space-y-8 animate-in slide-in-from-right-4 duration-500 w-full pb-8">
       {/* Simulation Modal */}
-      <RoutineSimulator 
+      <RoutineSimulator
         isOpen={isSimulating}
         onClose={() => setIsSimulating(false)}
         exercises={plan.routines[0]?.exercises || []}
         planName={plan.name}
       />
 
-      {/* Header Detail */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      {/* Detail Header */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 glass-card p-6 sm:p-8 rounded-3xl border-white/10">
         <div className="space-y-4">
-          <button 
+          <button
             onClick={onBack}
-            className="flex items-center gap-2 text-primary hover:gap-3 transition-all group font-bold text-sm"
+            className="flex items-center gap-2 text-primary hover:gap-3 transition-all group font-bold text-xs uppercase tracking-wider"
           >
             <ArrowLeft className="size-4" />
-            VOLVER A TODOS LOS PLANES
+            Volver a Todos los Planes
           </button>
-          <div>
-            <h1 className="text-5xl font-serif tracking-tight">{plan.name}</h1>
-            <p className="text-muted-foreground mt-2 max-w-2xl">
-              Panel de gestión estratégica para el plan de entrenamiento personalizado. 
-              Visualiza y administra a los miembros asignados y la estructura técnica.
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1 ${category.color}`}>
+                {category.label}
+              </Badge>
+              <Badge variant="outline" className="bg-white/5 border-white/10 text-[10px] text-muted-foreground uppercase tracking-wider">
+                Plan Prescrito
+              </Badge>
+            </div>
+            <h1 className="text-4xl sm:text-5xl font-serif tracking-tight text-foreground">
+              {plan.name}
+            </h1>
+            <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed">
+              Panel de gestión estratégica para el plan de entrenamiento. Visualice a los socios que tienen asignada esta rutina y examine la secuencia técnica de ejercicios.
             </p>
           </div>
         </div>
-        
+
+        {/* KPI Stats */}
         <div className="flex gap-4">
-          <div className="glass-card px-6 py-4 border-white/5 bg-white/5">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-black">Socios Totales</p>
-            <p className="text-3xl font-serif text-primary">{plan.routines.length}</p>
+          <div className="glass-card px-6 py-4 rounded-2xl border-white/10 bg-white/5 text-center min-w-[120px]">
+            <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold">
+              Socios Totales
+            </p>
+            <p className="text-3xl font-serif font-bold text-primary">
+              {plan.routines.length}
+            </p>
           </div>
-          <div className="glass-card px-6 py-4 border-white/5 bg-white/5">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-black">Ejercicios</p>
-            <p className="text-3xl font-serif text-primary">{plan.exerciseCount}</p>
+          <div className="glass-card px-6 py-4 rounded-2xl border-white/10 bg-white/5 text-center min-w-[120px]">
+            <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold">
+              Ejercicios
+            </p>
+            <p className="text-3xl font-serif font-bold text-foreground">
+              {plan.exerciseCount}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         {/* Members Column */}
-        <div className="lg:col-span-2 flex flex-col">
-          <div className="glass-card border-white/5 overflow-hidden flex flex-col bg-black/20">
-            <div className="p-6 border-b border-white/5 bg-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <h3 className="text-xl font-serif">Socios Vinculados</h3>
+        <div className="lg:col-span-7 flex flex-col">
+          <div className="glass-card border-white/10 rounded-3xl overflow-hidden flex flex-col backdrop-blur-md h-full">
+            <div className="p-6 border-b border-white/5 bg-white/2 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div>
+                <h3 className="text-xl font-serif font-bold text-foreground">Socios Vinculados</h3>
+                <p className="text-xs text-muted-foreground">Alumnos con esta rutina asignada en su expediente</p>
+              </div>
               <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Buscar socio..." 
-                  className="pl-9 h-10 bg-black/20 border-white/10 rounded-xl text-xs focus:ring-1 focus:ring-primary/50"
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por socio o DNI..."
+                  className="pl-10 h-10 bg-white/5 border-white/10 rounded-xl text-xs focus-visible:ring-primary/40"
                   value={memberSearchTerm}
                   onChange={(e) => {
                     setMemberSearchTerm(e.target.value);
@@ -110,137 +160,199 @@ export function PlanDetail({ plan, onBack }: PlanDetailProps) {
                 />
               </div>
             </div>
-            
+
             <div className="flex-1 overflow-auto">
               <Table>
                 <TableHeader className="bg-white/5">
                   <TableRow className="border-white/5 hover:bg-transparent">
-                    <TableHead className="text-muted-foreground font-bold py-4">Socio</TableHead>
-                    <TableHead className="text-muted-foreground font-bold py-4">Entrenador</TableHead>
-                    <TableHead className="text-muted-foreground font-bold py-4">Desde</TableHead>
-                    <TableHead className="text-muted-foreground font-bold py-4 text-right">Acciones</TableHead>
+                    <TableHead className="text-muted-foreground font-bold text-xs py-3.5">
+                      Socio
+                    </TableHead>
+                    <TableHead className="text-muted-foreground font-bold text-xs py-3.5">
+                      Entrenador
+                    </TableHead>
+                    <TableHead className="text-muted-foreground font-bold text-xs py-3.5">
+                      Asignado
+                    </TableHead>
+                    <TableHead className="text-muted-foreground font-bold text-xs py-3.5 text-right">
+                      Acciones
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paginatedMembers.map((r: any) => (
-                    <TableRow key={r.id} className="border-white/5 hover:bg-white/5 transition-colors group">
-                      <TableCell className="py-4">
+                    <TableRow
+                      key={r.id}
+                      className="border-white/5 hover:bg-white/5 transition-colors group"
+                    >
+                      <TableCell className="py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs">
-                            {r.member.fullName.charAt(0)}
+                          <div className="size-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-xs shrink-0">
+                            {r.member?.fullName?.substring(0, 2).toUpperCase() || "M"}
                           </div>
                           <div>
-                            <p className="text-sm font-medium">{r.member.fullName}</p>
-                            <p className="text-[10px] text-muted-foreground">ID: {r.member.dni || 'N/A'}</p>
+                            <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                              {r.member?.fullName}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground font-mono">
+                              DNI: {r.member?.dni || "S/D"}
+                            </p>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm font-medium text-muted-foreground">{r.trainer.fullName}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {new Date(r.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      <TableCell className="text-xs text-muted-foreground font-medium">
+                        {r.trainer?.fullName || "Staff Entrenador"}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground font-mono">
+                        {r.createdAt
+                          ? new Date(r.createdAt).toLocaleDateString("es-PE", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : "N/A"}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Link 
-                          href={`/members/${r.member.id}`}
-                          className="text-[10px] uppercase font-black tracking-widest text-primary hover:underline transition-all px-3 py-2 rounded-lg hover:bg-primary/5 inline-block"
+                        <Link
+                          href={`/members/${r.member?.id}`}
+                          className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-primary hover:underline px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors"
                         >
-                          Ver Perfil
+                          Ver Perfil <ExternalLink className="size-3" />
                         </Link>
                       </TableCell>
                     </TableRow>
                   ))}
                   {paginatedMembers.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
-                        No se encontraron socios con ese criterio.
+                      <TableCell
+                        colSpan={4}
+                        className="h-32 text-center text-muted-foreground text-xs"
+                      >
+                        No se encontraron socios asignados a este plan.
                       </TableCell>
                     </TableRow>
                   )}
                 </TableBody>
               </Table>
             </div>
-            
+
             {filteredMembers.length > MEMBERS_PER_PAGE && (
-              <div className="p-4 border-t border-white/5 flex items-center justify-between bg-black/20">
-                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
-                  Mostrando {Math.min(filteredMembers.length, memberPage * MEMBERS_PER_PAGE)} de {filteredMembers.length} socios
+              <div className="p-4 border-t border-white/5 flex items-center justify-between bg-white/2">
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                  Mostrando{" "}
+                  {Math.min(
+                    filteredMembers.length,
+                    memberPage * MEMBERS_PER_PAGE,
+                  )}{" "}
+                  de {filteredMembers.length} socios
                 </p>
                 <div className="flex gap-2">
-                  <button 
-                    onClick={() => setMemberPage(p => Math.max(1, p - 1))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setMemberPage((p) => Math.max(1, p - 1))}
                     disabled={memberPage === 1}
-                    className="h-8 w-8 flex items-center justify-center rounded-lg border border-white/10 hover:bg-white/5 disabled:opacity-30 transition-all"
+                    className="h-8 w-8 p-0 rounded-lg border-white/10"
                   >
                     <ChevronLeft className="size-4" />
-                  </button>
-                  <button 
-                    onClick={() => setMemberPage(p => p + 1)}
-                    disabled={memberPage * MEMBERS_PER_PAGE >= filteredMembers.length}
-                    className="h-8 w-8 flex items-center justify-center rounded-lg border border-white/10 hover:bg-white/5 disabled:opacity-30 transition-all"
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setMemberPage((p) => p + 1)}
+                    disabled={
+                      memberPage * MEMBERS_PER_PAGE >= filteredMembers.length
+                    }
+                    className="h-8 w-8 p-0 rounded-lg border-white/10"
                   >
                     <ChevronRight className="size-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Tech Plan Column */}
-        <div className="lg:col-span-1 flex flex-col">
-          <div className="glass-card border-white/5 flex flex-col h-[700px] bg-black/40 overflow-hidden">
-            <div className="p-6 border-b border-white/5 bg-white/5 flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Target className="size-4 text-primary" />
+        {/* Technical Plan Column */}
+        <div className="lg:col-span-5 flex flex-col">
+          <div className="glass-card border-white/10 rounded-3xl flex flex-col h-full bg-white/2 overflow-hidden backdrop-blur-md">
+            <div className="p-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-xl border border-primary/20 text-primary">
+                  <Target className="size-4" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-serif font-bold text-foreground">Secuencia Técnica</h3>
+                  <p className="text-xs text-muted-foreground">Prescripción de cargas del plan</p>
+                </div>
               </div>
-              <h3 className="text-xl font-serif">Plan Técnico</h3>
+              <Badge variant="outline" className="text-[9px] font-bold uppercase bg-primary/10 text-primary border-primary/30">
+                {plan.exerciseCount} Ejercicios
+              </Badge>
             </div>
-            
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4 max-h-[600px]">
               {plan.routines[0]?.exercises?.length > 0 ? (
                 plan.routines[0].exercises.map((item: any, idx: number) => (
-                  <div key={idx} className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all group/ex">
-                    <div className="flex items-start justify-between mb-3">
+                  <div
+                    key={idx}
+                    className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-primary/30 transition-all group/ex space-y-3"
+                  >
+                    <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-black/40 flex items-center justify-center text-[10px] font-black text-primary border border-white/5">
-                          {String(idx + 1).padStart(2, '0')}
+                        <div className="size-8 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center text-xs font-serif font-bold text-primary shrink-0">
+                          {String(idx + 1).padStart(2, "0")}
                         </div>
-                        <h4 className="font-bold text-sm group-hover/ex:text-primary transition-colors">{item.exercise.name}</h4>
+                        <div>
+                          <h4 className="font-bold text-sm text-foreground group-hover/ex:text-primary transition-colors">
+                            {item.exercise?.name}
+                          </h4>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                            {item.exercise?.muscleGroup || "General"}
+                          </p>
+                        </div>
                       </div>
-                      <Badge variant="outline" className="text-[8px] uppercase tracking-tighter border-white/10 bg-white/5">
-                        {item.exercise.muscleGroup}
-                      </Badge>
                     </div>
-                    
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="px-3 py-2 rounded-xl bg-black/20 border border-white/5">
+
+                    <div className="grid grid-cols-4 gap-2">
+                      <div className="p-2 rounded-xl bg-black/20 border border-white/5 text-center">
                         <p className="text-[8px] uppercase text-muted-foreground font-bold">Series</p>
-                        <p className="text-sm font-serif">{item.sets} <span className="text-[10px] font-sans text-muted-foreground italic">sets</span></p>
+                        <p className="text-sm font-serif font-bold text-foreground">{item.sets}</p>
                       </div>
-                      <div className="px-3 py-2 rounded-xl bg-black/20 border border-white/5">
+                      <div className="p-2 rounded-xl bg-black/20 border border-white/5 text-center">
                         <p className="text-[8px] uppercase text-muted-foreground font-bold">Reps</p>
-                        <p className="text-sm font-serif">{item.reps} <span className="text-[10px] font-sans text-muted-foreground italic">movs</span></p>
+                        <p className="text-sm font-serif font-bold text-foreground">{item.reps}</p>
+                      </div>
+                      <div className="p-2 rounded-xl bg-black/20 border border-white/5 text-center">
+                        <p className="text-[8px] uppercase text-muted-foreground font-bold">Descanso</p>
+                        <p className="text-sm font-serif font-bold text-emerald-400">60s</p>
+                      </div>
+                      <div className="p-2 rounded-xl bg-black/20 border border-white/5 text-center">
+                        <p className="text-[8px] uppercase text-muted-foreground font-bold">Objetivo</p>
+                        <p className="text-sm font-serif font-bold text-amber-400">RPE 8</p>
                       </div>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-12 opacity-40">
-                  <Dumbbell className="size-8 mx-auto mb-3" />
-                  <p className="text-xs uppercase font-bold tracking-widest">Sin ejercicios configurados</p>
+                <div className="text-center py-16 opacity-40">
+                  <Dumbbell className="size-10 mx-auto mb-3" />
+                  <p className="text-xs uppercase font-bold tracking-widest">
+                    Sin ejercicios configurados
+                  </p>
                 </div>
               )}
             </div>
-            
-            <div className="p-4 bg-primary/5 border-t border-white/5 mt-auto">
-              <button 
+
+            <div className="p-5 bg-white/2 border-t border-white/5 mt-auto">
+              <Button
                 onClick={() => setIsSimulating(true)}
                 disabled={!plan.routines[0]?.exercises?.length}
-                className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50 disabled:scale-100"
+                className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-widest hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
               >
-                <Play className="size-3 fill-current" />
-                Simular Rutina
-              </button>
+                <Play className="size-4 fill-current" />
+                Simular Rutina Interactivamente
+              </Button>
             </div>
           </div>
         </div>

@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { TrainerPayrollTab } from "./TrainerPayrollTab";
+import { TrainerRoutinesTab } from "./TrainerRoutinesTab";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 
 // New Component Imports
@@ -118,7 +119,7 @@ type TrainerState = {
   isSaving: boolean;
   isUploading: boolean;
   photoControlsVisible: boolean;
-  activeTab: "GENERAL" | "PAYROLL";
+  activeTab: "GENERAL" | "PAYROLL" | "ROUTINES";
   newSpecialty: string;
   formData: {
     fullName: string;
@@ -141,7 +142,7 @@ type Action =
   | { type: "SET_SAVING"; payload: boolean }
   | { type: "SET_UPLOADING"; payload: boolean }
   | { type: "SET_PHOTO_CONTROLS"; payload: boolean }
-  | { type: "SET_TAB"; payload: "GENERAL" | "PAYROLL" }
+  | { type: "SET_TAB"; payload: "GENERAL" | "PAYROLL" | "ROUTINES" }
   | { type: "UPDATE_FORM"; payload: Partial<TrainerState["formData"]> }
   | { type: "SET_NEW_SPECIALTY"; payload: string }
   | { type: "SET_SELECTED_CLASS"; payload: string | null }
@@ -360,7 +361,7 @@ export default function TrainerProfileClient({
         <div className="absolute bottom-[-10%] left-[-10%] size-[40%] bg-primary/5 blur-[120px] rounded-full animate-pulse delay-1000" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 relative">
+      <div className="w-full relative space-y-8">
         {/* Navigation Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
           <div className="flex items-center gap-4">
@@ -380,41 +381,56 @@ export default function TrainerProfileClient({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-background/50 backdrop-blur-xl p-1 rounded-2xl border border-white/10">
             <button
               onClick={() => dispatch({ type: "SET_TAB", payload: "GENERAL" })}
               className={cn(
-                "px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all",
-                activeTab === "GENERAL" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "hover:bg-secondary/40 text-muted-foreground"
+                "px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all",
+                activeTab === "GENERAL"
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/5",
               )}
             >
-              General
+              Información General
+            </button>
+            <button
+              onClick={() => dispatch({ type: "SET_TAB", payload: "ROUTINES" })}
+              className={cn(
+                "px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all",
+                activeTab === "ROUTINES"
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/5",
+              )}
+            >
+              Rutinas & Alumnos
             </button>
             <button
               onClick={() => dispatch({ type: "SET_TAB", payload: "PAYROLL" })}
               className={cn(
-                "px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all",
-                activeTab === "PAYROLL" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "hover:bg-secondary/40 text-muted-foreground"
+                "px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all",
+                activeTab === "PAYROLL"
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/5",
               )}
             >
-              Payroll
+              Nómina & Comisiones
             </button>
           </div>
         </div>
 
         {/* Profile Header Card */}
         <div className="relative mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-          <div className="absolute inset-0 bg-linear-to-r from-primary/5 via-transparent to-transparent blur-3xl opacity-20" />
-          <div className="relative rounded-[2.5rem] border border-border/10 bg-secondary/10 backdrop-blur-xl overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/15 via-transparent to-transparent blur-3xl opacity-40" />
+          <div className="relative rounded-[2.5rem] border border-white/15 bg-zinc-950/85 backdrop-blur-2xl overflow-hidden shadow-2xl">
             {/* Top accent line */}
-            <div className="h-px bg-linear-to-r from-transparent via-primary/30 to-transparent" />
+            <div className="h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
             
             {/* Action Controls - Top Bar */}
             <div className="flex items-center justify-end gap-2 px-8 pt-6 pb-0">
               {!isEditing ? (
                 <button
                   onClick={() => dispatch({ type: "TOGGLE_EDIT" })}
-                  className="flex items-center gap-2 px-5 py-2 rounded-xl bg-background/40 backdrop-blur-md border border-border/10 hover:bg-background/60 text-muted-foreground hover:text-foreground transition-all text-xs font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98]"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/30 hover:bg-primary hover:text-primary-foreground transition-all text-xs font-bold uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <Edit2 className="size-3.5" />
                   Editar Perfil
@@ -462,7 +478,7 @@ export default function TrainerProfileClient({
           </div>
         </div>
 
-        {activeTab === "GENERAL" ? (
+        {activeTab === "GENERAL" && (
           <>
             {/* Stats Grid - Subtle and Modern */}
             <TrainerStats
@@ -489,9 +505,10 @@ export default function TrainerProfileClient({
               />
             </div>
           </>
-        ) : (
-          <TrainerPayrollTab trainer={trainer} />
         )}
+
+        {activeTab === "ROUTINES" && <TrainerRoutinesTab trainer={trainer} />}
+        {activeTab === "PAYROLL" && <TrainerPayrollTab trainer={trainer} />}
 
         <ClassDetailsDialog 
           classId={selectedClassId}

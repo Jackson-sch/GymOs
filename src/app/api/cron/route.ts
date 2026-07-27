@@ -1,13 +1,29 @@
 import { NextResponse } from "next/server";
 import { processExpiringMembershipsAction, processExpiredMembershipsAction } from "@/lib/actions/cron-actions";
 
-export async function GET(request: Request) {
+function isCronAuthorized(request: Request): boolean {
+  const secret = process.env.CRON_SECRET;
+  if (!secret || secret.trim() === "") {
+    return false;
+  }
+
+  const authHeader = request.headers.get("authorization");
+  if (authHeader && authHeader === `Bearer ${secret}`) {
+    return true;
+  }
+
   const { searchParams } = new URL(request.url);
   const token = searchParams.get("token");
+  if (token && token === secret) {
+    return true;
+  }
 
-  // Verificar el token de seguridad
-  if (token !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  return false;
+}
+
+export async function GET(request: Request) {
+  if (!isCronAuthorized(request)) {
+    return NextResponse.json({ error: "No autorizado: CRON_SECRET inválido o no configurado" }, { status: 401 });
   }
 
   console.log("[CRON] Iniciando procesamiento automático de membresías...");
@@ -34,3 +50,4 @@ export async function GET(request: Request) {
     }, { status: 500 });
   }
 }
+

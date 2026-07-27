@@ -30,10 +30,23 @@ function handlePrismaUniqueError(error: any, fallbackMessage: string): string {
   return fallbackMessage;
 }
 
-export async function getMembersAction() {
+export async function getMembersAction(options?: { branchId?: string }) {
   try {
-    await verifySession();
+    const session = await verifySession();
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { organizationId: true, role: true }
+    });
+
+    const isSuperAdmin = dbUser?.role === "SUPER_ADMIN";
+    const organizationId = isSuperAdmin ? undefined : (dbUser?.organizationId || undefined);
+    const branchId = options?.branchId && options.branchId !== "ALL" ? options.branchId : undefined;
+
     const members = await prisma.member.findMany({
+      where: {
+        ...(organizationId ? { organizationId } : {}),
+        ...(branchId ? { branchId } : {}),
+      },
       include: {
         memberships: {
           orderBy: { createdAt: "desc" },
@@ -45,7 +58,8 @@ export async function getMembersAction() {
     });
 
     return { success: true, data: serialize(members) };
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Error al cargar socios:", error);
     return { success: false, error: "Error al cargar socios" };
   }
 }
@@ -75,6 +89,16 @@ export async function getMemberAction(id: string) {
           include: { class: true },
           orderBy: { bookedAt: "desc" },
           take: 5
+        },
+        routines: {
+          include: {
+            trainer: { select: { fullName: true } },
+            exercises: {
+              include: { exercise: true },
+              orderBy: { order: "asc" }
+            }
+          },
+          orderBy: { createdAt: "desc" }
         }
       }
     });
@@ -89,11 +113,18 @@ export async function getMemberAction(id: string) {
 
 export async function createMemberAction(data: MemberInput) {
   try {
-    await verifySession(["ADMIN", "SUPER_ADMIN"]);
+    const session = await verifySession(["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"]);
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { organizationId: true, branchId: true }
+    });
+
     const validated = memberSchema.parse(data);
 
     const member = await prisma.member.create({
       data: {
+        organizationId: dbUser?.organizationId || null,
+        branchId: dbUser?.branchId || null,
         fullName: validated.fullName,
         email: validated.email,
         phone: validated.phone,
@@ -353,17 +384,32 @@ export async function disablePortalAccess(memberId: string) {
   }
 }
 
-export async function getMembersStatsAction() {
+export async function getMembersStatsAction(options?: { branchId?: string }) {
   try {
-    await verifySession();
+    const session = await verifySession();
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { organizationId: true, role: true }
+    });
+
+    const isSuperAdmin = dbUser?.role === "SUPER_ADMIN";
+    const organizationId = isSuperAdmin ? undefined : (dbUser?.organizationId || undefined);
+    const branchId = options?.branchId && options.branchId !== "ALL" ? options.branchId : undefined;
+
+    const whereClause = {
+      ...(organizationId ? { organizationId } : {}),
+      ...(branchId ? { branchId } : {}),
+    };
+
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const [total, active, newThisMonth] = await Promise.all([
-      prisma.member.count(),
-      prisma.member.count({ where: { status: "ACTIVE" } }),
+      prisma.member.count({ where: whereClause }),
+      prisma.member.count({ where: { ...whereClause, status: "ACTIVE" } }),
       prisma.member.count({
         where: {
+          ...whereClause,
           createdAt: {
             gte: startOfMonth
           }

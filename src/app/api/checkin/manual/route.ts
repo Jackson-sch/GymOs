@@ -12,7 +12,8 @@ export async function GET(request: Request) {
   const result = await searchMembersAction(query);
   
   if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: 400 });
+    const status = result.error?.includes("No autorizado") || result.error?.includes("sesión") ? 401 : 400;
+    return NextResponse.json({ error: result.error }, { status });
   }
   
   return NextResponse.json(result.data);

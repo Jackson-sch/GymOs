@@ -10,7 +10,8 @@ This skill defines the mandatory patterns and practices for maintaining the inte
 ## 🛡️ Security Best Practices
 
 ### 1. Authentication & Authorization
-- **Auth Guarding**: Every Server Action and Route Handler MUST verify the user's session using `auth.api.getSession()`.
+- **Next.js 16 Proxy Convention**: Next.js 16 deprecates `middleware.ts` in favor of `src/proxy.ts` exporting `proxy()` and `config.matcher`. All request-level auth & RBAC checks MUST reside in `src/proxy.ts`.
+- **Auth Guarding**: Every Server Action and Route Handler MUST verify the user's session using `auth.api.getSession()` or `verifySession()`.
 - **RBAC (Role-Based Access Control)**: Verify roles for administrative actions. Do not rely solely on being "logged in".
 - **Sensitive Data Scoping**: Always filter database queries by `userId` or `memberId` to prevent IDOR (Insecure Direct Object Reference) vulnerabilities.
 

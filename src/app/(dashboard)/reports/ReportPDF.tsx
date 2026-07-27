@@ -224,7 +224,7 @@ export function ReportPDF({
 
         {/* Top Members Table */}
         <View style={styles.section} break>
-          <Heading level={4} style={{ marginBottom: 10 }}>Top 10 Miembros más Activos</Heading>
+          <Heading level={4} style={{ marginBottom: 10 }}>Top 5 Miembros más Activos (Ranking de Lealtad)</Heading>
           <Table variant="line">
             <TableHeader>
               <TableRow header>
@@ -235,7 +235,7 @@ export function ReportPDF({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {topMembers.slice(0, 10).map((m, i) => (
+              {topMembers.slice(0, 5).map((m, i) => (
                 <TableRow key={m.id || i}>
                   <TableCell width="10%">{String(i + 1)}</TableCell>
                   <TableCell width="50%">{String(m.fullName)}</TableCell>

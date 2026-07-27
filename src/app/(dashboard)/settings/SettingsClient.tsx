@@ -10,6 +10,7 @@ import {
   User,
   Eye,
   Cpu,
+  Zap,
 } from "lucide-react";
 import {
   updateConfigsAction,
@@ -31,6 +32,7 @@ import { APITab } from "./components/APITab";
 import { SecurityTab } from "./components/SecurityTab";
 import { AuditTab } from "./components/AuditTab";
 import { SystemTab } from "./components/SystemTab";
+import { AutomationsTab } from "./AutomationsTab";
 
 // Reducers
 const passwordReducer = (state: any, action: any) => {
@@ -138,13 +140,19 @@ export function SettingsClient({ initialData }: { initialData: any[] }) {
     }
   }, [activeTab, currentPage]);
 
-  // Transform flat array to key-value object for easier form management
+  // Transform flat array or object to key-value object for form state
   const [formState, setFormState] = React.useState<Record<string, string>>(
     () => {
       const state: Record<string, string> = {};
-      initialData.forEach((item) => {
-        state[item.key] = item.value;
-      });
+      if (Array.isArray(initialData)) {
+        initialData.forEach((item) => {
+          if (item && item.key) {
+            state[item.key] = item.value || "";
+          }
+        });
+      } else if (initialData && typeof initialData === "object") {
+        Object.assign(state, initialData);
+      }
       return state;
     },
   );
@@ -181,6 +189,7 @@ export function SettingsClient({ initialData }: { initialData: any[] }) {
     { id: "general", label: "General", icon: Globe },
     { id: "branding", label: "Marca & UI", icon: Cpu },
     { id: "account", label: "Mi Cuenta", icon: User },
+    { id: "automations", label: "Automatizaciones & Marketing", icon: Zap },
     { id: "notifications", label: "Notificaciones", icon: Bell },
     { id: "api", label: "Canales API", icon: Key },
     { id: "security", label: "Seguridad", icon: Shield },
@@ -221,6 +230,8 @@ export function SettingsClient({ initialData }: { initialData: any[] }) {
           )}
 
           {activeTab === "account" && <AccountTab user={user} />}
+
+          {activeTab === "automations" && <AutomationsTab />}
 
           {activeTab === "notifications" && (
             <NotificationsTab

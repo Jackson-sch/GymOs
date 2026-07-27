@@ -62,3 +62,16 @@ export const UNAUTHORIZED_RESPONSE = {
   success: false,
   error: "No autorizado: Inicie sesión o verifique sus permisos"
 };
+
+/**
+ * Obtiene la información del usuario en sesión y su organización activa (tenant).
+ */
+export async function getCurrentTenant() {
+  const session = await verifySession();
+  const user = session.user as any;
+  return {
+    user,
+    organizationId: user.organizationId as string | null | undefined,
+    role: getUserRole(session),
+  };
+}

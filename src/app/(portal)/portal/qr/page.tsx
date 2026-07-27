@@ -1,43 +1,51 @@
 import React from "react";
-import { getPortalMemberAction } from "@/lib/actions/portal-actions";
-import { QRClient } from "./QRClient";
-import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/security";
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+import { DynamicQRClient } from "./DynamicQRClient";
 import { serialize } from "@/lib/utils";
 
-export default async function PortalQRPage() {
-  const session: any = await verifySession();
+export const metadata = {
+  title: "Credencial QR Digital | GymOS",
+};
 
-  const member = await prisma.member.findUnique({
-    where: { userId: session.user.id },
+export default async function PortalQRPage() {
+  const session = await verifySession();
+  const user = session.user as any;
+
+  const member = await prisma.member.findFirst({
+    where: {
+      OR: [
+        { userId: user.id },
+        { email: user.email }
+      ]
+    },
     include: {
+      organization: { select: { name: true } },
       memberships: {
         where: { status: "ACTIVE" },
-        include: { plan: true },
-        take: 1
+        take: 1,
+        include: { plan: true }
       }
     }
   });
 
   if (!member) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
-        <h2 className="text-2xl font-serif text-muted-foreground">Socio no vinculado</h2>
-        <p className="max-w-md text-sm text-muted-foreground/60">
-          Tu cuenta de usuario no está vinculada a un registro de socio. 
-          Contacta a recepción para solucionar esto.
-        </p>
-      </div>
-    );
+    redirect("/portal");
   }
 
-  const activeMembership = member.memberships[0];
+  const memberData = {
+    id: member.id,
+    fullName: member.fullName,
+    dni: member.dni,
+    email: member.email,
+    photo: member.photo,
+    qrCode: member.qrCode || member.id,
+    status: member.status,
+    organizationName: member.organization?.name,
+    planName: member.memberships?.[0]?.plan?.name,
+    endDate: member.memberships?.[0]?.endDate,
+  };
 
-  return (
-    <QRClient 
-      member={serialize(member)} 
-      planName={activeMembership?.plan?.name || "Sin Plan Activo"}
-      isActive={!!activeMembership}
-    />
-  );
+  return <DynamicQRClient member={serialize(memberData)} />;
 }

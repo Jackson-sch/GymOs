@@ -19,6 +19,7 @@ import { createEquipmentAction, updateEquipmentAction } from "@/lib/actions/inve
 import { toast } from "sonner";
 import { Loader2, Save } from "lucide-react";
 import { ImageUpload } from "@/components/shared/ImageUpload";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const equipmentSchema = z.object({
   name: z.string().min(2, "Mínimo 2 caracteres"),
@@ -134,18 +135,30 @@ export function EquipmentForm({ initialData, onSuccess }: EquipmentFormProps) {
         </div>
         <div className="space-y-2">
           <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Fecha Compra</Label>
-          <Input {...register("purchaseDate")} type="date" className="bg-white/5 border-white/10" />
+          <DatePicker
+            value={watch("purchaseDate")}
+            onChange={(date) => setValue("purchaseDate", date ? date.toISOString().split("T")[0] : "")}
+            placeholder="Seleccionar fecha..."
+          />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Último Mantenimiento</Label>
-          <Input {...register("lastMaintenance")} type="date" className="bg-white/5 border-white/10" />
+          <DatePicker
+            value={watch("lastMaintenance")}
+            onChange={(date) => setValue("lastMaintenance", date ? date.toISOString().split("T")[0] : "")}
+            placeholder="Seleccionar fecha..."
+          />
         </div>
         <div className="space-y-2">
           <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Próximo Mantenimiento</Label>
-          <Input {...register("nextMaintenance")} type="date" className="bg-white/5 border-white/10" />
+          <DatePicker
+            value={watch("nextMaintenance")}
+            onChange={(date) => setValue("nextMaintenance", date ? date.toISOString().split("T")[0] : "")}
+            placeholder="Seleccionar fecha..."
+          />
         </div>
       </div>
 

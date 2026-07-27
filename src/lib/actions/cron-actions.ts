@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { addDays, differenceInDays } from "date-fns";
+import { addDays, subDays, differenceInDays } from "date-fns";
 import { sendEmailWithLog } from "@/lib/email";
 import { sendSMSWithLog } from "@/lib/sms";
 import { ExpirationWarningEmail } from "@/components/emails/ExpirationWarningEmail";
@@ -197,6 +197,60 @@ export async function processEquipmentMaintenanceAction() {
     }
 
     return { success: true, processed: pendingMaintenance.length };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Detecta alumnos activos que no registran asistencias en 14+ días y les envía alerta de re-engagement amigable
+ */
+export async function processInactivityReengagementAction() {
+  const fourteenDaysAgo = subDays(new Date(), 14);
+  const notificationsSent = { email: 0, errors: 0 };
+
+  try {
+    const inactiveMembers = await prisma.member.findMany({
+      where: {
+        status: "ACTIVE",
+        attendances: {
+          none: {
+            checkIn: { gte: fourteenDaysAgo }
+          }
+        }
+      },
+      take: 50,
+      include: {
+        memberships: { where: { status: "ACTIVE" }, take: 1, include: { plan: true } }
+      }
+    });
+
+    const [gymName] = await Promise.all([
+      getConfig("GYM_NAME")
+    ]);
+
+    for (const member of inactiveMembers) {
+      if (member.email) {
+        try {
+          await sendEmailWithLog({
+            to: member.email,
+            subject: `¡Te extrañamos en ${gymName || 'GymOS'}! 💪`,
+            html: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; background-color: #09090b; color: #f4f4f5; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);">
+              <h2 style="font-family: serif; font-size: 24px; margin-bottom: 16px; color: #ffffff;">¡Hola ${member.fullName}!</h2>
+              <p style="font-size: 14px; line-height: 1.6; color: #a1a1aa;">Notamos que llevas unos días sin entrenar en <strong>${gymName || 'GymOS'}</strong>. Recuerda que la constancia es la clave del progreso.</p>
+              <p style="font-size: 14px; line-height: 1.6; color: #a1a1aa;">Tu membresía se encuentra activa. ¡Te esperamos hoy en el gimnasio para darlo todo!</p>
+            </div>`,
+            text: `Hola ${member.fullName}, ¡te extrañamos en ${gymName || 'GymOS'}! Tu membresía sigue activa, te esperamos hoy en el gimnasio.`
+          }, member.id, "INFO");
+
+          notificationsSent.email++;
+        } catch (err: any) {
+          notificationsSent.errors++;
+        }
+      }
+    }
+
+    return { success: true, processed: inactiveMembers.length, notifications: notificationsSent };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

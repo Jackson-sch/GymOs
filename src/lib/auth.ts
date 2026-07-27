@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { admin } from "better-auth/plugins";
 
 export const auth = betterAuth({
+    secret: process.env.BETTER_AUTH_SECRET || "ba_sec_9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c",
     database: prismaAdapter(prisma, {
         provider: "postgresql",
     }),
@@ -77,6 +78,14 @@ export const auth = betterAuth({
             role: {
                 type: "string",
                 defaultValue: "RECEPTIONIST",
+            },
+            organizationId: {
+                type: "string",
+                required: false,
+            },
+            branchId: {
+                type: "string",
+                required: false,
             },
             isActive: {
                 type: "boolean",

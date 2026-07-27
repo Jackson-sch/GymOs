@@ -24,6 +24,7 @@ interface DataTableProps<TData, TValue> {
   placeholder?: string;
   manualFiltering?: boolean;
   onRowClick?: (row: TData) => void;
+  showSearchInput?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -33,6 +34,7 @@ export function DataTable<TData, TValue>({
   placeholder = "Buscar...",
   manualFiltering = false,
   onRowClick,
+  showSearchInput = true,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   
@@ -67,7 +69,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-6">
       {/* Search Bar - Premium Style with nuqs sync */}
-      {filterColumn && (
+      {filterColumn && showSearchInput && (
         <div className="flex items-center relative max-w-sm group">
           <Search className="absolute left-4 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input

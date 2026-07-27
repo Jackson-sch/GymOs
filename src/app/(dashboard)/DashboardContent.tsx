@@ -13,6 +13,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { NotificationCenter } from "@/components/shared/NotificationCenter";
+import { BranchSwitcher } from "@/components/shared/BranchSwitcher";
 import Image from "next/image";
 
 export function DashboardContent({
@@ -30,7 +31,7 @@ export function DashboardContent({
   return (
     <div className="flex min-h-screen bg-background premium-gradient overflow-x-hidden">
       {/* Mobile Header */}
-      <header className="fixed top-0 left-0 right-0 h-16 glass-card border-white/5 z-50 flex items-center justify-between px-6 md:hidden">
+      <header className="fixed top-0 left-0 right-0 h-16 glass-card border-white/5 z-50 flex items-center justify-between px-4 md:hidden">
         <div className="flex items-center gap-2">
           <div className="bg-primary/20 p-1.5 rounded-lg border border-white/10 overflow-hidden flex items-center justify-center size-8 relative">
             {gymLogo ? (
@@ -39,10 +40,11 @@ export function DashboardContent({
               <Dumbbell className="size-5 text-primary" />
             )}
           </div>
-          <span className="font-serif text-xl tracking-tight">{gymName}</span>
+          <span className="font-serif text-lg tracking-tight truncate max-w-[120px]">{gymName}</span>
         </div>
         
         <div className="flex items-center gap-2">
+          <BranchSwitcher />
           <NotificationCenter />
           <Sheet>
             <SheetTrigger asChild>
@@ -80,11 +82,17 @@ export function DashboardContent({
         )}
       >
         {/* Desktop Top Bar */}
-        <header className="hidden md:flex h-20 items-center justify-end px-8 gap-4">
-          <NotificationCenter />
+        <header className="hidden md:flex h-20 items-center justify-between px-8 gap-4 border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <BranchSwitcher />
+          </div>
+
+          <div className="flex items-center gap-4">
+            <NotificationCenter />
+          </div>
         </header>
 
-        <div className="w-full max-w-[100vw] px-4 sm:px-8 lg:px-12 py-6 pt-20 md:py-4 mx-auto overflow-hidden">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 pt-20 md:pt-8 overflow-hidden min-h-[calc(100vh-5rem)]">
           {children}
         </div>
       </main>

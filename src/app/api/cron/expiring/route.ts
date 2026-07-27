@@ -4,13 +4,12 @@ import { processExpiringMembershipsAction } from "@/lib/actions/cron-actions";
 export const runtime = "nodejs";
 
 async function verifyCronAuth(request: Request): Promise<boolean> {
-  const authHeader = request.headers.get("authorization");
-  const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
-  
-  if (!authHeader || authHeader !== expectedAuth) {
+  const secret = process.env.CRON_SECRET;
+  if (!secret || secret.trim() === "") {
     return false;
   }
-  return true;
+  const authHeader = request.headers.get("authorization");
+  return authHeader === `Bearer ${secret}`;
 }
 
 export async function GET(request: Request) {

@@ -8,11 +8,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function MemberForm() {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [gender, setGender] = useState("MALE");
+  const [birthDate, setBirthDate] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -72,19 +82,27 @@ export function MemberForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="birthDate">Fecha de Nacimiento</Label>
-              <Input id="birthDate" name="birthDate" type="date" />
+              <input type="hidden" name="birthDate" value={birthDate} />
+              <DatePicker
+                value={birthDate}
+                onChange={(date) => setBirthDate(date ? date.toISOString().split("T")[0] : "")}
+                placeholder="Seleccionar fecha de nacimiento..."
+                className="h-10 bg-background"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="gender">Género</Label>
-              <select 
-                id="gender" 
-                name="gender" 
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="MALE">Masculino</option>
-                <option value="FEMALE">Femenino</option>
-                <option value="OTHER">Otro</option>
-              </select>
+              <input type="hidden" name="gender" value={gender} />
+              <Select value={gender} onValueChange={setGender}>
+                <SelectTrigger className="w-full bg-background border-input h-10">
+                  <SelectValue placeholder="Seleccionar género" />
+                </SelectTrigger>
+                <SelectContent className="glass-card bg-black/90 text-white">
+                  <SelectItem value="MALE">Masculino</SelectItem>
+                  <SelectItem value="FEMALE">Femenino</SelectItem>
+                  <SelectItem value="OTHER">Otro</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

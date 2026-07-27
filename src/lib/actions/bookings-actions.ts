@@ -35,7 +35,15 @@ export async function getBookingById(id: string) {
 }
 
 export async function createBooking(data: { classId: string; memberId: string }) {
-  await verifySession();
+  const session = await verifySession();
+  const userRole = (session.user as any).role;
+  if (userRole === "MEMBER") {
+    const member = await prisma.member.findUnique({ where: { userId: session.user.id } });
+    if (!member || member.id !== data.memberId) {
+      return { success: false, error: "No tienes permiso para reservar en nombre de otro socio" };
+    }
+  }
+
   const existing = await prisma.classBooking.findFirst({
     where: { classId: data.classId, memberId: data.memberId, status: "CONFIRMED" },
   });
@@ -131,14 +139,19 @@ export async function createBooking(data: { classId: string; memberId: string })
 }
 
 export async function cancelBooking(id: string) {
-  await verifySession();
+  const session = await verifySession();
   const existing = await prisma.classBooking.findUnique({ 
     where: { id },
-    include: { class: true }
+    include: { class: true, member: true }
   });
   
   if (!existing) {
     return { success: false, error: "Reserva no encontrada" };
+  }
+
+  const userRole = (session.user as any).role;
+  if (userRole === "MEMBER" && existing.member.userId !== session.user.id) {
+    return { success: false, error: "No tienes permiso para cancelar esta reserva" };
   }
   
   await prisma.classBooking.update({

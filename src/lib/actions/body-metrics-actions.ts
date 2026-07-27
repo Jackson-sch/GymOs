@@ -24,7 +24,14 @@ function calculateBMI(weight: number, height: number): number {
 }
 
 export async function getBodyMetrics(memberId: string) {
-  await verifySession();
+  const session = await verifySession();
+  const userRole = (session.user as any).role;
+  if (userRole === "MEMBER") {
+    const member = await prisma.member.findUnique({ where: { userId: session.user.id } });
+    if (!member || member.id !== memberId) {
+      throw new Error("FORBIDDEN: No tienes acceso a las métricas corporales de otros socios");
+    }
+  }
   return await prisma.bodyMetric.findMany({
     where: { memberId },
     orderBy: { measuredAt: "desc" },
@@ -32,7 +39,14 @@ export async function getBodyMetrics(memberId: string) {
 }
 
 export async function getLatestBodyMetric(memberId: string) {
-  await verifySession();
+  const session = await verifySession();
+  const userRole = (session.user as any).role;
+  if (userRole === "MEMBER") {
+    const member = await prisma.member.findUnique({ where: { userId: session.user.id } });
+    if (!member || member.id !== memberId) {
+      throw new Error("FORBIDDEN: No tienes acceso a las métricas corporales de otros socios");
+    }
+  }
   return await prisma.bodyMetric.findFirst({
     where: { memberId },
     orderBy: { measuredAt: "desc" },

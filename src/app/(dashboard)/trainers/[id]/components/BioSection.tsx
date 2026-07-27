@@ -3,7 +3,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Activity } from "lucide-react";
+import { UserCheck } from "lucide-react";
 
 interface BioSectionProps {
   isEditing: boolean;
@@ -14,25 +14,25 @@ interface BioSectionProps {
 export function BioSection({ isEditing, bio, dispatch }: BioSectionProps) {
   return (
     <div className="lg:col-span-4 space-y-6">
-      <Card className="border-border/10 shadow-sm bg-secondary/10 group overflow-hidden">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-bold uppercase tracking-widest opacity-60 flex items-center gap-2">
-            <Activity className="size-4 text-primary" />
-            Biografía
+      <Card className="glass-card border-white/10 rounded-3xl overflow-hidden backdrop-blur-md">
+        <CardHeader className="pb-3 border-b border-white/5">
+          <CardTitle className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2">
+            <UserCheck className="size-4 text-primary" />
+            Biografía Profesional
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-5">
           {isEditing ? (
             <Textarea
               value={bio}
               onChange={(e) => dispatch({ type: "UPDATE_FORM", payload: { bio: e.target.value } })}
-              placeholder="Escribe aquí la biografía profesional..."
+              placeholder="Escriba la reseña o biografía del entrenador..."
               rows={8}
-              className="bg-background/20 border-border/10 focus:border-primary/30 resize-none rounded-xl text-sm leading-relaxed"
+              className="bg-white/5 border-white/15 focus-visible:ring-primary/30 resize-none rounded-2xl text-xs text-foreground font-medium leading-relaxed placeholder:text-muted-foreground/50"
             />
           ) : (
-            <p className="text-foreground/80 leading-relaxed text-sm font-light italic opacity-90 whitespace-pre-wrap">
-              {bio || "No hay información adicional disponible."}
+            <p className="text-foreground/90 leading-relaxed text-xs font-medium whitespace-pre-wrap">
+              {bio || "No hay información biográfica registrada para este instructor."}
             </p>
           )}
         </CardContent>

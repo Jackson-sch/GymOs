@@ -23,6 +23,8 @@ import { isAfter, isBefore, startOfMonth, endOfMonth } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MemberProgressTab } from "./MemberProgressTab";
+import { MemberRoutineTab } from "./MemberRoutineTab";
+import { MemberPaymentsTab } from "./MemberPaymentsTab";
 import { MemberStats } from "./MemberStats";
 import { MemberActivityHistory } from "./MemberActivityHistory";
 import { MemberPlanDetails } from "./MemberPlanDetails";
@@ -30,6 +32,7 @@ import { MemberIdentitySection, MemberFormData } from "./MemberIdentitySection";
 import { MemberPhotoSection } from "./MemberPhotoSection";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useDragReposition } from "@/hooks/use-drag-reposition";
+import { User, TrendingUp, Dumbbell, Receipt } from "lucide-react";
 
 // Main reducer for profile state management
 
@@ -269,8 +272,7 @@ export function MemberProfileClient({ member }: { member: any }) {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen pt-8 md:pt-12">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+    <div className="w-full space-y-8 animate-in fade-in duration-500">
         {/* Header Card */}
         <div className="relative mb-8">
           <Card className="bg-secondary/40 backdrop-blur-2xl border-border/10 shadow-2xl overflow-visible">
@@ -412,28 +414,58 @@ export function MemberProfileClient({ member }: { member: any }) {
         </div>
 
         {/* Custom Tab Switcher */}
-        <div className="flex bg-background/50 backdrop-blur-xl p-1.5 rounded-2xl w-fit mb-8 border border-white/10">
+        <div className="flex flex-wrap bg-background/50 backdrop-blur-xl p-1.5 rounded-2xl w-fit mb-8 border border-white/10 gap-1">
           <button
             onClick={() => dispatch({ type: "SET_TAB", payload: "GENERAL" })}
             className={cn(
-              "px-6 py-2.5 rounded-xl text-sm font-bold tracking-widest uppercase transition-all duration-300",
-              activeTab === "GENERAL" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+              "px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-2",
+              activeTab === "GENERAL"
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
             )}
           >
-            Información General
+            <User className="size-3.5" />
+            Expediente & Membresía
           </button>
           <button
             onClick={() => dispatch({ type: "SET_TAB", payload: "PROGRESS" })}
             className={cn(
-              "px-6 py-2.5 rounded-xl text-sm font-bold tracking-widest uppercase transition-all duration-300",
-              activeTab === "PROGRESS" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+              "px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-2",
+              activeTab === "PROGRESS"
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
             )}
           >
-            Progreso
+            <TrendingUp className="size-3.5" />
+            Progreso Físico
+          </button>
+          <button
+            onClick={() => dispatch({ type: "SET_TAB", payload: "ROUTINE" })}
+            className={cn(
+              "px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-2",
+              activeTab === "ROUTINE"
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+            )}
+          >
+            <Dumbbell className="size-3.5" />
+            Rutina Prescrita
+          </button>
+          <button
+            onClick={() => dispatch({ type: "SET_TAB", payload: "PAYMENTS" })}
+            className={cn(
+              "px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-2",
+              activeTab === "PAYMENTS"
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+            )}
+          >
+            <Receipt className="size-3.5" />
+            Historial de Pagos
           </button>
         </div>
 
-        {activeTab === "GENERAL" ? (
+        {activeTab === "GENERAL" && (
           <>
             <MemberStats 
               attendancesThisMonth={attendancesThisMonth} 
@@ -441,19 +473,20 @@ export function MemberProfileClient({ member }: { member: any }) {
               lastWeight={member.bodyMetrics?.[0]?.weight} 
             />
 
-        <div className="grid lg:grid-cols-12 gap-8 mb-16">
-          {/* Recent Activity */}
-          <div className="lg:col-span-7">
-            <MemberActivityHistory attendances={member.attendances || []} />
-          </div>
+            <div className="grid lg:grid-cols-12 gap-8 mb-16">
+              {/* Recent Activity */}
+              <div className="lg:col-span-7">
+                <MemberActivityHistory attendances={member.attendances || []} />
+              </div>
 
-            <MemberPlanDetails member={member} currentMembership={currentMembership} />
-        </div>
+              <MemberPlanDetails member={member} currentMembership={currentMembership} />
+            </div>
           </>
-        ) : (
-          <MemberProgressTab member={member} />
         )}
-      </div>
+
+        {activeTab === "PROGRESS" && <MemberProgressTab member={member} />}
+        {activeTab === "ROUTINE" && <MemberRoutineTab member={member} />}
+        {activeTab === "PAYMENTS" && <MemberPaymentsTab member={member} />}
 
       <ConfirmDialog
         isOpen={isPhotoDeleteOpen}

@@ -16,7 +16,7 @@ import {
 } from "date-fns";
 import { verifySession } from "@/lib/security";
 
-export async function getDashboardKPIs() {
+export async function getDashboardKPIs(branchId?: string) {
   await verifySession();
   const now = new Date();
   const monthStart = startOfMonth(now);
@@ -25,6 +25,8 @@ export async function getDashboardKPIs() {
   const todayEnd = endOfDay(now);
   const weekStart = startOfWeek(now);
   const weekEnd = endOfWeek(now);
+
+  const bFilter = branchId && branchId !== "ALL" ? { branchId } : {};
 
   const [
     activeMembers, 
@@ -39,10 +41,10 @@ export async function getDashboardKPIs() {
     classesToday, 
     totalMembers
   ] = await Promise.all([
-    prisma.member.count({ where: { status: "ACTIVE" } }),
-    prisma.member.count({ where: { createdAt: { gte: monthStart, lte: monthEnd } } }),
+    prisma.member.count({ where: { status: "ACTIVE", ...bFilter } }),
+    prisma.member.count({ where: { createdAt: { gte: monthStart, lte: monthEnd }, ...bFilter } }),
     prisma.payment.aggregate({
-      where: { status: "COMPLETED", paidAt: { gte: monthStart, lte: monthEnd } },
+      where: { status: "COMPLETED", paidAt: { gte: monthStart, lte: monthEnd }, ...bFilter },
       _sum: { amount: true },
     }),
     prisma.payment.aggregate({
@@ -51,7 +53,8 @@ export async function getDashboardKPIs() {
         paidAt: { 
           gte: subMonths(monthStart, 1), 
           lte: subMonths(monthEnd, 1) 
-        } 
+        },
+        ...bFilter
       },
       _sum: { amount: true },
     }),
@@ -70,24 +73,26 @@ export async function getDashboardKPIs() {
       _sum: { amount: true },
     }),
     prisma.attendance.count({
-      where: { checkIn: { gte: todayStart, lte: todayEnd } },
+      where: { checkIn: { gte: todayStart, lte: todayEnd }, ...bFilter },
     }),
     prisma.attendance.count({
-      where: { checkIn: { gte: weekStart, lte: weekEnd } },
+      where: { checkIn: { gte: weekStart, lte: weekEnd }, ...bFilter },
     }),
     prisma.membership.count({
       where: {
         status: "ACTIVE",
         endDate: { gte: now, lte: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) },
+        member: bFilter,
       },
     }),
     prisma.class.count({
       where: {
         startTime: { gte: todayStart, lte: todayEnd },
         status: { not: "CANCELLED" },
+        ...bFilter,
       },
     }),
-    prisma.member.count(),
+    prisma.member.count({ where: bFilter }),
   ]);
 
   const currentRevenue = revenueThisMonth._sum.amount ? Number(revenueThisMonth._sum.amount) : 0;

@@ -92,6 +92,25 @@ export async function testApiConnectionAction(provider: string, config: Record<s
         }
       }
 
+      case "WHATSAPP": {
+        const phoneId = config["WA_PHONE_NUMBER_ID"];
+        const token = config["WA_ACCESS_TOKEN"];
+        if (!phoneId || !token) {
+          return { success: false, error: "Phone Number ID y Access Token de WhatsApp Cloud API son requeridos" };
+        }
+
+        const res = await fetch(`https://graph.facebook.com/v20.0/${phoneId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          return { success: true, message: `Conexión exitosa con WhatsApp Cloud API (${data.display_phone_number || phoneId})` };
+        } else {
+          return { success: false, error: `Credenciales de WhatsApp Cloud API inválidas (Status ${res.status})` };
+        }
+      }
+
       default:
         return { success: false, error: "Servicio no soportado para prueba automática" };
     }

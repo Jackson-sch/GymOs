@@ -9,57 +9,75 @@ import {
   processEquipmentMaintenanceAction 
 } from "./cron-actions";
 
+import { setConfig, getConfigMap, type ConfigCategoryType } from "@/lib/config";
+
 export async function getSystemConfigAction() {
   try {
-    await verifySession();
-    const configs = await prisma.systemConfig.findMany({
-      orderBy: {
-        category: "asc",
-      },
+    const session = await verifySession(["SUPER_ADMIN", "ADMIN"]);
+    const user = session.user as any;
+    const orgId = user.organizationId || null;
+
+    const keys = [
+      "GYM_NAME", "GYM_LOGO", "GYM_ADDRESS", "GYM_PHONE",
+      "WA_PHONE_NUMBER_ID", "WA_ACCESS_TOKEN", "WA_WABA_ID",
+      "RESEND_API_KEY", "RESEND_SENDER_EMAIL",
+      "TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_PHONE_NUMBER",
+      "CULQI_PRIVATE_KEY", "CULQI_PUBLIC_KEY",
+      "MP_ACCESS_TOKEN", "MP_PUBLIC_KEY",
+      "CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"
+    ];
+
+    const configMap = await getConfigMap(keys, orgId);
+
+    const configsInDb = await prisma.systemConfig.findMany({
+      where: { key: { in: keys } }
     });
-    return { success: true, data: configs };
+
+    const resultList = keys.map((key) => {
+      const existing = configsInDb.find((c) => c.key === key);
+      return {
+        key,
+        value: configMap[key] || "",
+        category: existing?.category || "GENERAL",
+        isEncrypted: existing?.isEncrypted || false,
+      };
+    });
+
+    return { success: true, data: resultList };
   } catch (error) {
     console.error("Error fetching settings:", error);
-    return { success: false, error: "No se pudo obtener la configuración" };
+    return { success: false, error: "No se pudo obtener la configuración", data: [] };
   }
 }
 
-export async function updateConfigAction(key: string, value: string) {
+export async function updateConfigsAction(
+  configs: { key: string; value: string; category?: ConfigCategoryType; isEncrypted?: boolean }[]
+) {
   try {
-    await verifySession(["SUPER_ADMIN", "ADMIN"]);
-    const config = await prisma.systemConfig.upsert({
-      where: { key },
-      update: { value },
-      create: { 
-        key, 
-        value,
-        category: "GENERAL" 
-      }
-    });
-    revalidatePath("/settings");
-    return { success: true, data: config };
-  } catch (error) {
-    console.error("Error updating config:", error);
-    return { success: false, error: "Error al actualizar configuración" };
-  }
-}
+    const session = await verifySession(["SUPER_ADMIN", "ADMIN"]);
+    const user = session.user as any;
+    const orgId = user.organizationId || null;
 
-export async function updateConfigsAction(configs: { key: string; value: string; category?: any }[]) {
-  try {
-    await verifySession(["SUPER_ADMIN", "ADMIN"]);
-    const operations = configs.map(config => 
-      prisma.systemConfig.upsert({
-        where: { key: config.key },
-        update: { value: config.value },
-        create: { 
-          key: config.key, 
-          value: config.value,
-          category: config.category || "GENERAL" 
-        }
-      })
-    );
-    await prisma.$transaction(operations);
+    for (const c of configs) {
+      const isEncrypted = c.isEncrypted ?? (
+        c.key.includes("KEY") || 
+        c.key.includes("TOKEN") || 
+        c.key.includes("SECRET") || 
+        c.key.includes("SID")
+      );
+
+      await setConfig(
+        c.key,
+        c.value,
+        c.category || "GENERAL",
+        isEncrypted,
+        session.user.id,
+        orgId
+      );
+    }
+
     revalidatePath("/settings");
+    revalidatePath("/settings/integrations");
     return { success: true };
   } catch (error) {
     console.error("Error updating configs:", error);

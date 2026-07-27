@@ -24,6 +24,8 @@ import {
 import { createMemberAction, updateMemberAction } from "@/lib/actions/members-actions";
 import { toast } from "sonner";
 import { Loader2, Save } from "lucide-react";
+import { ImageUpload } from "@/components/shared/ImageUpload";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const memberSchema = z.object({
   fullName: z.string().min(3, "Mínimo 3 caracteres"),
@@ -185,7 +187,11 @@ export function MemberForm({ initialData, onSuccess }: MemberFormProps) {
               <FormItem>
                 <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Fecha de Nacimiento</FormLabel>
                 <FormControl>
-                  <Input type="date" className="bg-white/5 border-white/10" {...field} />
+                  <DatePicker
+                    value={field.value}
+                    onChange={(date) => field.onChange(date ? date.toISOString().split("T")[0] : "")}
+                    placeholder="Seleccionar fecha de nacimiento..."
+                  />
                 </FormControl>
                 <FormMessage className="text-[10px] font-bold uppercase" />
               </FormItem>

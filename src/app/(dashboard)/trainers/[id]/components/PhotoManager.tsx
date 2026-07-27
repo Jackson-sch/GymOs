@@ -55,10 +55,10 @@ export function PhotoManager({
         role="region"
         aria-label="Foto de perfil del entrenador"
         className={cn(
-          "size-40 rounded-full border shadow-2xl transition-all duration-300 relative overflow-hidden bg-muted/30",
+          "size-40 rounded-full border-2 shadow-2xl transition-all duration-300 relative overflow-hidden bg-black/60",
           dragReposition.isRepositioning 
-            ? "border-primary ring-2 ring-primary/20 scale-105" 
-            : "border-border/10 hover:border-primary/20"
+            ? "border-primary ring-4 ring-primary/30 scale-105" 
+            : "border-primary/40 hover:border-primary shadow-primary/10"
         )}
         onMouseDown={dragReposition.onMouseDown}
         onTouchStart={dragReposition.onTouchStart}

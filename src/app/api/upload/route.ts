@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { uploadFile, deleteFile } from "@/lib/storage";
 import { headers } from "next/headers";
 
+export const dynamic = "force-dynamic";
+
 /**
  * Maneja la subida de archivos (POST)
  */

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node --max-old-space-size=4096 node_modules/next/dist/bin/next build",
     "start": "next start",
     "lint": "eslint",
     "db:studio": "prisma studio",
@@ -15,8 +15,6 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.1",
-    "@better-auth/prisma-adapter": "^1.6.9",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
@@ -24,7 +22,7 @@
     "@react-pdf/renderer": "^4.5.1",
     "@tanstack/react-table": "^8.21.3",
     "bcryptjs": "^3.0.3",
-    "better-auth": "^1.6.9",
+    "better-auth": "^1.6.12",
     "boring-avatars": "^2.0.4",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.10.0",
@@ -34,7 +32,7 @@
     "date-fns": "^4.1.0",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^1.14.0",
-    "next": "16.2.4",
+    "next": "^16.2.6",
     "nuqs": "^2.8.9",
     "papaparse": "^5.5.3",
     "pdfx": "^1.0.6",

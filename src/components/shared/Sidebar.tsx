@@ -19,7 +19,8 @@ import {
   LogOut,
   TrendingDown,
   ScanLine,
-  Shield
+  Shield,
+  MapPin
 } from "lucide-react";
 import { cn, getUserRole } from "@/lib/utils";
 import { useUIStore } from "@/store/use-ui-store";
@@ -29,22 +30,29 @@ import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const menuItems = [
-  { label: "Dashboard", icon: LayoutDashboard, href: "/", roles: ["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"] },
+  // Super Admin Exclusive Navigation
+  { label: "Torre SaaS Global", icon: Shield, href: "/super-admin", roles: ["SUPER_ADMIN"] },
+  { label: "Canales & Claves API", icon: Settings, href: "/settings?tab=api", roles: ["SUPER_ADMIN"] },
+  { label: "Auditoría Global", icon: Shield, href: "/audit-log", roles: ["SUPER_ADMIN"] },
+
+  // Gym Admin & Staff Navigation
+  { label: "Dashboard", icon: LayoutDashboard, href: "/", roles: ["ADMIN", "RECEPTIONIST"] },
   { label: "Dashboard", icon: LayoutDashboard, href: "/portal/trainer", roles: ["TRAINER"] },
   { label: "Mis Alumnos", icon: Users, href: "/portal/trainer/members", roles: ["TRAINER"] },
-  { label: "Miembros", icon: Users, href: "/members", roles: ["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"] },
-  { label: "Membresías", icon: CreditCard, href: "/memberships", roles: ["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"] },
-  { label: "Asistencia", icon: UserCheck, href: "/attendance", roles: ["ADMIN", "SUPER_ADMIN", "TRAINER", "RECEPTIONIST"] },
-  { label: "Clases", icon: Calendar, href: "/classes", roles: ["ADMIN", "SUPER_ADMIN", "TRAINER", "RECEPTIONIST"] },
-  { label: "Entrenadores", icon: Sparkles, href: "/trainers", roles: ["ADMIN", "SUPER_ADMIN"] },
-  { label: "Ingresos", icon: FileText, href: "/payments", roles: ["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"] },
-  { label: "Egresos", icon: TrendingDown, href: "/expenses", roles: ["ADMIN", "SUPER_ADMIN"] },
-  { label: "Inventario", icon: Package, href: "/inventory", roles: ["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"] },
-  { label: "Rutinas", icon: Dumbbell, href: "/routines", roles: ["ADMIN", "SUPER_ADMIN", "TRAINER"] },
-  { label: "Reportes", icon: FileText, href: "/reports", roles: ["ADMIN", "SUPER_ADMIN"] },
-  { label: "Kiosco", icon: ScanLine, href: "/kiosk", roles: ["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"] },
-  { label: "Configuración", icon: Settings, href: "/settings", roles: ["ADMIN", "SUPER_ADMIN"] },
-  { label: "Auditoría", icon: Shield, href: "/audit-log", roles: ["ADMIN", "SUPER_ADMIN"] },
+  { label: "Miembros", icon: Users, href: "/members", roles: ["ADMIN", "RECEPTIONIST"] },
+  { label: "Sedes & Sucursales", icon: MapPin, href: "/branches", roles: ["ADMIN"] },
+  { label: "Membresías", icon: CreditCard, href: "/memberships", roles: ["ADMIN", "RECEPTIONIST"] },
+  { label: "Asistencia", icon: UserCheck, href: "/attendance", roles: ["ADMIN", "TRAINER", "RECEPTIONIST"] },
+  { label: "Clases", icon: Calendar, href: "/classes", roles: ["ADMIN", "TRAINER", "RECEPTIONIST"] },
+  { label: "Entrenadores", icon: Sparkles, href: "/trainers", roles: ["ADMIN"] },
+  { label: "Ingresos", icon: FileText, href: "/payments", roles: ["ADMIN", "RECEPTIONIST"] },
+  { label: "Egresos", icon: TrendingDown, href: "/expenses", roles: ["ADMIN"] },
+  { label: "Inventario", icon: Package, href: "/inventory", roles: ["ADMIN", "RECEPTIONIST"] },
+  { label: "Rutinas", icon: Dumbbell, href: "/routines", roles: ["ADMIN", "TRAINER"] },
+  { label: "Reportes", icon: FileText, href: "/reports", roles: ["ADMIN"] },
+  { label: "Kiosco", icon: ScanLine, href: "/kiosk", roles: ["ADMIN", "RECEPTIONIST"] },
+  { label: "Configuración", icon: Settings, href: "/settings", roles: ["ADMIN"] },
+  { label: "Auditoría", icon: Shield, href: "/audit-log", roles: ["ADMIN"] },
 ];
 
 import {
@@ -215,8 +223,9 @@ export function Sidebar({
                       {session?.user?.name || "Invitado"}
                     </p>
                     <p className="text-[10px] text-muted-foreground truncate uppercase tracking-tighter">
-                      {getUserRole(session) === "TRAINER" ? "Staff Técnico" : 
-                       getUserRole(session) === "MEMBER" ? "Socio" : "Administrador"}
+                      {getUserRole(session) === "SUPER_ADMIN" ? "Super Admin SaaS" : 
+                       getUserRole(session) === "TRAINER" ? "Staff Técnico" : 
+                       getUserRole(session) === "MEMBER" ? "Socio" : "Admin Gimnasio"}
                     </p>
                   </div>
                 )}

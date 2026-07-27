@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { User } from "lucide-react";
 import { formatDate } from "@/lib/formats";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface PersonalInfoFormSectionProps {
   isEditing: boolean;
@@ -100,12 +101,11 @@ export function PersonalInfoFormSection({
             Fecha de Nacimiento
           </Label>
           {isEditing ? (
-            <Input
-              id="birthDate"
-              type="date"
+            <DatePicker
               value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-              className="h-11 bg-white/5 border-white/10 rounded-xl transition-all font-sans"
+              onChange={(date) => setBirthDate(date ? date.toISOString().split("T")[0] : "")}
+              placeholder="Seleccionar fecha..."
+              className="h-11"
             />
           ) : (
             <p className="text-sm font-medium h-11 flex items-center bg-white/2 border border-transparent rounded-xl px-3 text-muted-foreground/80 font-sans">

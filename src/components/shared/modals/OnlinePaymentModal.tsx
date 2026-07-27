@@ -175,6 +175,18 @@ export function OnlinePaymentModal({ member, currentMembership, plans }: OnlineP
             {plans.map((p) => {
               const isSelected = p.id === selectedPlanId;
               const isCurrent = currentMembership?.plan?.id === p.id;
+              const days = p.durationDays;
+              const periodLabel =
+                days >= 28 && days <= 31
+                  ? "Mensual"
+                  : days >= 85 && days <= 95
+                  ? "Trimestral"
+                  : days >= 175 && days <= 185
+                  ? "Semestral"
+                  : days >= 360
+                  ? "Anual"
+                  : `${days} días`;
+
               return (
                 <button
                   key={p.id}
@@ -190,6 +202,9 @@ export function OnlinePaymentModal({ member, currentMembership, plans }: OnlineP
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="font-serif text-lg font-medium text-white">{p.name}</span>
+                      <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20">
+                        {periodLabel}
+                      </span>
                       {isCurrent && (
                         <Badge variant="outline" className="text-[9px] border-emerald-500/30 text-emerald-400 px-1.5 py-0">
                           Tu Plan Actual

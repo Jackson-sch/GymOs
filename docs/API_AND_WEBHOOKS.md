@@ -85,3 +85,22 @@ Para mantener la base de datos sincronizada y enviar recordatorios automáticos 
   1. Busca todas las membresías cuyo `endDate` sea menor a la fecha actual y tengan estado `ACTIVE`.
   2. Actualiza su estado a `EXPIRED` o `CANCELLED`.
   3. Identifica membresías próximas a vencer (en los siguientes 3 días) y dispara la notificación de alerta al correo del socio.
+
+---
+
+## 🔌 5. Hub de Canales API, Webhooks Outbound & Developer Keys
+
+Ubicación en UI: [APITab.tsx](file:///E:/PROYECTOS/2026/GymOS/src/app/(dashboard)/settings/components/APITab.tsx)
+
+### Pestañas Principales
+1. **Servicios Integrados (Categorizados)**:
+   - **Comunicación**: Meta WhatsApp Cloud API (`WA_PHONE_NUMBER_ID`, `WA_ACCESS_TOKEN`), Resend (`RESEND_API_KEY`), Twilio (`TWILIO_SID`).
+   - **Pasarelas de Pago**: Mercado Pago (`MP_ACCESS_TOKEN`), Culqi (`CULQI_PUBLIC_KEY`, `CULQI_PRIVATE_KEY`).
+   - **Control de Acceso (IoT)**: Gateway de torniquetes y molinetes ZKTeco / Hikvision.
+   - **Multimedia**: Cloudinary (`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_UPLOAD_PRESET`).
+2. **Webhooks Outbound**:
+   - Registro de endpoints HTTP POST para que sistemas externos del gimnasio reciban notificaciones en tiempo real de eventos como `member.created`, `payment.successful`, `checkin.allowed`, `checkin.denied`.
+   - Firma HMAC SHA-256 en cabecera `X-GymOS-Signature`.
+3. **Developer API Keys**:
+   - Generación de Bearer Tokens (`gym_live_...` / `gym_test_...`) para integraciones con apps móviles nativas de clientes, quioscos físicos o sistemas ERP propios con control granular de ámbitos (scopes).
+

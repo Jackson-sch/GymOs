@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Mail, Phone, User as UserIcon, Target, ShieldCheck, AlertCircle, KeyRound } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
 
 export interface MemberFormData {
   fullName: string;
@@ -75,11 +76,11 @@ export function MemberIdentitySection({ isEditing, member, formData, setFormData
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label className="text-xs font-bold uppercase tracking-widest opacity-60 ml-1">Fecha de Nac.</Label>
-            <Input 
-              type="date"
-              value={formData.birthDate} 
-              onChange={(e) => setFormData(prev => ({ ...prev, birthDate: e.target.value }))} 
-              className="bg-background/20 border-border/10 focus:border-primary/30 h-12 rounded-xl" 
+            <DatePicker
+              value={formData.birthDate}
+              onChange={(date) => setFormData((prev) => ({ ...prev, birthDate: date ? date.toISOString().split("T")[0] : "" }))}
+              placeholder="Seleccionar fecha..."
+              className="h-12 rounded-xl"
             />
           </div>
           <div className="space-y-2">

@@ -275,6 +275,8 @@ export async function getPortalProgressAction() {
   };
 }
 
+import crypto from "crypto";
+
 export async function regeneratePortalQRAction() {
   const session = await verifySession();
 
@@ -285,8 +287,8 @@ export async function regeneratePortalQRAction() {
 
   if (!member) return { success: false, error: "Socio no encontrado" };
 
-  // Generate a new unique CUID-like string
-  const newQrCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  // Generate a new secure UUID
+  const newQrCode = crypto.randomUUID();
 
   await prisma.member.update({
     where: { id: member.id },

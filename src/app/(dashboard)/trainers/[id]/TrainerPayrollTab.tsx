@@ -29,6 +29,7 @@ import {
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { PayrollReceiptPDF } from "./components/PayrollReceiptPDF";
 import { FileDown } from "lucide-react";
+import { DateRangePicker } from "@/components/shared/DateRangePicker";
 
 export function TrainerPayrollTab({ trainer }: { trainer: any }) {
   const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
@@ -91,21 +92,16 @@ export function TrainerPayrollTab({ trainer }: { trainer: any }) {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-serif">Liquidación de Sueldos</h2>
-        <div className="flex items-center gap-3 bg-background/50 p-1.5 rounded-xl border border-white/10">
-          <Input 
-            type="date" 
-            value={startDate} 
-            onChange={(e) => setStartDate(e.target.value)}
-            className="bg-transparent border-none h-8 w-36 text-xs"
-          />
-          <span className="text-muted-foreground text-xs">al</span>
-          <Input 
-            type="date" 
-            value={endDate} 
-            onChange={(e) => setEndDate(e.target.value)}
-            className="bg-transparent border-none h-8 w-36 text-xs"
-          />
-        </div>
+        <DateRangePicker
+          from={startDate}
+          to={endDate}
+          onSelectRange={({ from, to }) => {
+            setStartDate(from || "");
+            setEndDate(to || "");
+          }}
+          placeholder="Seleccionar periodo"
+          showPresets={true}
+        />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">

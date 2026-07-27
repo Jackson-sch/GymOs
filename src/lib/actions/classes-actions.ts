@@ -300,3 +300,8 @@ export async function getMembersForBookingAction() {
     return { success: false, error: "Error al cargar socios" };
   }
 }
+
+export async function bookClassAction(data: { classId: string; memberId: string }) {
+  return createBookingAction(data.classId, data.memberId);
+}
+
