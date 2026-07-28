@@ -812,7 +812,7 @@ export function SuperAdminClient({
                 return (
                   <div
                     key={plan.tier}
-                    className={`p-8 rounded-3xl bg-gradient-to-b ${plan.color} border space-y-6 flex flex-col justify-between relative shadow-xl backdrop-blur-md hover:scale-105 transition-colors transition-transform`}
+                    className={`p-8 rounded-3xl bg-linear-to-b ${plan.color} border space-y-6 flex flex-col justify-between relative shadow-xl backdrop-blur-md hover:scale-105 transition-colors transition-transform`}
                   >
                     {plan.isPopular && (
                       <div className="absolute -top-3.5 right-6 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest shadow-lg">

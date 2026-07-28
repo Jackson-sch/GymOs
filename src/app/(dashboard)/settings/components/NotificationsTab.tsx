@@ -113,7 +113,7 @@ export function NotificationsTab({ formState, handleChange }: NotificationsTabPr
       </div>
 
       {/* Banner al Centro de Control de Comunicaciones */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-2xl backdrop-blur-md">
+      <div className="p-6 rounded-3xl bg-linear-to-r from-primary/20 via-primary/10 to-transparent border border-primary/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-2xl backdrop-blur-md">
         <div className="space-y-1">
           <h3 className="text-lg font-serif font-semibold text-foreground flex items-center gap-2">
             <Bell className="size-5 text-primary" /> Centro de Control de Notificaciones

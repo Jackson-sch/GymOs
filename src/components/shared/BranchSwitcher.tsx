@@ -41,7 +41,7 @@ export function BranchSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="h-10 px-3.5 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 text-foreground font-bold text-xs gap-2 transition-colors transition-transform hover:scale-102"
+          className="h-10 px-3.5 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 text-foreground font-bold text-xs gap-2 transition-colors hover:scale-102"
         >
           {selectedBranchId === "ALL" ? (
             <div className="flex items-center gap-2 text-primary">
@@ -106,7 +106,7 @@ export function BranchSwitcher() {
                 <div>
                   <p className="font-bold">{branch.name}</p>
                   {branch.address && (
-                    <p className="text-[10px] font-normal text-muted-foreground truncate max-w-[150px]">
+                    <p className="text-[10px] font-normal text-muted-foreground truncate max-w-37.5">
                       {branch.address}
                     </p>
                   )}

@@ -156,7 +156,7 @@ export function RoutineSimulator({
             <div className="relative group scale-95 md:scale-100 shrink-0">
               <div className="absolute -inset-6 bg-primary/20 rounded-full blur-3xl group-hover:bg-primary/30 transition-colors duration-700 opacity-60" />
 
-              <div className="relative size-44 sm:size-52 md:size-60 rounded-[40px] bg-gradient-to-br from-white/10 via-white/5 to-transparent border border-white/15 flex items-center justify-center shadow-2xl overflow-hidden">
+              <div className="relative size-44 sm:size-52 md:size-60 rounded-[40px] bg-linear-to-br from-white/10 via-white/5 to-transparent border border-white/15 flex items-center justify-center shadow-2xl overflow-hidden">
                 {demoUrl && (demoUrl.startsWith("http") || demoUrl.startsWith("/")) ? (
                   /* Demo Image / GIF Animation */
                   <Image

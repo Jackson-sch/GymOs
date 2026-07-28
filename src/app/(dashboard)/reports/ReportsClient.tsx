@@ -228,7 +228,7 @@ export function ReportsClient({
       </div>
 
       {/* Executive Smart Insights Banner */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-primary/15 via-primary/5 to-transparent border border-primary/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl backdrop-blur-md">
+      <div className="p-6 rounded-3xl bg-linear-to-r from-primary/15 via-primary/5 to-transparent border border-primary/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl backdrop-blur-md">
         <div className="flex items-start gap-4">
           <div className="size-10 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0 mt-0.5">
             <Lightbulb className="size-5 text-primary" />
@@ -277,7 +277,7 @@ export function ReportsClient({
         </TabsList>
 
         {/* TAB 1: RESUMEN EJECUTIVO */}
-        <TabsContent value="overview" className="space-y-8 focus-visible:outline-none">
+        <TabsContent value="overview" className="space-y-8 focus-visible:outline-hidden">
           <div className="grid gap-6 lg:grid-cols-12">
             <div className="lg:col-span-8 glass-card overflow-hidden group rounded-3xl border-white/10">
               <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/2">
@@ -348,7 +348,7 @@ export function ReportsClient({
         </TabsContent>
 
         {/* TAB 2: FINANZAS & PLANES */}
-        <TabsContent value="finance" className="space-y-8 focus-visible:outline-none">
+        <TabsContent value="finance" className="space-y-8 focus-visible:outline-hidden">
           <div className="grid gap-6 lg:grid-cols-12">
             <div className="lg:col-span-7 glass-card overflow-hidden group rounded-3xl border-white/10">
               <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/2">
@@ -389,7 +389,7 @@ export function ReportsClient({
         </TabsContent>
 
         {/* TAB 3: ASISTENCIA & LEALTAD */}
-        <TabsContent value="attendance" className="space-y-8 focus-visible:outline-none">
+        <TabsContent value="attendance" className="space-y-8 focus-visible:outline-hidden">
           <div className="grid gap-6 lg:grid-cols-12">
             <div className="lg:col-span-5">
               <TopMembersRanking topMembers={topMembers} />

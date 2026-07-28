@@ -89,7 +89,7 @@ export function TopMembersRanking({ topMembers }: { topMembers: any[] }) {
                       sizes="44px"
                     />
                   ) : (
-                    <div className="bg-gradient-to-br from-zinc-800 to-zinc-950 size-full flex items-center justify-center">
+                    <div className="bg-linear-to-br from-zinc-800 to-zinc-950 size-full flex items-center justify-center">
                       <span className="text-xs font-serif font-bold text-muted-foreground">
                         {member.fullName?.[0] || "M"}
                       </span>

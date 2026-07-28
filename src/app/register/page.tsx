@@ -281,7 +281,7 @@ export default function RegisterPage() {
                         )}
                       >
                         {isVip && (
-                          <div className="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-amber-600 text-black font-bold text-[9px] uppercase tracking-[0.2em] px-4 py-1 rounded-bl-xl flex items-center gap-1 shadow-lg">
+                          <div className="absolute top-0 right-0 bg-linear-to-l from-amber-500 to-amber-600 text-black font-bold text-[9px] uppercase tracking-[0.2em] px-4 py-1 rounded-bl-xl flex items-center gap-1 shadow-lg">
                             <Trophy className="size-3" /> VIP
                           </div>
                         )}

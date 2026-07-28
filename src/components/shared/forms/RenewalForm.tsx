@@ -267,7 +267,7 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Ej: Renovación con descuento del 10%..."
-          className="bg-white/5 border-white/10 rounded-xl min-h-[80px] resize-none placeholder:text-muted-foreground/40"
+          className="bg-white/5 border-white/10 rounded-xl min-h-20 resize-none placeholder:text-muted-foreground/40"
         />
       </div>
 

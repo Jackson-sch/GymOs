@@ -81,7 +81,7 @@ export const getColumns = ({
               )}
             </div>
             {isVip && (
-              <div className="absolute -top-1 -right-1 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full p-1 shadow-md border border-background">
+              <div className="absolute -top-1 -right-1 bg-linear-to-br from-amber-400 to-yellow-500 rounded-full p-1 shadow-md border border-background">
                 <Crown className="size-3 text-amber-950" />
               </div>
             )}

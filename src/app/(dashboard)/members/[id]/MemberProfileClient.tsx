@@ -30,6 +30,8 @@ import { MemberActivityHistory } from "./MemberActivityHistory";
 import { MemberPlanDetails } from "./MemberPlanDetails";
 import { MemberIdentitySection, MemberFormData } from "./MemberIdentitySection";
 import { MemberPhotoSection } from "./MemberPhotoSection";
+import { MemberPinDialog } from "./MemberPinDialog";
+import { MemberProfileTabNav } from "./MemberProfileTabNav";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useDragReposition } from "@/hooks/use-drag-reposition";
 import { User, TrendingUp, Dumbbell, Receipt } from "lucide-react";
@@ -336,46 +338,15 @@ export function MemberProfileClient({ member }: { member: any }) {
                         </Button>
                       )}
                       
-                      <Dialog open={pinDialogOpen} onOpenChange={setPinDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button variant="outline" className="border-white/10 hover:bg-white/5 h-12 px-6 rounded-xl font-bold transition-colors duration-300 shadow-sm">
-                            <KeyRound className="size-4 mr-2 text-primary" />
-                            {member.pin ? "Cambiar PIN Kiosco" : "Asignar PIN Kiosco"}
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="glass-card bg-zinc-950/95 backdrop-blur-2xl border-white/10 max-w-sm p-6 rounded-2xl shadow-2xl">
-                          <DialogHeader>
-                            <DialogTitle className="font-serif text-xl flex items-center gap-2 text-foreground">
-                              <KeyRound className="size-5 text-primary" />
-                              PIN de Kiosco
-                            </DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4 pt-2">
-                            <p className="text-xs text-white/70 leading-relaxed">
-                              Asigna un código de 4 a 6 dígitos para que <strong className="text-white">{member.fullName}</strong> pueda hacer check-in rápidamente desde el Kiosco.
-                            </p>
-                            <div className="space-y-2">
-                              <Label className="text-[10px] uppercase tracking-widest text-white/60 font-bold ml-1">Código PIN Numérico</Label>
-                              <Input
-                                type="password"
-                                maxLength={6}
-                                placeholder="Ej: 12345"
-                                value={newPin}
-                                onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
-                                className="bg-white/5 border-white/10 h-12 rounded-xl text-center font-mono tracking-[0.5em] text-xl placeholder:tracking-normal placeholder:text-xs"
-                              />
-                            </div>
-                            <Button 
-                              onClick={handleAssignPin} 
-                              disabled={isAssigningPin || newPin.length < 4}
-                              className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 transition-colors duration-300"
-                            >
-                              {isAssigningPin ? <Activity className="size-4 mr-2 animate-spin" /> : null}
-                              {isAssigningPin ? "Guardando..." : "Guardar PIN"}
-                            </Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                      <MemberPinDialog
+                        member={member}
+                        open={pinDialogOpen}
+                        onOpenChange={setPinDialogOpen}
+                        newPin={newPin}
+                        onPinChange={setNewPin}
+                        onAssignPin={handleAssignPin}
+                        isAssigningPin={isAssigningPin}
+                      />
 
                       <Button onClick={() => dispatch({ type: "SET_EDITING", payload: true })} className="bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20 shadow-lg shadow-primary/5 h-12 px-8 rounded-xl font-bold transition-colors duration-300">
                         <Edit2 className="size-4 mr-2" /> Editar Perfil
@@ -420,56 +391,10 @@ export function MemberProfileClient({ member }: { member: any }) {
         </div>
 
         {/* Custom Tab Switcher */}
-        <div className="flex flex-wrap bg-background/50 backdrop-blur-xl p-1.5 rounded-2xl w-fit mb-8 border border-white/10 gap-1">
-          <button type="button"
-            onClick={() => dispatch({ type: "SET_TAB", payload: "GENERAL" })}
-            className={cn(
-              "px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-colors duration-300 flex items-center gap-2",
-              activeTab === "GENERAL"
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-            )}
-          >
-            <User className="size-3.5" />
-            Expediente & Membresía
-          </button>
-          <button type="button"
-            onClick={() => dispatch({ type: "SET_TAB", payload: "PROGRESS" })}
-            className={cn(
-              "px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-colors duration-300 flex items-center gap-2",
-              activeTab === "PROGRESS"
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-            )}
-          >
-            <TrendingUp className="size-3.5" />
-            Progreso Físico
-          </button>
-          <button type="button"
-            onClick={() => dispatch({ type: "SET_TAB", payload: "ROUTINE" })}
-            className={cn(
-              "px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-colors duration-300 flex items-center gap-2",
-              activeTab === "ROUTINE"
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-            )}
-          >
-            <Dumbbell className="size-3.5" />
-            Rutina Prescrita
-          </button>
-          <button type="button"
-            onClick={() => dispatch({ type: "SET_TAB", payload: "PAYMENTS" })}
-            className={cn(
-              "px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-colors duration-300 flex items-center gap-2",
-              activeTab === "PAYMENTS"
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-            )}
-          >
-            <Receipt className="size-3.5" />
-            Historial de Pagos
-          </button>
-        </div>
+        <MemberProfileTabNav
+          activeTab={activeTab}
+          onTabChange={(tab) => dispatch({ type: "SET_TAB", payload: tab })}
+        />
 
         {activeTab === "GENERAL" && (
           <>

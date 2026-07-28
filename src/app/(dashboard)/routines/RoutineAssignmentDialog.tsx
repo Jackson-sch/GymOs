@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/form";
 import { MemberCombobox } from "@/components/shared/MemberCombobox";
 import { Combobox } from "@/components/ui/combobox";
+import { RoutineExerciseRow } from "./components/RoutineExerciseRow";
 
 interface Props {
   members: any[];
@@ -56,7 +57,7 @@ const routineSchema = z.object({
   })).min(1, "Añade al menos un ejercicio"),
 });
 
-type RoutineFormValues = z.infer<typeof routineSchema>;
+export type RoutineFormValues = z.infer<typeof routineSchema>;
 
 export function RoutineAssignmentDialog({ members, trainers, exercises, onSuccess }: Props) {
   const [open, setOpen] = useState(false);
@@ -210,142 +211,26 @@ export function RoutineAssignmentDialog({ members, trainers, exercises, onSucces
 
               <div className="space-y-3">
                 {fields.map((field, idx) => (
-                  <div key={field.id} className="p-5 rounded-2xl bg-white/3 border border-white/10 hover:bg-white/6 transition-colors grid grid-cols-1 md:grid-cols-12 gap-5 items-end animate-slide-right-fast group">
-                    <div className="md:col-span-4 space-y-2">
-                      <FormLabel className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Ejercicio</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`exercises.${idx}.exerciseId`}
-                        render={({ field: exerciseField }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Combobox 
-                                items={exercises.map(e => ({ label: e.name, value: e.id, description: e.category?.name }))}
-                                value={exerciseField.value}
-                                onSelect={exerciseField.onChange}
-                                placeholder="Seleccionar"
-                                searchPlaceholder="Buscar ejercicio..."
-                                triggerClassName="h-10 rounded-xl"
-                                icon={Dumbbell}
-                              />
-                            </FormControl>
-                            <FormMessage className="text-[8px]" />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="md:col-span-2 space-y-2">
-                      <FormLabel className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Día</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`exercises.${idx}.day`}
-                        render={({ field: dayField }) => (
-                          <FormItem>
-                            <Select value={dayField.value} onValueChange={dayField.onChange}>
-                              <FormControl>
-                                <SelectTrigger className="h-10 rounded-xl bg-white/5 border-white/10">
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent className="bg-secondary/95 backdrop-blur-md border-white/10">
-                                {["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo", "General"].map(d => (
-                                  <SelectItem key={d} value={d}>{d}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage className="text-[8px]" />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="md:col-span-1 space-y-2">
-                      <FormLabel className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground text-center">Sets</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`exercises.${idx}.sets`}
-                        render={({ field: setsField }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                {...setsField}
-                                onChange={(e) => setsField.onChange(parseInt(e.target.value))}
-                                className="h-10 px-2 rounded-xl bg-white/5 border-white/10 text-center" 
-                              />
-                            </FormControl>
-                            <FormMessage className="text-[8px]" />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="md:col-span-1 space-y-2">
-                      <FormLabel className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground text-center">Reps</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`exercises.${idx}.reps`}
-                        render={({ field: repsField }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input 
-                                {...repsField}
-                                placeholder="12" 
-                                className="h-10 px-2 rounded-xl bg-white/5 border-white/10 text-center" 
-                              />
-                            </FormControl>
-                            <FormMessage className="text-[8px]" />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="md:col-span-3 space-y-2">
-                      <FormLabel className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Notas / Peso</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`exercises.${idx}.notes`}
-                        render={({ field: notesField }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input 
-                                {...notesField}
-                                placeholder="Ej: 20kg, lento" 
-                                className="h-10 rounded-xl bg-white/5 border-white/10" 
-                              />
-                            </FormControl>
-                            <FormMessage className="text-[8px]" />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="md:col-span-1 pb-1">
-                      <Button 
-                        type="button" 
-                        onClick={() => remove(idx)} 
-                        variant="outline" 
-                        className="w-full h-10 p-0 rounded-xl border-white/10 hover:text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
-                  </div>
+                  <RoutineExerciseRow
+                    key={field.id}
+                    form={form}
+                    index={idx}
+                    exercises={exercises}
+                    onRemove={remove}
+                  />
                 ))}
-
-                {fields.length === 0 && (
-                  <div className="text-center py-12 rounded-2xl border-2 border-dashed border-white/5 text-muted-foreground italic">
-                    No hay ejercicios añadidos a esta rutina
-                  </div>
-                )}
-                {form.formState.errors.exercises && (
-                  <p className="text-sm font-medium text-destructive text-center">
-                    {form.formState.errors.exercises.message}
-                  </p>
-                )}
-              </div>
+              {fields.length === 0 && (
+                <div className="text-center py-12 rounded-2xl border-2 border-dashed border-white/5 text-muted-foreground italic">
+                  No hay ejercicios añadidos a esta rutina
+                </div>
+              )}
+              {form.formState.errors.exercises && (
+                <p className="text-sm font-medium text-destructive text-center">
+                  {form.formState.errors.exercises.message}
+                </p>
+              )}
             </div>
+          </div>
 
             <Button 
               type="submit" 

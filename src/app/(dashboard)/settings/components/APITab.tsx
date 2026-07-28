@@ -649,7 +649,7 @@ export function APITab({
         {/* ========================================== */}
         {/* TAB 1: SERVICIOS INTEGRADOS */}
         {/* ========================================== */}
-        <TabsContent value="connectors" className="space-y-10 focus-visible:outline-none">
+        <TabsContent value="connectors" className="space-y-10 focus-visible:outline-hidden">
           {/* Categoría: Comunicación & Notificaciones */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5 text-primary border-b border-white/5 pb-2">
@@ -741,7 +741,7 @@ export function APITab({
         {/* ========================================== */}
         {/* TAB 2: WEBHOOKS OUTBOUND */}
         {/* ========================================== */}
-        <TabsContent value="webhooks" className="space-y-6 focus-visible:outline-none">
+        <TabsContent value="webhooks" className="space-y-6 focus-visible:outline-hidden">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white/2 border border-white/5">
             <div className="space-y-1">
               <h3 className="text-lg font-serif text-foreground">
@@ -850,7 +850,7 @@ export function APITab({
         {/* ========================================== */}
         {/* TAB 3: DEVELOPER API KEYS */}
         {/* ========================================== */}
-        <TabsContent value="apikeys" className="space-y-6 focus-visible:outline-none">
+        <TabsContent value="apikeys" className="space-y-6 focus-visible:outline-hidden">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white/2 border border-white/5">
             <div className="space-y-1">
               <h3 className="text-lg font-serif text-foreground">

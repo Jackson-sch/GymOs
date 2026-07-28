@@ -53,6 +53,7 @@ import { useQueryState, parseAsInteger } from "nuqs";
 import { PlanDetail } from "./components/PlanDetail";
 import { PlanCard } from "./components/PlanCard";
 import { RoutineSimulator } from "./components/RoutineSimulator";
+import { NewExerciseDialog } from "./components/NewExerciseDialog";
 import { PaginationBar } from "@/components/shared/PaginationBar";
 
 interface RoutinesClientProps {
@@ -144,12 +145,47 @@ export function RoutinesClient({
   };
 
   // New Exercise Form State
-  const [newExName, setNewExName] = useState("");
-  const [newExMuscle, setNewExMuscle] = useState("Pecho");
-  const [newExDesc, setNewExDesc] = useState("");
-  const [newExVideo, setNewExVideo] = useState("");
+  const [newExForm, setNewExForm] = useState({
+    name: "",
+    muscleGroup: "Pecho",
+    description: "",
+    demoUrl: "",
+  });
   const [creatingEx, setCreatingEx] = useState(false);
   const [isNewExOpen, setIsNewExOpen] = useState(false);
+
+  const handleCreateExerciseSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newExForm.name.trim()) {
+      toast.error("El nombre del ejercicio es obligatorio");
+      return;
+    }
+    setCreatingEx(true);
+    try {
+      const res = await createExerciseAction({
+        name: newExForm.name,
+        muscleGroup: newExForm.muscleGroup,
+        demoUrl: newExForm.demoUrl,
+      });
+      if (res.success && res.data) {
+        toast.success("Ejercicio creado correctamente");
+        setExercises((prev) => [res.data, ...prev]);
+        setIsNewExOpen(false);
+        setNewExForm({
+          name: "",
+          muscleGroup: "Pecho",
+          description: "",
+          demoUrl: "",
+        });
+      } else {
+        toast.error(res.error || "Error al crear el ejercicio");
+      }
+    } catch (err) {
+      toast.error("Error de servidor al guardar el ejercicio");
+    } finally {
+      setCreatingEx(false);
+    }
+  };
 
   // Reset exercise page on filter change
   useEffect(() => {
@@ -257,7 +293,7 @@ export function RoutinesClient({
 
         {/* Studio KPI Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full lg:w-auto">
-          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-[110px]">
+          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-27.5">
             <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
               Planes
             </p>
@@ -265,7 +301,7 @@ export function RoutinesClient({
               {groupedRoutines.length}
             </p>
           </div>
-          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-[110px]">
+          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-27.5">
             <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
               Ejercicios
             </p>
@@ -273,7 +309,7 @@ export function RoutinesClient({
               {exercises.length}
             </p>
           </div>
-          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-[110px]">
+          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-27.5">
             <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
               Socios
             </p>
@@ -281,7 +317,7 @@ export function RoutinesClient({
               {totalAssignedMembers}
             </p>
           </div>
-          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-[110px]">
+          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-27.5">
             <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
               Entrenadores
             </p>
@@ -320,7 +356,7 @@ export function RoutinesClient({
         {/* ========================================== */}
         <TabsContent
           value="rutinas"
-          className="space-y-8 outline-none animate-fade-in-fast"
+          className="space-y-8 outline-hidden animate-fade-in-fast"
         >
           {/* Search & Actions Bar */}
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass-card p-4 rounded-3xl border-white/10">
@@ -387,7 +423,7 @@ export function RoutinesClient({
         {/* ========================================== */}
         <TabsContent
           value="ejercicios"
-          className="space-y-8 outline-none animate-fade-in-fast"
+          className="space-y-8 outline-hidden animate-fade-in-fast"
         >
           {/* Search, Muscle Group Pills & Controls */}
           <div className="space-y-4 glass-card p-5 rounded-3xl border-white/10">
@@ -450,112 +486,14 @@ export function RoutinesClient({
                 </Button>
 
                 {/* Add New Exercise Dialog */}
-                <Dialog open={isNewExOpen} onOpenChange={setIsNewExOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="rounded-2xl gap-2 h-11 px-5 font-bold text-xs uppercase tracking-wider bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20">
-                      <Plus className="size-4" />
-                      Nuevo Ejercicio
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="bg-background/95 backdrop-blur-2xl border-white/10 text-foreground max-w-md">
-                    <DialogHeader>
-                      <DialogTitle className="text-xl font-serif">
-                        Registrar Nuevo Ejercicio
-                      </DialogTitle>
-                      <DialogDescription className="text-xs text-muted-foreground">
-                        Añada movimientos a la biblioteca del gimnasio con guía de ejecuciones.
-                      </DialogDescription>
-                    </DialogHeader>
-
-                    <form onSubmit={handleCreateExerciseSubmit} className="space-y-4 py-2">
-                      <div className="space-y-2">
-                        <Label className="text-xs font-semibold uppercase tracking-wider">
-                          Nombre del Ejercicio
-                        </Label>
-                        <Input
-                          value={newExForm.name}
-                          onChange={(e) =>
-                            setNewExForm((prev) => ({ ...prev, name: e.target.value }))
-                          }
-                          placeholder="Ej: Sentadilla Búlgara con Mancuernas"
-                          className="bg-white/5 border-white/10 h-11 text-xs"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-xs font-semibold uppercase tracking-wider">
-                          Grupo Muscular Principal
-                        </Label>
-                        <Select
-                          value={newExForm.muscleGroup}
-                          onValueChange={(val) =>
-                            setNewExForm((prev) => ({ ...prev, muscleGroup: val }))
-                          }
-                        >
-                          <SelectTrigger className="bg-white/5 border-white/10 h-11 text-xs">
-                            <SelectValue placeholder="Seleccionar grupo" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Pecho">Pecho (Pectoral)</SelectItem>
-                            <SelectItem value="Espalda">Espalda (Dorsal/Trapecio)</SelectItem>
-                            <SelectItem value="Piernas">Piernas (Cuádriceps/Isquios)</SelectItem>
-                            <SelectItem value="Brazos">Brazos (Bíceps/Tríceps)</SelectItem>
-                            <SelectItem value="Hombros">Hombros (Deltoides)</SelectItem>
-                            <SelectItem value="Core">Core (Abdomen/Lumbar)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-xs font-semibold uppercase tracking-wider">
-                          URL de Demostración (Video YouTube / GIF)
-                        </Label>
-                        <Input
-                          value={newExForm.demoUrl}
-                          onChange={(e) =>
-                            setNewExForm((prev) => ({ ...prev, demoUrl: e.target.value }))
-                          }
-                          placeholder="https://youtube.com/watch?v=..."
-                          className="bg-white/5 border-white/10 h-11 text-xs font-mono"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="new-ex-desc" className="text-xs font-semibold uppercase tracking-wider">
-                          Instrucciones Técnicas de Ejecución
-                        </Label>
-                        <textarea
-                          id="new-ex-desc"
-                          value={newExForm.description}
-                          onChange={(e) =>
-                            setNewExForm((prev) => ({ ...prev, description: e.target.value }))
-                          }
-                          placeholder="Consejos de postura, respiración y recorrido del movimiento..."
-                          className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs h-24 focus:outline-none focus:border-primary/50 text-foreground"
-                        />
-                      </div>
-
-                      <div className="pt-2 flex justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => setIsNewExOpen(false)}
-                          className="text-xs uppercase font-bold"
-                        >
-                          Cancelar
-                        </Button>
-                        <Button
-                          type="submit"
-                          disabled={creatingEx}
-                          className="bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider rounded-xl gap-2"
-                        >
-                          {creatingEx && <Loader2 className="size-3.5 animate-spin" />}
-                          Guardar Ejercicio
-                        </Button>
-                      </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                <NewExerciseDialog
+                  open={isNewExOpen}
+                  onOpenChange={setIsNewExOpen}
+                  formState={newExForm}
+                  setFormState={setNewExForm}
+                  onSubmit={handleCreateExerciseSubmit}
+                  isLoading={creatingEx}
+                />
               </div>
             </div>
 

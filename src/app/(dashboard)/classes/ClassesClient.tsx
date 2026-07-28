@@ -244,7 +244,7 @@ export function ClassesClient({ classes, trainers }: { classes: any[]; trainers:
                       <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
                         {trainer.fullName}
                       </p>
-                      <p className="text-[9px] text-muted-foreground uppercase tracking-wider truncate max-w-[140px]">
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-wider truncate max-w-35">
                         {trainer.email || "Sin email"}
                       </p>
                     </div>
