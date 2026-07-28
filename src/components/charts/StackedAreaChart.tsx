@@ -115,7 +115,7 @@ export function StackedAreaChart({
           <path
             d={areaGenerator(data)!}
             fill="url(#area-gradient)"
-            className="transition-all duration-700"
+            className="transition-colors duration-700"
           />
 
           {/* Line layer with glow */}
@@ -131,15 +131,15 @@ export function StackedAreaChart({
 
           {/* Interactive Points */}
           <TooltipProvider>
-            {data.map((d, i) => (
-              <Tooltip key={`point-${d.name}-${i}`} delayDuration={0}>
+            {data.map((d) => (
+              <Tooltip key={(d as any).id || `point-${d.name}`} delayDuration={0}>
                 <TooltipTrigger asChild>
                   <circle
                     cx={xScale(d.name)}
                     cy={yScale(d.value)}
                     r="4"
                     fill="var(--color-primary)"
-                    className="stroke-background stroke-2 cursor-pointer hover:r-6 transition-all duration-300"
+                    className="stroke-background stroke-2 cursor-pointer hover:r-6 transition-transform duration-300"
                   />
                 </TooltipTrigger>
                 <TooltipContent className="bg-secondary/90 backdrop-blur-md border-white/10 text-foreground font-medium z-50">

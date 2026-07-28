@@ -21,14 +21,14 @@ export function SettingsTabs({ tabs, activeTab, setActiveTab, setCurrentPage }: 
   return (
     <div className="lg:col-span-3 space-y-2">
       {tabs.map((tab) => (
-        <button
+        <button type="button"
           key={tab.id}
           onClick={() => {
             setActiveTab(tab.id);
             if (tab.id !== activeTab) setCurrentPage(1);
           }}
           className={cn(
-            "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium",
+            "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-300 text-sm font-medium",
             activeTab === tab.id
               ? "bg-white/5 border border-white/10 text-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-white/5",

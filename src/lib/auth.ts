@@ -4,8 +4,13 @@ import { prisma } from "@/lib/prisma";
 
 import { admin } from "better-auth/plugins";
 
+export const authSecret = process.env.BETTER_AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+if (!authSecret && process.env.NODE_ENV !== "test") {
+  throw new Error("CRITICAL SECURITY ERROR: BETTER_AUTH_SECRET o NEXTAUTH_SECRET debe estar configurada en las variables de entorno");
+}
+
 export const auth = betterAuth({
-    secret: process.env.BETTER_AUTH_SECRET || "ba_sec_9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c",
+    secret: authSecret || "test_environment_secret_key_32bytes_min",
     database: prismaAdapter(prisma, {
         provider: "postgresql",
     }),

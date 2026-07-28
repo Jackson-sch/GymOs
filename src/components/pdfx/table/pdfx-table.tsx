@@ -172,6 +172,7 @@ export function TableCell({
   footer,
   align,
   width,
+  text,
   children,
   style,
   variant = 'line',
@@ -222,14 +223,13 @@ export function TableCell({
     textStyle = styles.cellTextCompact;
   }
 
-  const content =
-    typeof children === 'string' ? (
-      <PDFText style={[textStyle, align ? { textAlign: align } : {}, { margin: 0, padding: 0 }]}>
-        {children}
-      </PDFText>
-    ) : (
-      children
-    );
+  const content = text ? (
+    <PDFText style={[textStyle, align ? { textAlign: align } : {}, { margin: 0, padding: 0 }]}>
+      {text}
+    </PDFText>
+  ) : (
+    children
+  );
 
   return <View style={styleArray}>{content}</View>;
 }

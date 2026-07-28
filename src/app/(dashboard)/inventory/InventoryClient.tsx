@@ -3,24 +3,17 @@
 import React, { useState, useMemo } from "react";
 import {
   Wrench,
-  Plus,
-  Search,
   AlertTriangle,
   CheckCircle2,
   Clock,
   MoreVertical,
   Edit,
   Trash2,
-  Calendar,
   Dumbbell,
-  LayoutGrid,
-  List,
-  Activity,
   ShieldAlert,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -54,6 +47,41 @@ import { PaginationBar } from "@/components/shared/PaginationBar";
 import { useQueryState, parseAsInteger } from "nuqs";
 import Image from "next/image";
 import { formatDate } from "@/lib/formats";
+import { InventoryTabBar } from "./components/InventoryTabBar";
+import { InventoryControlBar } from "./components/InventoryControlBar";
+
+const getStatusInfo = (status: EquipmentStatus) => {
+  switch (status) {
+    case "OPERATIONAL":
+      return {
+        label: "Operativo",
+        color: "text-emerald-400",
+        bg: "bg-emerald-500/10 border-emerald-500/30",
+        icon: CheckCircle2,
+      };
+    case "MAINTENANCE":
+      return {
+        label: "En Mantenimiento",
+        color: "text-amber-400",
+        bg: "bg-amber-500/10 border-amber-500/30",
+        icon: Clock,
+      };
+    case "OUT_OF_SERVICE":
+      return {
+        label: "Fuera de Servicio",
+        color: "text-rose-400",
+        bg: "bg-rose-500/10 border-rose-500/30",
+        icon: AlertTriangle,
+      };
+    default:
+      return {
+        label: "Desconocido",
+        color: "text-muted-foreground",
+        bg: "bg-muted/10 border-white/10",
+        icon: Clock,
+      };
+  }
+};
 
 export function InventoryClient({ data }: { data: any[] }) {
   const [activeTab, setActiveTab] = useState<"EQUIPMENT" | "SCHEDULE" | "ALERTS">("EQUIPMENT");
@@ -68,6 +96,7 @@ export function InventoryClient({ data }: { data: any[] }) {
 
   // Dialogs
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const now = useMemo(() => new Date(), []);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
@@ -158,176 +187,44 @@ export function InventoryClient({ data }: { data: any[] }) {
     }
   };
 
-  const getStatusInfo = (status: EquipmentStatus) => {
-    switch (status) {
-      case "OPERATIONAL":
-        return {
-          label: "Operativo",
-          color: "text-emerald-400",
-          bg: "bg-emerald-500/10 border-emerald-500/30",
-          icon: CheckCircle2,
-        };
-      case "MAINTENANCE":
-        return {
-          label: "En Mantenimiento",
-          color: "text-amber-400",
-          bg: "bg-amber-500/10 border-amber-500/30",
-          icon: Clock,
-        };
-      case "OUT_OF_SERVICE":
-        return {
-          label: "Fuera de Servicio",
-          color: "text-rose-400",
-          bg: "bg-rose-500/10 border-rose-500/30",
-          icon: AlertTriangle,
-        };
-      default:
-        return {
-          label: "Desconocido",
-          color: "text-muted-foreground",
-          bg: "bg-muted/10 border-white/10",
-          icon: Clock,
-        };
-    }
-  };
-
   return (
     <div className="space-y-8 w-full">
-      {/* Top Tab Bar Navigation */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex bg-background/50 backdrop-blur-xl p-1.5 rounded-2xl border border-white/10 gap-1 w-full sm:w-auto">
-          <button
-            onClick={() => setActiveTab("EQUIPMENT")}
-            className={cn(
-              "px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-2 flex-1 sm:flex-none justify-center",
-              activeTab === "EQUIPMENT"
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-white/5",
-            )}
-          >
-            <Dumbbell className="size-3.5" />
-            Catálogo de Equipos ({data.length})
-          </button>
-
-          <button
-            onClick={() => setActiveTab("SCHEDULE")}
-            className={cn(
-              "px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-2 flex-1 sm:flex-none justify-center",
-              activeTab === "SCHEDULE"
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-white/5",
-            )}
-          >
-            <Wrench className="size-3.5" />
-            Cronograma Mant.
-          </button>
-
-          <button
-            onClick={() => setActiveTab("ALERTS")}
-            className={cn(
-              "px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-2 flex-1 sm:flex-none justify-center relative",
-              activeTab === "ALERTS"
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-white/5",
-            )}
-          >
-            <ShieldAlert className="size-3.5" />
-            Alertas & Incidentes
-            {overdueItems.length > 0 && (
-              <span className="size-2 rounded-full bg-rose-500 animate-ping absolute top-2 right-2" />
-            )}
-          </button>
-        </div>
-
-        <Button
-          onClick={() => setIsCreateOpen(true)}
-          className="rounded-2xl h-11 px-6 shadow-lg shadow-primary/20 bg-primary font-bold text-xs uppercase tracking-wider transition-all hover:scale-105 active:scale-95 w-full sm:w-auto"
-        >
-          <Plus className="w-4 h-4 mr-2" /> Registrar Nuevo Equipo
-        </Button>
-      </div>
+      <InventoryTabBar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        totalItems={data.length}
+        overdueCount={overdueItems.length}
+        onCreateClick={() => setIsCreateOpen(true)}
+      />
 
       {/* TAB 1: EQUIPMENT CATALOG */}
       {activeTab === "EQUIPMENT" && (
         <div className="space-y-6">
-          {/* Controls Bar: Search + Category Pills + View Switcher */}
-          <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 glass-card p-4 rounded-3xl border-white/10">
-            <div className="flex flex-col md:flex-row gap-4 items-center flex-1">
-              <div className="relative flex-1 w-full">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por equipo, categoría o N° de serie..."
-                  className="pl-11 h-11 bg-white/5 border-white/10 rounded-2xl text-xs focus-visible:ring-primary/40"
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setPage(1);
-                  }}
-                />
-              </div>
-
-              {/* Status Filter Pills */}
-              <div className="flex bg-black/40 p-1 rounded-2xl border border-white/10 w-full md:w-auto overflow-x-auto custom-scrollbar">
-                {["ALL", "OPERATIONAL", "MAINTENANCE", "OUT_OF_SERVICE"].map((st) => {
-                  const info = st === "ALL" ? null : getStatusInfo(st as EquipmentStatus);
-                  return (
-                    <button
-                      key={st}
-                      onClick={() => {
-                        setStatusFilter(st);
-                        setPage(1);
-                      }}
-                      className={cn(
-                        "px-3.5 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap",
-                        statusFilter === st
-                          ? "bg-primary text-primary-foreground shadow-md"
-                          : "text-muted-foreground hover:text-foreground hover:bg-white/5",
-                      )}
-                    >
-                      {st === "ALL" ? "Todos" : info?.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* View Mode Switcher */}
-            <div className="flex items-center gap-2 justify-end">
-              <div className="flex p-1 bg-black/40 rounded-2xl border border-white/10">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={cn(
-                    "p-2 rounded-xl text-xs transition-all",
-                    viewMode === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-                  )}
-                  title="Vista Cuadrícula"
-                >
-                  <LayoutGrid className="size-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={cn(
-                    "p-2 rounded-xl text-xs transition-all",
-                    viewMode === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-                  )}
-                  title="Vista Lista Tabla"
-                >
-                  <List className="size-4" />
-                </button>
-              </div>
-            </div>
-          </div>
+          <InventoryControlBar
+            search={search}
+            onSearchChange={(value) => {
+              setSearch(value);
+              setPage(1);
+            }}
+            statusFilter={statusFilter}
+            onStatusFilterChange={(value) => {
+              setStatusFilter(value);
+              setPage(1);
+            }}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+          />
 
           {/* Dynamic Category Pills */}
           {categories.length > 0 && (
             <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
-              <button
+              <button type="button"
                 onClick={() => {
                   setCategoryFilter("ALL");
                   setPage(1);
                 }}
                 className={cn(
-                  "px-4 py-1.5 rounded-2xl text-[10px] font-bold uppercase tracking-wider border transition-all shrink-0",
+                  "px-4 py-1.5 rounded-2xl text-[10px] font-bold uppercase tracking-wider border transition-colors shrink-0",
                   categoryFilter === "ALL"
                     ? "bg-white text-black border-white shadow-sm"
                     : "bg-white/5 text-muted-foreground border-white/10 hover:bg-white/10 hover:text-foreground",
@@ -336,14 +233,14 @@ export function InventoryClient({ data }: { data: any[] }) {
                 Todas las Categorías
               </button>
               {categories.map((cat) => (
-                <button
+                <button type="button"
                   key={cat}
                   onClick={() => {
                     setCategoryFilter(cat);
                     setPage(1);
                   }}
                   className={cn(
-                    "px-4 py-1.5 rounded-2xl text-[10px] font-bold uppercase tracking-wider border transition-all shrink-0",
+                    "px-4 py-1.5 rounded-2xl text-[10px] font-bold uppercase tracking-wider border transition-colors shrink-0",
                     categoryFilter === cat
                       ? "bg-white text-black border-white shadow-sm"
                       : "bg-white/5 text-muted-foreground border-white/10 hover:bg-white/10 hover:text-foreground",
@@ -360,12 +257,12 @@ export function InventoryClient({ data }: { data: any[] }) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {paginatedData.map((item) => {
                 const status = getStatusInfo(item.status);
-                const isOverdue = item.nextMaintenance && new Date(item.nextMaintenance) < new Date();
+                const isOverdue = item.nextMaintenance && new Date(item.nextMaintenance) < now;
 
                 return (
                   <Card
                     key={item.id}
-                    className="glass-card border-white/10 overflow-hidden hover:border-primary/30 transition-all group relative p-0 backdrop-blur-md"
+                    className="glass-card border-white/10 overflow-hidden hover:border-primary/30 transition-colors duration-300 group relative p-0 backdrop-blur-md"
                   >
                     <div className="h-56 relative overflow-hidden bg-black/40">
                       {item.photo ? (
@@ -373,6 +270,7 @@ export function InventoryClient({ data }: { data: any[] }) {
                           src={item.photo}
                           alt={item.name}
                           fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           className="object-cover transition-transform group-hover:scale-105 duration-700"
                         />
                       ) : (
@@ -507,7 +405,7 @@ export function InventoryClient({ data }: { data: any[] }) {
                 <TableBody>
                   {paginatedData.map((item) => {
                     const status = getStatusInfo(item.status);
-                    const isOverdue = item.nextMaintenance && new Date(item.nextMaintenance) < new Date();
+                    const isOverdue = item.nextMaintenance && new Date(item.nextMaintenance) < now;
 
                     return (
                       <TableRow key={item.id} className="border-white/5 hover:bg-white/5 transition-colors">
@@ -515,7 +413,7 @@ export function InventoryClient({ data }: { data: any[] }) {
                           <div className="flex items-center gap-3">
                             <div className="size-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary shrink-0 overflow-hidden">
                               {item.photo ? (
-                                <img src={item.photo} alt={item.name} className="w-full h-full object-cover" />
+                                <Image src={item.photo} alt={item.name} width={40} height={40} className="w-full h-full object-cover" />
                               ) : (
                                 <Dumbbell className="size-5" />
                               )}

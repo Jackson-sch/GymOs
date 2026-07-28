@@ -26,23 +26,24 @@ import {
   settlePayrollAction, 
   getTrainerPayrollHistory 
 } from "@/lib/actions/payroll-actions";
-import { PDFDownloadLink } from "@react-pdf/renderer";
-import { PayrollReceiptPDF } from "./components/PayrollReceiptPDF";
+import dynamic from "next/dynamic";
 import { FileDown } from "lucide-react";
+import { PayrollReceiptPDF } from "./components/PayrollReceiptPDF";
+
+const PDFDownloadLink = dynamic(
+  () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
+  { ssr: false }
+);
 import { DateRangePicker } from "@/components/shared/DateRangePicker";
 
 export function TrainerPayrollTab({ trainer }: { trainer: any }) {
-  const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
-  const [endDate, setEndDate] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"));
+  const [startDate, setStartDate] = useState(() => format(startOfMonth(new Date()), "yyyy-MM-dd"));
+  const [endDate, setEndDate] = useState(() => format(endOfMonth(new Date()), "yyyy-MM-dd"));
   const [payrollData, setPayrollData] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSettling, setIsSettling] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const [isMounted] = useState(() => typeof window !== "undefined");
 
   const fetchPayrollData = React.useCallback(async () => {
     setIsLoading(true);
@@ -161,7 +162,7 @@ export function TrainerPayrollTab({ trainer }: { trainer: any }) {
                         {({ loading }) => (
                           <Button 
                             variant="outline"
-                            className="h-14 px-6 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground font-bold transition-all w-full md:w-auto"
+                            className="h-14 px-6 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground font-bold transition-colors w-full md:w-auto"
                             disabled={loading}
                           >
                             <FileDown className="w-5 h-5 mr-2" />
@@ -202,7 +203,7 @@ export function TrainerPayrollTab({ trainer }: { trainer: any }) {
                                 <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">{format(new Date(c.startTime), "HH:mm")}</div>
                               </div>
                             </div>
-                            <div className="text-xs font-bold opacity-60 group-hover:opacity-100 group-hover:text-primary transition-all">S/. {payrollData.perClassRate}</div>
+                            <div className="text-xs font-bold opacity-60 group-hover:opacity-100 group-hover:text-primary transition-colors transition-opacity">S/. {payrollData.perClassRate}</div>
                           </div>
                         ))}
                       </div>
@@ -231,7 +232,7 @@ export function TrainerPayrollTab({ trainer }: { trainer: any }) {
                                   <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">{r.plan.name}</div>
                                 </div>
                               </div>
-                              <div className="text-xs font-bold opacity-60 group-hover:opacity-100 group-hover:text-accent transition-all">S/. {commission.toLocaleString()}</div>
+                              <div className="text-xs font-bold opacity-60 group-hover:opacity-100 group-hover:text-accent transition-colors transition-opacity">S/. {commission.toLocaleString()}</div>
                             </div>
                           );
                         })}
@@ -295,7 +296,7 @@ export function TrainerPayrollTab({ trainer }: { trainer: any }) {
               ) : (
                 <div className="space-y-4">
                   {history.map((p: any) => (
-                    <div key={p.id} className="p-4 rounded-2xl bg-background/40 border border-white/5 space-y-3 group hover:border-primary/20 transition-all">
+                    <div key={p.id} className="p-4 rounded-2xl bg-background/40 border border-white/5 space-y-3 group hover:border-primary/20 transition-colors">
                       <div className="flex justify-between items-start">
                         <div className="space-y-1">
                           <div className="text-lg font-light tracking-tight text-foreground">S/. {Number(p.amount).toLocaleString()}</div>

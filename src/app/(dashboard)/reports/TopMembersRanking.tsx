@@ -5,38 +5,38 @@ import { Crown, Trophy, Medal, Award, Star } from "lucide-react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 
+const getRankBadge = (index: number) => {
+  switch (index) {
+    case 0:
+      return {
+        icon: Crown,
+        bg: "bg-amber-500/20 text-amber-400 border-amber-500/40 shadow-amber-500/10",
+        label: "1° Oro",
+      };
+    case 1:
+      return {
+        icon: Trophy,
+        bg: "bg-slate-300/20 text-slate-200 border-slate-300/40 shadow-slate-300/10",
+        label: "2° Plata",
+      };
+    case 2:
+      return {
+        icon: Medal,
+        bg: "bg-amber-700/20 text-amber-500 border-amber-700/40 shadow-amber-700/10",
+        label: "3° Bronce",
+      };
+    default:
+      return {
+        icon: Award,
+        bg: "bg-white/5 text-muted-foreground border-white/10",
+        label: `${index + 1}° Top`,
+      };
+  }
+};
+
 export function TopMembersRanking({ topMembers }: { topMembers: any[] }) {
   const members = topMembers.slice(0, 5);
   const maxVisits = Math.max(...members.map((m) => m.visitCount || m.attendancesCount || 1), 1);
-
-  const getRankBadge = (index: number) => {
-    switch (index) {
-      case 0:
-        return {
-          icon: Crown,
-          bg: "bg-amber-500/20 text-amber-400 border-amber-500/40 shadow-amber-500/10",
-          label: "1° Oro",
-        };
-      case 1:
-        return {
-          icon: Trophy,
-          bg: "bg-slate-300/20 text-slate-200 border-slate-300/40 shadow-slate-300/10",
-          label: "2° Plata",
-        };
-      case 2:
-        return {
-          icon: Medal,
-          bg: "bg-amber-700/20 text-amber-500 border-amber-700/40 shadow-amber-700/10",
-          label: "3° Bronce",
-        };
-      default:
-        return {
-          icon: Award,
-          bg: "bg-white/5 text-muted-foreground border-white/10",
-          label: `${index + 1}° Top`,
-        };
-    }
-  };
 
   return (
     <div className="glass-card overflow-hidden h-full flex flex-col border-white/10 rounded-3xl backdrop-blur-md">
@@ -67,8 +67,8 @@ export function TopMembersRanking({ topMembers }: { topMembers: any[] }) {
 
           return (
             <div
-              key={member.id || i}
-              className="p-5 hover:bg-white/5 transition-all duration-300 group flex items-center justify-between gap-4"
+              key={member.id || member.dni || member.fullName}
+              className="p-5 hover:bg-white/5 transition-colors duration-300 group flex items-center justify-between gap-4"
             >
               <div className="flex items-center gap-4 flex-1 min-w-0">
                 {/* Rank Metallic Icon */}
@@ -110,7 +110,7 @@ export function TopMembersRanking({ topMembers }: { topMembers: any[] }) {
 
                   <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-primary/70 rounded-full transition-all duration-500"
+                      className="h-full bg-primary/70 rounded-full transition-colors duration-500"
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>

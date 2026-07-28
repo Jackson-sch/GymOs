@@ -115,7 +115,7 @@ export function DateRangePicker({
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className="glass-card bg-white/5 hover:bg-white/10 border-white/10 rounded-xl h-11 px-4 font-bold text-xs gap-2.5 transition-all"
+            className="glass-card bg-white/5 hover:bg-white/10 border-white/10 rounded-xl h-11 px-4 font-bold text-xs gap-2.5 transition-colors"
           >
             <CalendarIcon className="size-4 text-primary shrink-0" />
             <span className="truncate">

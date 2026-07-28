@@ -76,7 +76,7 @@ export function DataTable<TData, TValue>({
             placeholder={placeholder}
             value={search}
             onChange={(event) => setSearch(event.target.value || null)}
-            className="pl-11 h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/30 transition-all placeholder:text-muted-foreground/30 font-sans"
+            className="pl-11 h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/30 transition-colors placeholder:text-muted-foreground/30 font-sans"
           />
         </div>
       )}
@@ -96,6 +96,9 @@ export function DataTable<TData, TValue>({
                       >
                         {header.isPlaceholder ? null : (
                           <div
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                             className={cn(
                               "flex items-center gap-2",
                               header.column.getCanSort() && "cursor-pointer select-none hover:text-foreground transition-colors"
@@ -122,6 +125,9 @@ export function DataTable<TData, TValue>({
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     onClick={() => onRowClick?.(row.original)}
                     className={cn(
                       "group transition-colors duration-200",
@@ -152,17 +158,19 @@ export function DataTable<TData, TValue>({
             Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <button type="button"
+              aria-label="Previous page"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="p-2 rounded-lg hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="p-2 rounded-lg hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <button
+            <button type="button"
+              aria-label="Next page"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="p-2 rounded-lg hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="p-2 rounded-lg hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight className="w-5 h-5" />
             </button>

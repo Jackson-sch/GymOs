@@ -26,9 +26,9 @@ export default function GlobalError({
         <p className="mb-6 text-sm leading-relaxed text-zinc-400">
           Hemos detectado un problema al cargar esta vista en GymOS. Nuestro equipo ha sido notificado del incidente.
         </p>
-        <button
+        <button type="button"
           onClick={() => reset()}
-          className="flex items-center gap-2 rounded-xl bg-linear-to-r from-red-600 to-amber-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:scale-105 active:scale-95"
+          className="flex items-center gap-2 rounded-xl bg-linear-to-r from-red-600 to-amber-600 px-6 py-3 font-semibold text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
         >
           <RotateCcw className="h-4 w-4" />
           <span>Intentar de nuevo</span>

@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dumbbell, Play, Target, Calendar, User, Clock, ChevronRight } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { RoutineSimulator } from "../../routines/components/RoutineSimulator";
 import Link from "next/link";
 
@@ -35,7 +37,7 @@ export function MemberRoutineTab({ member }: { member: any }) {
   const exercises = activeRoutine.exercises || [];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-fade-in-fast">
       {/* Simulator Modal */}
       {isSimulating && (
         <RoutineSimulator
@@ -50,10 +52,10 @@ export function MemberRoutineTab({ member }: { member: any }) {
       {routines.length > 1 && (
         <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
           {routines.map((r: any) => (
-            <button
+            <button type="button"
               key={r.id}
               onClick={() => setSelectedRoutine(r)}
-              className={`px-5 py-3 rounded-2xl border text-xs font-bold transition-all shrink-0 flex items-center gap-2 ${
+              className={`px-5 py-3 rounded-2xl border text-xs font-bold transition-colors shrink-0 flex items-center gap-2 ${
                 activeRoutine.id === r.id
                   ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20"
                   : "bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10 hover:text-foreground"
@@ -74,7 +76,7 @@ export function MemberRoutineTab({ member }: { member: any }) {
               Rutina Activa Prescrita
             </Badge>
             <span className="text-xs text-muted-foreground font-mono">
-              Asignado: {new Date(activeRoutine.createdAt).toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" })}
+              Asignado: {format(new Date(activeRoutine.createdAt), "dd MMM yyyy", { locale: es })}
             </span>
           </div>
           <h2 className="text-3xl font-serif font-bold text-foreground">{activeRoutine.name}</h2>
@@ -86,7 +88,7 @@ export function MemberRoutineTab({ member }: { member: any }) {
         <Button
           onClick={() => setIsSimulating(true)}
           disabled={exercises.length === 0}
-          className="h-12 px-6 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider hover:bg-primary/90 transition-all flex items-center gap-2 shadow-lg shadow-primary/20"
+          className="h-12 px-6 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-lg shadow-primary/20"
         >
           <Play className="size-4 fill-current" />
           Simular Entrenamiento
@@ -98,7 +100,7 @@ export function MemberRoutineTab({ member }: { member: any }) {
         {exercises.map((item: any, idx: number) => {
           const ex = item.exercise || item;
           return (
-            <Card key={item.id || idx} className="glass-card border-white/10 rounded-3xl overflow-hidden hover:border-primary/30 transition-all group">
+            <Card key={item.id || item.exerciseId || ex.id || ex.name} className="glass-card border-white/10 rounded-3xl overflow-hidden hover:border-primary/30 transition-colors duration-300 group">
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">

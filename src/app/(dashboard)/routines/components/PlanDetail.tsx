@@ -16,6 +16,8 @@ import {
   Trophy,
   ExternalLink,
 } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -30,6 +32,20 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { RoutineSimulator } from "./RoutineSimulator";
 
+const getPlanCategory = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes("fuerza") || n.includes("power") || n.includes("5x5")) {
+    return { label: "Fuerza & Potencia", color: "bg-rose-500/10 text-rose-400 border-rose-500/30" };
+  }
+  if (n.includes("hipertrofia") || n.includes("volumen") || n.includes("muscle")) {
+    return { label: "Hipertrofia", color: "bg-primary/10 text-primary border-primary/30" };
+  }
+  if (n.includes("cardio") || n.includes("hiit") || n.includes("definicion")) {
+    return { label: "Definición & HIIT", color: "bg-amber-500/10 text-amber-400 border-amber-500/30" };
+  }
+  return { label: "Acondicionamiento", color: "bg-blue-500/10 text-blue-400 border-blue-500/30" };
+};
+
 interface PlanDetailProps {
   plan: any;
   onBack: () => void;
@@ -41,10 +57,12 @@ export function PlanDetail({ plan, onBack }: PlanDetailProps) {
   const [isSimulating, setIsSimulating] = useState(false);
   const MEMBERS_PER_PAGE = 10;
 
-  useEffect(() => {
+  const [prevPlan, setPrevPlan] = useState(plan);
+  if (plan !== prevPlan) {
+    setPrevPlan(plan);
     setMemberPage(1);
     setMemberSearchTerm("");
-  }, [plan]);
+  }
 
   const filteredMembers = (plan.routines || []).filter((r: any) => {
     if (!memberSearchTerm.trim()) return true;
@@ -62,25 +80,10 @@ export function PlanDetail({ plan, onBack }: PlanDetailProps) {
     memberPage * MEMBERS_PER_PAGE,
   );
 
-  // Determine category badge based on plan name
-  const getPlanCategory = (name: string) => {
-    const n = name.toLowerCase();
-    if (n.includes("fuerza") || n.includes("power") || n.includes("5x5")) {
-      return { label: "Fuerza & Potencia", color: "bg-rose-500/10 text-rose-400 border-rose-500/30" };
-    }
-    if (n.includes("hipertrofia") || n.includes("volumen") || n.includes("muscle")) {
-      return { label: "Hipertrofia", color: "bg-primary/10 text-primary border-primary/30" };
-    }
-    if (n.includes("cardio") || n.includes("hiit") || n.includes("definicion")) {
-      return { label: "Definición & HIIT", color: "bg-amber-500/10 text-amber-400 border-amber-500/30" };
-    }
-    return { label: "Acondicionamiento", color: "bg-blue-500/10 text-blue-400 border-blue-500/30" };
-  };
-
   const category = getPlanCategory(plan.name);
 
   return (
-    <div className="space-y-8 animate-in slide-in-from-right-4 duration-500 w-full pb-8">
+    <div className="space-y-8 animate-slide-right w-full pb-8">
       {/* Simulation Modal */}
       <RoutineSimulator
         isOpen={isSimulating}
@@ -92,9 +95,9 @@ export function PlanDetail({ plan, onBack }: PlanDetailProps) {
       {/* Detail Header */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 glass-card p-6 sm:p-8 rounded-3xl border-white/10">
         <div className="space-y-4">
-          <button
+          <button type="button"
             onClick={onBack}
-            className="flex items-center gap-2 text-primary hover:gap-3 transition-all group font-bold text-xs uppercase tracking-wider"
+            className="flex items-center gap-2 text-primary hover:gap-3 transition-colors group font-bold text-xs uppercase tracking-wider"
           >
             <ArrowLeft className="size-4" />
             Volver a Todos los Planes
@@ -205,11 +208,7 @@ export function PlanDetail({ plan, onBack }: PlanDetailProps) {
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground font-mono">
                         {r.createdAt
-                          ? new Date(r.createdAt).toLocaleDateString("es-PE", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })
+                          ? format(new Date(r.createdAt), "dd MMM yyyy", { locale: es })
                           : "N/A"}
                       </TableCell>
                       <TableCell className="text-right">
@@ -295,8 +294,8 @@ export function PlanDetail({ plan, onBack }: PlanDetailProps) {
               {plan.routines[0]?.exercises?.length > 0 ? (
                 plan.routines[0].exercises.map((item: any, idx: number) => (
                   <div
-                    key={idx}
-                    className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-primary/30 transition-all group/ex space-y-3"
+                    key={item.id || item.exerciseId || item.exercise?.id || item.exercise?.name || 'ex'}
+                    className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-primary/30 transition-colors duration-300 group/ex space-y-3"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
@@ -348,7 +347,7 @@ export function PlanDetail({ plan, onBack }: PlanDetailProps) {
               <Button
                 onClick={() => setIsSimulating(true)}
                 disabled={!plan.routines[0]?.exercises?.length}
-                className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-widest hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
+                className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-widest hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
               >
                 <Play className="size-4 fill-current" />
                 Simular Rutina Interactivamente

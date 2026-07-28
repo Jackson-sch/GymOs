@@ -138,7 +138,7 @@ export function MembersClient({ data, plans, serverStats }: MembersClientProps) 
   );
 
   return (
-    <div className="space-y-8 w-full animate-in fade-in duration-700">
+    <div className="space-y-8 w-full animate-fade-in">
       {/* Consolidated 5-Card Executive Dashboard Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
         <Card className="glass-card border-white/15 rounded-3xl overflow-hidden relative group backdrop-blur-md bg-zinc-950/85 shadow-xl">
@@ -257,11 +257,11 @@ export function MembersClient({ data, plans, serverStats }: MembersClientProps) 
             { id: "INACTIVE", label: "Inactivos" },
             { id: "VIP", label: "Socios VIP" },
           ].map((s) => (
-            <button
+            <button type="button"
               key={s.id}
               onClick={() => setStatusFilter(s.id)}
               className={cn(
-                "px-3.5 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap",
+                "px-3.5 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap",
                 statusFilter === s.id
                   ? "bg-primary text-primary-foreground shadow-md"
                   : "text-muted-foreground hover:text-foreground hover:bg-white/5",
@@ -277,7 +277,7 @@ export function MembersClient({ data, plans, serverStats }: MembersClientProps) 
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <Button
               onClick={() => setIsCreateOpen(true)}
-              className="h-11 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
+              className="h-11 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-transform"
             >
               <Plus className="size-4 mr-2" /> Registrar Nuevo Socio
             </Button>

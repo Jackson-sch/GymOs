@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import { Check, Eye } from "lucide-react";
+import Image from "next/image";
 
 interface BrandingTabProps {
   formState: Record<string, string>;
@@ -27,7 +28,7 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
   const currentColor = formState["PRIMARY_COLOR"] || "#10b981";
 
   return (
-    <section className="glass-card p-6 sm:p-8 md:p-10 border-white/10 space-y-8 animate-in slide-in-from-right-4 duration-500">
+    <section className="glass-card p-6 sm:p-8 md:p-10 border-white/10 space-y-8 animate-slide-right">
       <div>
         <h2 className="text-2xl font-serif mb-1">Identidad Visual & Marca (White-Label)</h2>
         <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium">
@@ -68,7 +69,7 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
                     key={preset.hex}
                     type="button"
                     onClick={() => handleChange("PRIMARY_COLOR", preset.hex)}
-                    className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all ${
+                    className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-colors ${
                       isSelected
                         ? "bg-white/10 border-primary shadow-md"
                         : "bg-white/2 border-white/5 hover:border-white/20"
@@ -94,6 +95,7 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
               <div className="relative size-11 rounded-xl border border-white/10 overflow-hidden shrink-0">
                 <input
                   type="color"
+                  aria-label="Color selector"
                   value={currentColor}
                   onChange={(e) => handleChange("PRIMARY_COLOR", e.target.value)}
                   className="absolute inset-0 size-full cursor-pointer opacity-0 z-10"
@@ -165,9 +167,12 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   {formState["GYM_LOGO"] ? (
-                    <img
+                    <Image
                       src={formState["GYM_LOGO"]}
                       alt="Logo"
+                      width={100}
+                      height={28}
+                      unoptimized
                       className="h-7 w-auto object-contain"
                     />
                   ) : (

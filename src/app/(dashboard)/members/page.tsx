@@ -18,7 +18,7 @@ export default async function MembersPage() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 w-full">
+    <div className="space-y-8 animate-fade-in w-full">
       {/* Header Editorial */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="space-y-1">

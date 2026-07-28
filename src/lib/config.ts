@@ -11,9 +11,13 @@ const ALGORITHM = "aes-256-cbc";
 let cachedEncryptionKey: Buffer | null = null;
 function getEncryptionKey(): Buffer {
   if (!cachedEncryptionKey) {
-    const secret = process.env.CONFIG_SECRET || "default-secret-change-me";
+    const secret = process.env.CONFIG_SECRET || process.env.NEXTAUTH_SECRET;
+    if (!secret && process.env.NODE_ENV !== "test") {
+      throw new Error("CRITICAL SECURITY ERROR: CONFIG_SECRET o NEXTAUTH_SECRET debe estar configurada en las variables de entorno");
+    }
+    const finalSecret = secret || "test-config-secret-for-environment-32";
     const salt = process.env.CONFIG_SALT || "gymos-default-secure-salt-2026";
-    cachedEncryptionKey = scryptSync(secret, salt, 32);
+    cachedEncryptionKey = scryptSync(finalSecret, salt, 32);
   }
   return cachedEncryptionKey;
 }

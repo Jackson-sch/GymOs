@@ -96,6 +96,10 @@ export function TrainersClient({ data }: { data: any[] }) {
     setIsDeleteLoading(true);
     try {
       const res = await fetch(`/api/trainers?id=${deletingId}`, { method: "DELETE" });
+      if (!res.ok) {
+        toast.error("Error en la respuesta del servidor");
+        return;
+      }
       const result = await res.json();
       if (result.success) {
         toast.success("Entrenador eliminado");
@@ -135,7 +139,7 @@ export function TrainersClient({ data }: { data: any[] }) {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              className="pl-11 h-11 bg-white/5 border-white/10 rounded-2xl text-xs focus-visible:ring-primary/30 transition-all"
+              className="pl-11 h-11 bg-white/5 border-white/10 rounded-2xl text-xs focus-visible:ring-primary/30 transition-colors"
             />
           </div>
         </div>
@@ -143,20 +147,20 @@ export function TrainersClient({ data }: { data: any[] }) {
         <div className="flex items-center gap-3 justify-end shrink-0">
           {/* View Switcher */}
           <div className="flex p-1 bg-black/40 rounded-2xl border border-white/10">
-            <button
+            <button type="button"
               onClick={() => setViewMode("grid")}
               className={cn(
-                "p-2 rounded-xl text-xs transition-all",
+                "p-2 rounded-xl text-xs transition-colors",
                 viewMode === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
               )}
               title="Vista Cuadrícula"
             >
               <LayoutGrid className="size-4" />
             </button>
-            <button
+            <button type="button"
               onClick={() => setViewMode("list")}
               className={cn(
-                "p-2 rounded-xl text-xs transition-all",
+                "p-2 rounded-xl text-xs transition-colors",
                 viewMode === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
               )}
               title="Vista Tabla Lista"
@@ -167,7 +171,7 @@ export function TrainersClient({ data }: { data: any[] }) {
 
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
-              <Button className="h-11 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+              <Button className="h-11 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-transform">
                 <Plus className="size-4 mr-2" /> Nuevo Entrenador
               </Button>
             </DialogTrigger>
@@ -194,13 +198,13 @@ export function TrainersClient({ data }: { data: any[] }) {
       {/* Specialty Filter Pills */}
       {specialties.length > 0 && (
         <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
-          <button
+          <button type="button"
             onClick={() => {
               setSelectedSpecialty("ALL");
               setPage(1);
             }}
             className={cn(
-              "px-4 py-1.5 rounded-2xl text-[10px] font-bold uppercase tracking-wider border transition-all shrink-0",
+              "px-4 py-1.5 rounded-2xl text-[10px] font-bold uppercase tracking-wider border transition-colors shrink-0",
               selectedSpecialty === "ALL"
                 ? "bg-white text-black border-white shadow-sm"
                 : "bg-white/5 text-muted-foreground border-white/10 hover:bg-white/10 hover:text-foreground",
@@ -209,14 +213,14 @@ export function TrainersClient({ data }: { data: any[] }) {
             Todas las Especialidades
           </button>
           {specialties.map((spec) => (
-            <button
+            <button type="button"
               key={spec}
               onClick={() => {
                 setSelectedSpecialty(spec);
                 setPage(1);
               }}
               className={cn(
-                "px-4 py-1.5 rounded-2xl text-[10px] font-bold uppercase tracking-wider border transition-all shrink-0",
+                "px-4 py-1.5 rounded-2xl text-[10px] font-bold uppercase tracking-wider border transition-colors shrink-0",
                 selectedSpecialty === spec
                   ? "bg-white text-black border-white shadow-sm"
                   : "bg-white/5 text-muted-foreground border-white/10 hover:bg-white/10 hover:text-foreground",
@@ -234,7 +238,7 @@ export function TrainersClient({ data }: { data: any[] }) {
           {paginatedData.map((trainer) => (
             <Card
               key={trainer.id}
-              className="glass-card border-white/10 rounded-3xl overflow-hidden hover:border-primary/30 transition-all group backdrop-blur-md"
+              className="glass-card border-white/10 rounded-3xl overflow-hidden hover:border-primary/30 transition-colors duration-300 group backdrop-blur-md"
             >
               <CardContent className="p-6 space-y-5">
                 <div className="flex items-start justify-between">
@@ -245,6 +249,7 @@ export function TrainersClient({ data }: { data: any[] }) {
                           src={trainer.photo}
                           alt={trainer.fullName}
                           fill
+                          sizes="56px"
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (

@@ -1,0 +1,10 @@
+{
+  "include": [
+    "src/**/*.{tsx,ts,jsx,js}"
+  ],
+  "exclude": [
+    ".next/**",
+    "node_modules/**",
+    "dist/**"
+  ]
+}

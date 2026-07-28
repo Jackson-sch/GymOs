@@ -1,10 +1,14 @@
 "use client";
 
-import React from "react";
-import { PDFDownloadLink } from "@react-pdf/renderer";
-import { ReportPDF } from "./ReportPDF";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { FileChartColumn } from "lucide-react";
+import { ReportPDF } from "./ReportPDF";
+
+const PDFDownloadLink = dynamic(
+  () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
+  { ssr: false }
+);
 
 interface ReportExportProps {
   kpis: any;
@@ -52,7 +56,7 @@ export default function ReportExport({
         <Button 
           variant="outline" 
           disabled={loading}
-          className="glass-card bg-primary/10 hover:bg-primary/20 border-primary/20 text-primary rounded-xl h-11 px-6 font-bold text-[10px] uppercase tracking-widest transition-all"
+          className="glass-card bg-primary/10 hover:bg-primary/20 border-primary/20 text-primary rounded-xl h-11 px-6 font-bold text-[10px] uppercase tracking-widest transition-colors"
         >
           <FileChartColumn className="mr-2 size-3" />
           {loading ? "Generando…" : "PDF"}

@@ -18,6 +18,21 @@ import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+const MEMBER_ITEMS = [
+  { label: "Mi Resumen", icon: LayoutDashboard, href: "/portal" },
+  { label: "Mi Tarjeta Virtual", icon: QrCode, href: "/portal/qr" },
+  { label: "Mis Clases", icon: Calendar, href: "/portal/classes" },
+  { label: "Mis Rutinas", icon: Dumbbell, href: "/portal/routines" },
+  { label: "Mi Progreso", icon: TrendingUp, href: "/portal/progress" },
+  { label: "Mi Perfil", icon: User, href: "/portal/profile" },
+];
+
+const TRAINER_ITEMS = [
+  { label: "Panel Principal", icon: LayoutDashboard, href: "/portal/trainer" },
+  { label: "Mis Alumnos", icon: Users, href: "/portal/trainer/members" },
+  { label: "Gestión de Clases", icon: Calendar, href: "/portal/trainer/classes" },
+];
+
 export function PortalSidebar({ branding }: { branding?: Record<string, string> }) {
   const pathname = usePathname();
   const { push } = useRouter();
@@ -46,20 +61,8 @@ export function PortalSidebar({ branding }: { branding?: Record<string, string> 
     }
   };
 
-  const memberItems = [
-    { label: "Mi Resumen", icon: LayoutDashboard, href: "/portal" },
-    { label: "Mi Tarjeta Virtual", icon: QrCode, href: "/portal/qr" },
-    { label: "Mis Clases", icon: Calendar, href: "/portal/classes" },
-    { label: "Mis Rutinas", icon: Dumbbell, href: "/portal/routines" },
-    { label: "Mi Progreso", icon: TrendingUp, href: "/portal/progress" },
-    { label: "Mi Perfil", icon: User, href: "/portal/profile" },
-  ];
-
-  const trainerItems = [
-    { label: "Panel Principal", icon: LayoutDashboard, href: "/portal/trainer" },
-    { label: "Mis Alumnos", icon: Users, href: "/portal/trainer/members" },
-    { label: "Gestión de Clases", icon: Calendar, href: "/portal/trainer/classes" },
-  ];
+  const memberItems = MEMBER_ITEMS;
+  const trainerItems = TRAINER_ITEMS;
 
   return (
     <aside className="fixed left-4 top-4 bottom-4 w-64 z-40 glass-card border-white/5 hidden md:flex flex-col">
@@ -87,7 +90,7 @@ export function PortalSidebar({ branding }: { branding?: Record<string, string> 
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
+                      "group flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-300",
                       isActive 
                         ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
                         : "text-muted-foreground hover:bg-white/5 hover:text-white"
@@ -118,7 +121,7 @@ export function PortalSidebar({ branding }: { branding?: Record<string, string> 
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
+                    "group flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-300",
                     isActive 
                       ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
                       : "text-muted-foreground hover:bg-white/5 hover:text-white"
@@ -152,7 +155,8 @@ export function PortalSidebar({ branding }: { branding?: Record<string, string> 
               {isTrainer ? "Portal Entrenador" : "Portal de Socio"}
             </p>
           </div>
-          <button 
+          <button type="button" 
+            aria-label="Logout"
             onClick={handleLogout}
             className="p-2 hover:text-destructive transition-colors"
           >

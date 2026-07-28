@@ -26,7 +26,7 @@ export function TrainerMemberDetailClient({ member }: { member: any }) {
   const lastMetrics = member.bodyMetrics?.[0];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-enter-fast">
       {/* Perfil Lateral */}
       <div className="lg:col-span-4 space-y-6">
         <div className="glass-card p-6 border-white/5 text-center space-y-4">
@@ -108,10 +108,10 @@ export function TrainerMemberDetailClient({ member }: { member: any }) {
 
                 <div className="space-y-3">
                   {activeRoutine.exercises.map((item: any, idx: number) => (
-                    <div key={item.id} className="glass-card p-4 border-white/5 flex items-center gap-4 hover:border-white/10 transition-all group">
+                    <div key={item.id} className="glass-card p-4 border-white/5 flex items-center gap-4 hover:border-white/10 transition-colors duration-300 group">
                       <div className="size-16 rounded-xl bg-white/5 overflow-hidden flex-shrink-0 border border-white/10 relative">
                         {item.exercise.demoUrl ? (
-                          <Image src={item.exercise.demoUrl} alt={item.exercise.name} fill className="object-cover" />
+                          <Image src={item.exercise.demoUrl} alt={item.exercise.name} fill sizes="64px" className="object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                             <Dumbbell className="size-6" />

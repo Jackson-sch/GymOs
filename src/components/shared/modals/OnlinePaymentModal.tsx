@@ -147,14 +147,14 @@ export function OnlinePaymentModal({ member, currentMembership, plans }: OnlineP
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          className="w-full h-11 rounded-xl bg-linear-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 text-pink-400 border-pink-500/30 uppercase tracking-widest text-xs font-bold gap-2 shadow-lg shadow-pink-500/10 transition-all"
+          className="w-full h-11 rounded-xl bg-linear-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 text-pink-400 border-pink-500/30 uppercase tracking-widest text-xs font-bold gap-2 shadow-lg shadow-pink-500/10 transition-colors"
         >
           <Sparkles className="size-4 text-pink-400 animate-pulse" />
           Renovar / Pagar Online
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="glass-card max-w-lg bg-black/95 text-white border-white/10 p-8 space-y-6 animate-in zoom-in-95 duration-300">
+      <DialogContent className="glass-card max-w-lg bg-black/95 text-white border-white/10 p-8 space-y-6 animate-zoom-in-95">
         <DialogHeader className="space-y-2">
           <div className="flex items-center gap-2 text-pink-400 mb-1">
             <CreditCard className="size-4" />
@@ -168,9 +168,9 @@ export function OnlinePaymentModal({ member, currentMembership, plans }: OnlineP
 
         {/* Selector de Planes */}
         <div className="space-y-3">
-          <label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground ml-1">
+          <div className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground ml-1 mb-1">
             Selecciona tu Plan
-          </label>
+          </div>
           <div className="grid grid-cols-1 gap-2.5 max-h-56 overflow-y-auto pr-1">
             {plans.map((p) => {
               const isSelected = p.id === selectedPlanId;
@@ -193,7 +193,7 @@ export function OnlinePaymentModal({ member, currentMembership, plans }: OnlineP
                   type="button"
                   onClick={() => setSelectedPlanId(p.id)}
                   className={cn(
-                    "w-full text-left p-4 rounded-2xl border transition-all flex items-center justify-between group cursor-pointer relative overflow-hidden",
+                    "w-full text-left p-4 rounded-2xl border transition-colors flex items-center justify-between group cursor-pointer relative overflow-hidden",
                     isSelected
                       ? "bg-primary/20 border-primary text-white shadow-lg shadow-primary/10"
                       : "bg-white/5 border-white/5 hover:border-white/20 text-muted-foreground hover:text-white"
@@ -224,15 +224,15 @@ export function OnlinePaymentModal({ member, currentMembership, plans }: OnlineP
 
         {/* Pasarela Selector */}
         <div className="space-y-3">
-          <label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground ml-1">
+          <div className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground ml-1 mb-1">
             Método de Pago Seguro
-          </label>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setGateway("MERCADOPAGO")}
               className={cn(
-                "p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer",
+                "p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 text-center transition-colors cursor-pointer",
                 gateway === "MERCADOPAGO"
                   ? "bg-sky-500/20 border-sky-500 text-white shadow-lg shadow-sky-500/10"
                   : "bg-white/5 border-white/5 hover:border-white/20 text-muted-foreground"
@@ -251,7 +251,7 @@ export function OnlinePaymentModal({ member, currentMembership, plans }: OnlineP
               type="button"
               onClick={() => setGateway("CULQI")}
               className={cn(
-                "p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer",
+                "p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 text-center transition-colors cursor-pointer",
                 gateway === "CULQI"
                   ? "bg-pink-500/20 border-pink-500 text-white shadow-lg shadow-pink-500/10"
                   : "bg-white/5 border-white/5 hover:border-white/20 text-muted-foreground"

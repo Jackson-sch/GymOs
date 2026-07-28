@@ -36,25 +36,36 @@ export default function PortalProfileClient({ member: initialMember, user: initi
   const [photo, setPhoto] = useState(initialMember?.photo || "");
 
   // Form states
-  const [fullName, setFullName] = useState(initialMember?.fullName || "");
-  const [phone, setPhone] = useState(initialMember?.phone || "");
-  const [birthDate, setBirthDate] = useState(
-    initialMember?.birthDate ? new Date(initialMember.birthDate).toISOString().split("T")[0] : ""
-  );
-  const [gender, setGender] = useState(initialMember?.gender || "OTHER");
-  const [address, setAddress] = useState(initialMember?.address || "");
-  const [emergencyContact, setEmergencyContact] = useState(initialMember?.emergencyContact || "");
-  const [emergencyPhone, setEmergencyPhone] = useState(initialMember?.emergencyPhone || "");
+  const [formState, setFormState] = useState({
+    fullName: initialMember?.fullName || "",
+    phone: initialMember?.phone || "",
+    birthDate: initialMember?.birthDate ? new Date(initialMember.birthDate).toISOString().split("T")[0] : "",
+    gender: initialMember?.gender || "OTHER",
+    address: initialMember?.address || "",
+    emergencyContact: initialMember?.emergencyContact || "",
+    emergencyPhone: initialMember?.emergencyPhone || "",
+  });
+
+  const { fullName, phone, birthDate, gender, address, emergencyContact, emergencyPhone } = formState;
+  const setFullName = (v: string) => setFormState((p) => ({ ...p, fullName: v }));
+  const setPhone = (v: string) => setFormState((p) => ({ ...p, phone: v }));
+  const setBirthDate = (v: string) => setFormState((p) => ({ ...p, birthDate: v }));
+  const setGender = (v: string) => setFormState((p) => ({ ...p, gender: v }));
+  const setAddress = (v: string) => setFormState((p) => ({ ...p, address: v }));
+  const setEmergencyContact = (v: string) => setFormState((p) => ({ ...p, emergencyContact: v }));
+  const setEmergencyPhone = (v: string) => setFormState((p) => ({ ...p, emergencyPhone: v }));
 
   const handleCancel = () => {
     // Reset values to original
-    setFullName(member?.fullName || "");
-    setPhone(member?.phone || "");
-    setBirthDate(member?.birthDate ? new Date(member.birthDate).toISOString().split("T")[0] : "");
-    setGender(member?.gender || "OTHER");
-    setAddress(member?.address || "");
-    setEmergencyContact(member?.emergencyContact || "");
-    setEmergencyPhone(member?.emergencyPhone || "");
+    setFormState({
+      fullName: member?.fullName || "",
+      phone: member?.phone || "",
+      birthDate: member?.birthDate ? new Date(member.birthDate).toISOString().split("T")[0] : "",
+      gender: member?.gender || "OTHER",
+      address: member?.address || "",
+      emergencyContact: member?.emergencyContact || "",
+      emergencyPhone: member?.emergencyPhone || "",
+    });
     setIsEditing(false);
   };
 
@@ -110,6 +121,10 @@ export default function PortalProfileClient({ member: initialMember, user: initi
 
     try {
       const response = await fetch("/api/upload", { method: "POST", body: fd });
+      if (!response.ok) {
+        toast.error("Error al subir el archivo");
+        return;
+      }
       const data = await response.json();
       
       if (data.url) {
@@ -153,7 +168,7 @@ export default function PortalProfileClient({ member: initialMember, user: initi
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-fade-in-fast">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-4xl md:text-5xl font-serif leading-tight">Mi Perfil</h1>
@@ -163,7 +178,7 @@ export default function PortalProfileClient({ member: initialMember, user: initi
         {!isEditing && (
           <Button
             onClick={() => setIsEditing(true)}
-            className="self-start sm:self-center h-11 bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary-foreground font-sans rounded-xl font-medium tracking-wide flex items-center gap-2 transition-all px-5"
+            className="self-start sm:self-center h-11 bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary-foreground font-sans rounded-xl font-medium tracking-wide flex items-center gap-2 transition-colors px-5"
           >
             <Edit2 className="w-4 h-4" />
             Editar Perfil
@@ -216,7 +231,7 @@ export default function PortalProfileClient({ member: initialMember, user: initi
 
             {/* Action Buttons for Editing */}
             {isEditing && (
-              <div className="flex items-center justify-end gap-3 pt-6 border-t border-white/5 animate-in slide-in-from-bottom-2 duration-300">
+              <div className="flex items-center justify-end gap-3 pt-6 border-t border-white/5 animate-in slide-in-from-bottom-2">
                 <Button
                   type="button"
                   variant="ghost"

@@ -65,7 +65,7 @@ export function DatePicker({
           variant="outline"
           disabled={disabled}
           className={cn(
-            "w-full h-11 px-3.5 rounded-2xl justify-between text-left font-normal border-white/15 bg-white/5 hover:bg-white/10 text-xs transition-all shadow-sm",
+            "w-full h-11 px-3.5 rounded-2xl justify-between text-left font-normal border-white/15 bg-white/5 hover:bg-white/10 text-xs transition-colors shadow-sm",
             !selectedDate && "text-muted-foreground",
             className
           )}
@@ -82,21 +82,15 @@ export function DatePicker({
           </div>
 
           {clearable && selectedDate && (
-            <div
-              role="button"
-              tabIndex={0}
+            <button
+              type="button"
               onClick={handleClear}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  handleClear(e as any);
-                }
-              }}
               className="p-1 rounded-full hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors shrink-0"
               title="Limpiar fecha"
+              aria-label="Limpiar fecha"
             >
               <X className="size-3.5" />
-            </div>
+            </button>
           )}
         </Button>
       </PopoverTrigger>

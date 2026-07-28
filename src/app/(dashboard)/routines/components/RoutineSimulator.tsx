@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import {
   X,
@@ -25,7 +26,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 
 interface RoutineSimulatorProps {
   exercises: any[];
@@ -122,7 +122,7 @@ export function RoutineSimulator({
               {/* Rest Timer Widget */}
               {restTime !== null && (
                 <div
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-2xl border font-mono text-xs font-bold transition-all ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-2xl border font-mono text-xs font-bold transition-colors ${
                     restTime > 0
                       ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
                       : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
@@ -130,7 +130,8 @@ export function RoutineSimulator({
                 >
                   <Timer className="size-3.5 animate-spin" />
                   <span>{restTime > 0 ? `${restTime}s Descanso` : "¡A Entrenar!"}</span>
-                  <button
+                  <button type="button"
+                    aria-label={isRestActive ? "Pause timer" : "Play timer"}
                     onClick={() => setIsRestActive(!isRestActive)}
                     className="p-1 hover:bg-white/10 rounded-md"
                   >
@@ -139,9 +140,10 @@ export function RoutineSimulator({
                 </div>
               )}
 
-              <button
+              <button type="button"
+                aria-label="Close simulator"
                 onClick={onClose}
-                className="p-2.5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white/60 hover:text-white"
+                className="p-2.5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/60 hover:text-white"
               >
                 <X className="size-5" />
               </button>
@@ -152,15 +154,18 @@ export function RoutineSimulator({
           <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-8 text-center space-y-6 overflow-y-auto custom-scrollbar min-h-0">
             {/* Image / GIF or Dumbbell Icon Frame */}
             <div className="relative group scale-95 md:scale-100 shrink-0">
-              <div className="absolute -inset-6 bg-primary/20 rounded-full blur-3xl group-hover:bg-primary/30 transition-all duration-700 opacity-60" />
+              <div className="absolute -inset-6 bg-primary/20 rounded-full blur-3xl group-hover:bg-primary/30 transition-colors duration-700 opacity-60" />
 
               <div className="relative size-44 sm:size-52 md:size-60 rounded-[40px] bg-gradient-to-br from-white/10 via-white/5 to-transparent border border-white/15 flex items-center justify-center shadow-2xl overflow-hidden">
                 {demoUrl && (demoUrl.startsWith("http") || demoUrl.startsWith("/")) ? (
                   /* Demo Image / GIF Animation */
-                  <img
+                  <Image
                     src={demoUrl}
                     alt={exerciseName}
-                    className="w-full h-full object-cover rounded-[38px] group-hover:scale-105 transition-transform duration-500"
+                    fill
+                    sizes="(max-width: 768px) 176px, 240px"
+                    unoptimized
+                    className="object-cover rounded-[38px] group-hover:scale-105 transition-transform duration-500"
                   />
                 ) : (
                   /* Fallback Dumbbell Icon */
@@ -256,7 +261,7 @@ export function RoutineSimulator({
               </div>
               <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-primary transition-all duration-500 ease-out shadow-[0_0_15px_rgba(var(--primary),0.5)]"
+                  className="h-full bg-primary transition-colors duration-500 ease-out shadow-[0_0_15px_rgba(var(--primary),0.5)]"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -268,7 +273,7 @@ export function RoutineSimulator({
                 size="lg"
                 onClick={handlePrevious}
                 disabled={currentIndex === 0}
-                className="h-11 rounded-2xl border-white/10 bg-white/5 px-5 gap-2 text-xs font-bold uppercase tracking-wider hover:bg-white/10 disabled:opacity-20 transition-all flex-1 sm:flex-none"
+                className="h-11 rounded-2xl border-white/10 bg-white/5 px-5 gap-2 text-xs font-bold uppercase tracking-wider hover:bg-white/10 disabled:opacity-20 transition-colors flex-1 sm:flex-none"
               >
                 <ChevronLeft className="size-4" />
                 Anterior
@@ -276,15 +281,17 @@ export function RoutineSimulator({
 
               <div className="flex-1 hidden sm:flex justify-center">
                 <div className="flex items-center gap-1.5">
-                  {exercises.map((_, i) => (
+                  {exercises.map((ex, i) => (
                     <button
-                      key={i}
+                      key={ex.id || ex.exerciseId || ex.name || 'step'}
+                      type="button"
+                      aria-label={`Go to exercise ${i + 1}`}
                       onClick={() => {
                         setCurrentIndex(i);
                         setRestTime(null);
                       }}
                       className={cn(
-                        "size-2 rounded-full transition-all duration-300",
+                        "size-2 rounded-full transition-colors duration-300",
                         i === currentIndex ? "w-6 bg-primary" : "bg-white/20 hover:bg-white/40",
                       )}
                     />
@@ -296,7 +303,7 @@ export function RoutineSimulator({
                 <Button
                   size="lg"
                   onClick={onClose}
-                  className="h-11 rounded-2xl bg-primary text-primary-foreground px-6 gap-2 text-xs font-bold uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20 flex-1 sm:flex-none"
+                  className="h-11 rounded-2xl bg-primary text-primary-foreground px-6 gap-2 text-xs font-bold uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-transform shadow-xl shadow-primary/20 flex-1 sm:flex-none"
                 >
                   Finalizar
                   <Trophy className="size-4" />
@@ -305,7 +312,7 @@ export function RoutineSimulator({
                 <Button
                   size="lg"
                   onClick={handleNext}
-                  className="h-11 rounded-2xl bg-white text-black px-6 gap-2 text-xs font-bold uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-white/10 flex-1 sm:flex-none"
+                  className="h-11 rounded-2xl bg-white text-black px-6 gap-2 text-xs font-bold uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-transform shadow-xl shadow-white/10 flex-1 sm:flex-none"
                 >
                   Siguiente
                   <ChevronRight className="size-4" />

@@ -28,10 +28,8 @@ function ResetPasswordContent() {
 
   const handleReset = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!token) {
-      setError("Token de recuperación inválido o expirado.");
-      return;
-    }
+    if (loading) return;
+
     if (newPassword !== confirmPassword) {
       setError("Las contraseñas no coinciden.");
       return;
@@ -44,36 +42,44 @@ function ResetPasswordContent() {
     setLoading(true);
     setError("");
 
-    const { error } = await authClient.resetPassword({
-      newPassword,
-      token,
-    });
+    try {
+      const { error } = await authClient.resetPassword({
+        newPassword,
+        token: token!,
+      });
 
-    if (error) {
-      setError(error.message || "Error al restablecer la contraseña. El enlace puede haber caducado.");
-    } else {
-      setSuccess(true);
+      if (error) {
+        setError(error.message || "Error al restablecer la contraseña. El enlace puede haber caducado.");
+      } else {
+        setSuccess(true);
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleRequestLink = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (loading) return;
+
     setLoading(true);
     setRequestError("");
     setRequestStatus("");
 
-    const { error } = await authClient.requestPasswordReset({
-      email: requestEmail,
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
+    try {
+      const { error } = await authClient.requestPasswordReset({
+        email: requestEmail,
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
 
-    if (error) {
-      setRequestError(error.message || "Error al solicitar el enlace. Verifica el correo e intenta de nuevo.");
-    } else {
-      setRequestStatus("Se ha enviado un enlace de recuperación a tu correo electrónico. Revisa tu bandeja de entrada o carpeta de spam.");
+      if (error) {
+        setRequestError(error.message || "Error al solicitar el enlace. Verifica el correo e intenta de nuevo.");
+      } else {
+        setRequestStatus("Se ha enviado un enlace de recuperación a tu correo electrónico. Revisa tu bandeja de entrada o carpeta de spam.");
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -91,7 +97,7 @@ function ResetPasswordContent() {
       </div>
 
       {success ? (
-        <div className="bg-green-500/10 border border-green-500/20 p-6 rounded-2xl text-center space-y-4 animate-in fade-in zoom-in duration-300">
+        <div className="bg-green-500/10 border border-green-500/20 p-6 rounded-2xl text-center space-y-4 animate-zoom-in">
           <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
           <p className="text-sm font-semibold text-green-400">¡Contraseña actualizada con éxito!</p>
           <p className="text-xs text-muted-foreground">Ahora puedes acceder al sistema con tu nueva clave de acceso.</p>
@@ -105,7 +111,7 @@ function ResetPasswordContent() {
       ) : !token ? (
         <div className="space-y-6">
           {requestStatus ? (
-            <div className="bg-green-500/10 border border-green-500/20 p-6 rounded-2xl text-center space-y-4 animate-in fade-in zoom-in duration-300">
+            <div className="bg-green-500/10 border border-green-500/20 p-6 rounded-2xl text-center space-y-4 animate-zoom-in">
               <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
               <p className="text-xs font-semibold text-green-400">{requestStatus}</p>
               <Button 
@@ -128,12 +134,12 @@ function ResetPasswordContent() {
                   value={requestEmail}
                   onChange={(e) => setRequestEmail(e.target.value)}
                   required 
-                  className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-all placeholder:text-muted-foreground/30"
+                  className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-colors placeholder:text-muted-foreground/30"
                 />
               </div>
 
               {requestError && (
-                <div className="bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl animate-in shake duration-300">
+                <div className="bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl animate-in shake">
                   <p className="text-xs text-rose-500 text-center font-medium">{requestError}</p>
                 </div>
               )}
@@ -172,7 +178,7 @@ function ResetPasswordContent() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required 
-                className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-all font-mono text-sm"
+                className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-colors font-mono text-sm"
               />
             </div>
 
@@ -187,13 +193,13 @@ function ResetPasswordContent() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required 
-                className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-all font-mono text-sm"
+                className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-colors font-mono text-sm"
               />
             </div>
           </div>
 
           {error && (
-            <div className="bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl animate-in shake duration-300">
+            <div className="bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl animate-in shake">
               <p className="text-xs text-rose-500 text-center font-medium">{error}</p>
             </div>
           )}

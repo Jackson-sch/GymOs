@@ -30,6 +30,14 @@ interface RenewalFormProps {
   onSuccess: () => void;
 }
 
+const PAYMENT_METHODS = [
+  { value: "CASH", label: "Efectivo" },
+  { value: "CARD", label: "Tarjeta" },
+  { value: "TRANSFER", label: "Transferencia" },
+  { value: "YAPE", label: "Yape" },
+  { value: "PLIN", label: "Plin" },
+];
+
 export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
   const currentMembership = member.memberships?.[0];
   const initialPlanId = React.useMemo(() => {
@@ -44,6 +52,7 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
   const [paymentMethod, setPaymentMethod] = React.useState<string>("");
   const [notes, setNotes] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  const [todayDate] = React.useState(() => formatDate(new Date()));
 
   React.useEffect(() => {
     const currentPlanId = member.memberships?.[0]?.planId || member.memberships?.[0]?.plan?.id;
@@ -88,13 +97,7 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
     }
   };
 
-  const paymentMethods = [
-    { value: "CASH", label: "Efectivo" },
-    { value: "CARD", label: "Tarjeta" },
-    { value: "TRANSFER", label: "Transferencia" },
-    { value: "YAPE", label: "Yape" },
-    { value: "PLIN", label: "Plin" },
-  ];
+  const paymentMethods = PAYMENT_METHODS;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -146,43 +149,42 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
             <SelectValue placeholder="Seleccionar plan..." />
           </SelectTrigger>
           <SelectContent className="bg-black/95 border-white/10 backdrop-blur-xl">
-            {plans
-              .filter((p) => p.isActive)
-              .map((plan) => {
-                const days = plan.durationDays;
-                const periodLabel =
-                  days >= 28 && days <= 31
-                    ? "Mensual"
-                    : days >= 85 && days <= 95
-                    ? "Trimestral"
-                    : days >= 175 && days <= 185
-                    ? "Semestral"
-                    : days >= 360
-                    ? "Anual"
-                    : `${days} días`;
+            {plans.flatMap((plan) => {
+              if (!plan.isActive) return [];
+              const days = plan.durationDays;
+              const periodLabel =
+                days >= 28 && days <= 31
+                  ? "Mensual"
+                  : days >= 85 && days <= 95
+                  ? "Trimestral"
+                  : days >= 175 && days <= 185
+                  ? "Semestral"
+                  : days >= 360
+                  ? "Anual"
+                  : `${days} días`;
 
-                return (
-                  <SelectItem key={plan.id} value={plan.id}>
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                      <span className="font-semibold">{plan.name}</span>
-                      <span className="text-[11px] font-bold text-primary px-2 py-0.5 rounded-md bg-primary/10">
-                        {periodLabel}
-                      </span>
-                      <span className="text-muted-foreground">
-                        — {formatCurrency(plan.price)} ({days} días)
-                      </span>
-                    </div>
-                  </SelectItem>
-                );
-              })}
+              return [
+                <SelectItem key={plan.id} value={plan.id}>
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                    <span className="font-semibold">{plan.name}</span>
+                    <span className="text-[11px] font-bold text-primary px-2 py-0.5 rounded-md bg-primary/10">
+                      {periodLabel}
+                    </span>
+                    <span className="text-muted-foreground">
+                      — {formatCurrency(plan.price)} ({days} días)
+                    </span>
+                  </div>
+                </SelectItem>
+              ];
+            })}
           </SelectContent>
         </Select>
       </div>
 
       {/* Plan Preview */}
       {selectedPlan && (
-        <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4 space-y-3 animate-in slide-in-from-top-2 duration-300">
+        <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4 space-y-3 animate-in slide-in-from-top-2">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-emerald-500" />
             <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-emerald-500">
@@ -195,7 +197,7 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
                 Inicio
               </p>
               <p className="font-medium">
-                {formatDate(new Date())}
+                {todayDate}
               </p>
             </div>
             <div>

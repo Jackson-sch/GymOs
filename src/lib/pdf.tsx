@@ -410,7 +410,7 @@ interface InvoiceProps {
   gymSlogan: string;
 }
 
-const InvoiceDocument = ({
+const createInvoiceDocument = ({
   payment,
   gymName,
   gymAddress,
@@ -803,7 +803,7 @@ const tk = StyleSheet.create({
   },
 });
 
-const TicketDocument = ({
+const createTicketDocument = ({
   payment,
   gymName,
   gymAddress,
@@ -929,7 +929,7 @@ export async function getDefaultReceiptFormat(): Promise<string> {
 export async function generateInvoicePDF(payment: PDFPaymentData): Promise<Buffer> {
   const cfg = await getGymConfig();
   const buffer = await renderToBuffer(
-    <InvoiceDocument payment={payment} {...cfg} />
+    createInvoiceDocument({ payment, ...cfg })
   );
   return Buffer.from(buffer);
 }
@@ -938,7 +938,7 @@ export async function generateInvoicePDF(payment: PDFPaymentData): Promise<Buffe
 export async function generateTicketPDF(payment: PDFPaymentData): Promise<Buffer> {
   const cfg = await getGymConfig();
   const buffer = await renderToBuffer(
-    <TicketDocument payment={payment} {...cfg} />
+    createTicketDocument({ payment, ...cfg })
   );
   return Buffer.from(buffer);
 }

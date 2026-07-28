@@ -93,7 +93,7 @@ export function RosenChart({ data = defaultData }: { data?: DataItem[] }) {
                       fill="var(--color-primary)"
                       fillOpacity="0.1"
                       rx="4"
-                      className="blur-sm group-hover:fill-opacity-20 transition-all"
+                      className="blur-sm group-hover:fill-opacity-20 transition-colors"
                     />
                     <rect
                       x="0"
@@ -102,7 +102,7 @@ export function RosenChart({ data = defaultData }: { data?: DataItem[] }) {
                       height={yScale.bandwidth()}
                       fill="url(#rosen-gradient)"
                       rx="4"
-                      className="group-hover:brightness-125 transition-all"
+                      className="group-hover:brightness-125 transition-colors"
                     />
                     <line
                       x1={xScale(d.value)}

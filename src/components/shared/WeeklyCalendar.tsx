@@ -14,8 +14,9 @@ interface WeeklyCalendarProps {
 
 export function WeeklyCalendar({ selectedDate, onDateSelect }: WeeklyCalendarProps) {
   const [currentWeekStart, setCurrentWeekStart] = React.useState(
-    startOfWeek(new Date(), { weekStartsOn: 1 })
+    () => startOfWeek(new Date(), { weekStartsOn: 1 })
   );
+  const today = React.useMemo(() => new Date(), []);
 
   const days = eachDayOfInterval({
     start: currentWeekStart,
@@ -24,56 +25,42 @@ export function WeeklyCalendar({ selectedDate, onDateSelect }: WeeklyCalendarPro
 
   const nextWeek = () => setCurrentWeekStart(addDays(currentWeekStart, 7));
   const prevWeek = () => setCurrentWeekStart(addDays(currentWeekStart, -7));
-  const goToToday = () => {
-    const today = new Date();
-    setCurrentWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
-    onDateSelect(today);
-  };
 
   return (
-    <div className="glass-card p-6 rounded-3xl border border-white/15 backdrop-blur-md space-y-6 shadow-xl">
-      {/* Header & Controls */}
+    <div className="space-y-4">
+      {/* Calendar Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3.5">
-          <div className="size-11 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shadow-sm">
-            <CalendarIcon className="size-5" />
+        <div className="flex items-center gap-2">
+          <div className="p-2 rounded-xl bg-primary/10 border border-primary/20 text-primary">
+            <CalendarIcon className="size-4" />
           </div>
           <div>
-            <h3 className="text-xl font-serif font-bold text-foreground">Horario Semanal</h3>
-            <p className="text-[10px] uppercase tracking-widest text-primary font-mono font-bold capitalize">
+            <h3 className="font-serif font-bold text-sm tracking-wide text-foreground capitalize">
               {format(currentWeekStart, "MMMM yyyy", { locale: es })}
+            </h3>
+            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
+              Semana Actual
             </p>
           </div>
         </div>
 
-        {/* Navigation Action Buttons < Hoy > */}
-        <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-2xl border border-white/15 backdrop-blur-md shadow-md">
+        <div className="flex items-center gap-1.5">
           <Button
             type="button"
             variant="ghost"
             size="icon"
             onClick={prevWeek}
-            className="size-9 rounded-xl border border-white/10 bg-white/5 hover:bg-white/15 hover:border-primary/40 text-foreground transition-all shadow-sm"
+            className="size-9 rounded-xl border border-white/10 bg-white/5 hover:bg-white/15 hover:border-primary/40 text-foreground transition-colors duration-200 shadow-sm"
             title="Semana anterior"
           >
             <ChevronLeft className="size-4" />
           </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={goToToday}
-            className="h-9 px-4 rounded-xl border border-primary/40 bg-primary/10 hover:bg-primary hover:text-primary-foreground text-primary font-bold text-[10px] uppercase tracking-wider transition-all shadow-md active:scale-95"
-          >
-            Hoy
-          </Button>
-
           <Button
             type="button"
             variant="ghost"
             size="icon"
             onClick={nextWeek}
-            className="size-9 rounded-xl border border-white/10 bg-white/5 hover:bg-white/15 hover:border-primary/40 text-foreground transition-all shadow-sm"
+            className="size-9 rounded-xl border border-white/10 bg-white/5 hover:bg-white/15 hover:border-primary/40 text-foreground transition-colors duration-200 shadow-sm"
             title="Semana siguiente"
           >
             <ChevronRight className="size-4" />
@@ -85,14 +72,15 @@ export function WeeklyCalendar({ selectedDate, onDateSelect }: WeeklyCalendarPro
       <div className="grid grid-cols-7 gap-2.5 md:gap-4">
         {days.map((day) => {
           const isSelected = isSameDay(day, selectedDate);
-          const isToday = isSameDay(day, new Date());
+          const isToday = isSameDay(day, today);
 
           return (
             <button
               key={day.toString()}
+              type="button"
               onClick={() => onDateSelect(day)}
               className={cn(
-                "flex flex-col items-center justify-center p-3 md:p-4 rounded-2xl border transition-all duration-300 group relative overflow-hidden shadow-sm backdrop-blur-sm",
+                "flex flex-col items-center justify-center p-3 md:p-4 rounded-2xl border transition-colors duration-300 group relative overflow-hidden shadow-sm backdrop-blur-sm",
                 isSelected
                   ? "bg-primary border-primary shadow-lg shadow-primary/30 text-primary-foreground font-bold scale-[1.03]"
                   : isToday

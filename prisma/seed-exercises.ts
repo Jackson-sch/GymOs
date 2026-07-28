@@ -362,37 +362,25 @@ async function main() {
 
   console.log(`📦 Preparando para insertar ${exercises.length} ejercicios en la base de datos...`);
 
-  let createdCount = 0;
-  let updatedCount = 0;
+  const results = await Promise.all(
+    exercises.map(async (ex) => {
+      const slug = ex.name
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9 ]/g, "")
+        .replace(/ /g, "_");
+      const id = `ex_${slug}`;
 
-  for (const ex of exercises) {
-    const slug = ex.name
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Eliminar tildes
-      .replace(/[^a-z0-9 ]/g, "")
-      .replace(/ /g, "_");
-
-    const id = `ex_${slug}`;
-
-    const existing = await prisma.exercise.findUnique({
-      where: { id },
-    });
-
-    if (existing) {
-      await prisma.exercise.update({
+      return prisma.exercise.upsert({
         where: { id },
-        data: {
+        update: {
           category: ex.category,
           equipment: ex.equipment,
           muscleGroup: ex.muscleGroup,
           demoUrl: ex.demoUrl,
         },
-      });
-      updatedCount++;
-    } else {
-      await prisma.exercise.create({
-        data: {
+        create: {
           id,
           name: ex.name,
           category: ex.category,
@@ -401,13 +389,11 @@ async function main() {
           demoUrl: ex.demoUrl,
         },
       });
-      createdCount++;
-    }
-  }
+    })
+  );
 
   console.log(`✅ Catálogo de Ejercicios poblado correctamente.`);
-  console.log(`✨ Ejercicios creados: ${createdCount}`);
-  console.log(`🔄 Ejercicios actualizados: ${updatedCount}`);
+  console.log(`✨ Total ejercicios procesados: ${results.length}`);
 }
 
 main()

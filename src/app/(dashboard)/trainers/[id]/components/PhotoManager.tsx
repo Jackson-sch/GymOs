@@ -55,7 +55,7 @@ export function PhotoManager({
         role="region"
         aria-label="Foto de perfil del entrenador"
         className={cn(
-          "size-40 rounded-full border-2 shadow-2xl transition-all duration-300 relative overflow-hidden bg-black/60",
+          "size-40 rounded-full border-2 shadow-2xl transition-colors duration-300 relative overflow-hidden bg-black/60",
           dragReposition.isRepositioning 
             ? "border-primary ring-4 ring-primary/30 scale-105" 
             : "border-primary/40 hover:border-primary shadow-primary/10"
@@ -92,7 +92,7 @@ export function PhotoManager({
           <button 
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center cursor-pointer z-10"
+            className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer z-10"
             aria-label="Cambiar foto de perfil"
           >
             <Camera className="size-8 text-white/90 drop-shadow-lg" />
@@ -107,10 +107,10 @@ export function PhotoManager({
       </div>
 
       {(dragReposition.isRepositioning || (hasPhoto && photoControlsVisible)) && (
-        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-background/95 backdrop-blur-xl border border-border/20 rounded-full p-1 shadow-2xl z-20 animate-in fade-in zoom-in duration-300">
+        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-background/95 backdrop-blur-xl border border-border/20 rounded-full p-1 shadow-2xl z-20 animate-zoom-in">
           {dragReposition.isRepositioning ? (
             <>
-              <button
+              <button type="button"
                 onClick={dragReposition.confirmReposition}
                 className="p-2 hover:bg-primary/10 rounded-full text-primary transition-colors"
                 title="Guardar"
@@ -118,7 +118,7 @@ export function PhotoManager({
                 <Check className="size-4" />
               </button>
               <div className="w-px h-3 bg-border/50 mx-1" />
-              <button
+              <button type="button"
                 onClick={dragReposition.cancelReposition}
                 className="p-2 hover:bg-destructive/10 rounded-full text-destructive transition-colors"
                 title="Cancelar"
@@ -128,21 +128,21 @@ export function PhotoManager({
             </>
           ) : (
             <>
-              <button
+              <button type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="p-2 hover:bg-primary/10 rounded-full text-primary transition-colors"
                 title="Cambiar foto"
               >
                 <Camera className="size-4" />
               </button>
-              <button
+              <button type="button"
                 onClick={dragReposition.enterReposition}
                 className="p-2 hover:bg-primary/10 rounded-full text-primary transition-colors"
                 title="Ajustar posición"
               >
                 <Move className="size-4" />
               </button>
-              <button
+              <button type="button"
                 onClick={deletePhoto}
                 className="p-2 hover:bg-destructive/10 rounded-full text-destructive transition-colors"
                 title="Eliminar"

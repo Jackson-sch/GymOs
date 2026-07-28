@@ -17,6 +17,7 @@ import { toast } from "sonner";
 
 export function MaintenanceSchedule({ data }: { data: any[] }) {
   const [loading, setLoading] = React.useState<string | null>(null);
+  const now = React.useMemo(() => new Date(), []);
 
   const sortedData = React.useMemo(() => {
     return [...data].sort((a, b) => {
@@ -57,14 +58,14 @@ export function MaintenanceSchedule({ data }: { data: any[] }) {
         ) : (
           sortedData.map((item) => {
             const nextDate = item.nextMaintenance ? new Date(item.nextMaintenance) : null;
-            const isOverdue = nextDate && isBefore(nextDate, new Date());
-            const daysLeft = nextDate ? Math.ceil((nextDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
+            const isOverdue = nextDate && isBefore(nextDate, now);
+            const daysLeft = nextDate ? Math.ceil((nextDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
 
             return (
               <div 
                 key={item.id} 
                 className={cn(
-                  "glass-card p-5 border-white/5 flex items-center justify-between group transition-all duration-300",
+                  "glass-card p-5 border-white/5 flex items-center justify-between group transition-colors duration-300",
                   isOverdue ? "bg-rose-500/5 border-rose-500/20" : "hover:bg-white/2"
                 )}
               >
@@ -109,7 +110,7 @@ export function MaintenanceSchedule({ data }: { data: any[] }) {
                     variant="ghost"
                     disabled={loading === item.id}
                     onClick={() => handleMarkAsMaintained(item)}
-                    className="h-10 px-4 rounded-lg bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-500 border border-white/5 transition-all group-hover:border-emerald-500/30"
+                    className="h-10 px-4 rounded-lg bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-500 border border-white/5 transition-colors group-hover:border-emerald-500/30"
                   >
                     {loading === item.id ? (
                       <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />

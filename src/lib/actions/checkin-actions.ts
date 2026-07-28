@@ -6,6 +6,8 @@ import { differenceInDays, startOfDay, endOfDay } from "date-fns";
 import { verifySession } from "@/lib/security";
 
 export async function processCheckIn(identifier: string, method: "QR" | "NFC" | "PIN" | "MANUAL" = "QR") {
+  // If this can be called from an unauthenticated kiosk, verifySession should be skipped or modified
+  await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
   let member;
   
   if (method === "PIN") {

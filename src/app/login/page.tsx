@@ -18,28 +18,32 @@ export default function LoginPage() {
 
   const handleLogin = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     setError("");
 
-    const { error } = await authClient.signIn.email({
-      email,
-      password,
-    });
+    try {
+      const { error } = await authClient.signIn.email({
+        email,
+        password,
+      });
 
-    if (error) {
-      setError(error.message || "Credenciales incorrectas");
-      setLoading(false);
-    } else {
-      const { data: session } = await authClient.getSession();
-      const user = session?.user as any;
-      if (user?.mustChangePassword) {
-        router.push("/force-change-password");
-      } else if (user?.role === "MEMBER") {
-        router.push("/portal");
+      if (error) {
+        setError(error.message || "Credenciales incorrectas");
       } else {
-        router.push("/");
+        const { data: session } = await authClient.getSession();
+        const user = session?.user as any;
+        if (user?.mustChangePassword) {
+          router.push("/force-change-password");
+        } else if (user?.role === "MEMBER") {
+          router.push("/portal");
+        } else {
+          router.push("/");
+        }
+        router.refresh();
       }
-      router.refresh();
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,7 +53,7 @@ export default function LoginPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/10 rounded-full blur-[120px]" />
       
       <div className="w-full max-w-md glass-card p-8 relative z-10">
-        <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
+        <div className="space-y-6 animate-slide-left-fast">
           <div className="flex flex-col items-center text-center space-y-6 mb-8">
             <div className="relative">
               <div className="bg-primary/20 p-4 rounded-3xl backdrop-blur-md border border-white/10 interactive-hover">
@@ -81,7 +85,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required 
-                  className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-all placeholder:text-muted-foreground/30"
+                  className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-colors placeholder:text-muted-foreground/30"
                 />
               </div>
               
@@ -103,7 +107,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required 
-                  className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-all"
+                  className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-colors"
                 />
               </div>
             </div>

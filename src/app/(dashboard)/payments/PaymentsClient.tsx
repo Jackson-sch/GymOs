@@ -278,7 +278,7 @@ export function PaymentsClient({
 
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
-              <Button className="w-full h-13 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-widest hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary/20">
+              <Button className="w-full h-13 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-widest hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-xl shadow-primary/20">
                 <Plus className="size-4" />
                 Registrar Cobro en Caja
               </Button>
@@ -314,7 +314,7 @@ export function PaymentsClient({
                 placeholder="Buscar por socio, plan o número de comprobante..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-11 h-11 bg-white/5 border-white/10 rounded-2xl text-xs focus-visible:ring-primary/30 transition-all"
+                className="pl-11 h-11 bg-white/5 border-white/10 rounded-2xl text-xs focus-visible:ring-primary/30 transition-colors"
               />
             </div>
             <DateRangePicker
@@ -341,11 +341,11 @@ export function PaymentsClient({
             ].map((m) => {
               const Icon = m.icon;
               return (
-                <button
+                <button type="button"
                   key={m.id}
                   onClick={() => setSelectedMethod(m.id)}
                   className={cn(
-                    "px-3.5 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap flex items-center gap-1.5",
+                    "px-3.5 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap flex items-center gap-1.5",
                     selectedMethod === m.id
                       ? "bg-primary text-primary-foreground shadow-md"
                       : "text-muted-foreground hover:text-foreground hover:bg-white/5",

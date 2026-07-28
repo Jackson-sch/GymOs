@@ -89,6 +89,57 @@ interface SuperAdminStats {
   estimatedMRR: number;
 }
 
+const SAAS_PLANS = [
+  {
+    tier: "STARTER" as const,
+    name: "Starter Gym",
+    price: 49,
+    icon: Zap,
+    color: "from-blue-500/20 to-blue-600/10 border-blue-500/30 text-blue-400",
+    badgeColor: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    features: [
+      "Hasta 150 Socios Activos",
+      "Hasta 3 Entrenadores",
+      "Check-in con Código QR",
+      "Cobros manuales e historial",
+      "Soporte Estándar por Email",
+    ],
+  },
+  {
+    tier: "PRO" as const,
+    name: "Pro Performance",
+    price: 99,
+    isPopular: true,
+    icon: Award,
+    color: "from-primary/20 to-amber-500/10 border-primary/40 text-primary",
+    badgeColor: "bg-primary/20 text-primary border-primary/30",
+    features: [
+      "Hasta 500 Socios Activos",
+      "Hasta 10 Entrenadores",
+      "Integración WhatsApp Cloud API",
+      "Pasarela Culqi y Mercado Pago",
+      "Reportes Avanzados e Inventario",
+      "Soporte Prioritario 24/7",
+    ],
+  },
+  {
+    tier: "ENTERPRISE" as const,
+    name: "Enterprise Multi-Branch",
+    price: 199,
+    icon: Crown,
+    color: "from-purple-500/20 to-purple-600/10 border-purple-500/30 text-purple-400",
+    badgeColor: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+    features: [
+      "Socios Ilimitados",
+      "Entrenadores Ilimitados",
+      "Infraestructura BYOK Cifrada",
+      "Soporte Multi-Sede & Dominio Custom",
+      "Registro de Auditoría Dedicado",
+      "Ejecutivo de Cuenta Asignado",
+    ],
+  },
+];
+
 export function SuperAdminClient({
   initialStats,
   initialOrganizations
@@ -139,57 +190,6 @@ export function SuperAdminClient({
 
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [updatingPlanId, setUpdatingPlanId] = useState<string | null>(null);
-
-  const saasPlans = [
-    {
-      tier: "STARTER" as const,
-      name: "Starter Gym",
-      price: 49,
-      icon: Zap,
-      color: "from-blue-500/20 to-blue-600/10 border-blue-500/30 text-blue-400",
-      badgeColor: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-      features: [
-        "Hasta 150 Socios Activos",
-        "Hasta 3 Entrenadores",
-        "Check-in con Código QR",
-        "Cobros manuales e historial",
-        "Soporte Estándar por Email",
-      ],
-    },
-    {
-      tier: "PRO" as const,
-      name: "Pro Performance",
-      price: 99,
-      isPopular: true,
-      icon: Award,
-      color: "from-primary/20 to-amber-500/10 border-primary/40 text-primary",
-      badgeColor: "bg-primary/20 text-primary border-primary/30",
-      features: [
-        "Hasta 500 Socios Activos",
-        "Hasta 10 Entrenadores",
-        "Integración WhatsApp Cloud API",
-        "Pasarela Culqi y Mercado Pago",
-        "Reportes Avanzados e Inventario",
-        "Soporte Prioritario 24/7",
-      ],
-    },
-    {
-      tier: "ENTERPRISE" as const,
-      name: "Enterprise Multi-Branch",
-      price: 199,
-      icon: Crown,
-      color: "from-purple-500/20 to-purple-600/10 border-purple-500/30 text-purple-400",
-      badgeColor: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-      features: [
-        "Socios Ilimitados",
-        "Entrenadores Ilimitados",
-        "Infraestructura BYOK Cifrada",
-        "Soporte Multi-Sede & Dominio Custom",
-        "Registro de Auditoría Dedicado",
-        "Ejecutivo de Cuenta Asignado",
-      ],
-    },
-  ];
 
   // Auto-generate slug from name during creation
   const handleCreateNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -348,7 +348,7 @@ export function SuperAdminClient({
   );
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700">
+    <div className="space-y-10 animate-fade-in">
       {/* Header Banner */}
       <div className="glass-card p-8 md:p-10 border-white/5 space-y-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
@@ -371,7 +371,7 @@ export function SuperAdminClient({
 
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
-              <Button className="h-12 px-6 rounded-2xl bg-primary text-primary-foreground font-bold tracking-wide gap-2 shadow-xl shadow-primary/25 hover:bg-primary/90 transition-all hover:scale-105">
+              <Button className="h-12 px-6 rounded-2xl bg-primary text-primary-foreground font-bold tracking-wide gap-2 shadow-xl shadow-primary/25 hover:bg-primary/90 transition-colors transition-transform hover:scale-105">
                 <Plus className="size-5" />
                 Registrar Nuevo Gimnasio
               </Button>
@@ -541,7 +541,7 @@ export function SuperAdminClient({
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="glass-card p-6 border-white/5 space-y-2 relative overflow-hidden group hover:border-primary/30 transition-all">
+        <div className="glass-card p-6 border-white/5 space-y-2 relative overflow-hidden group hover:border-primary/30 transition-colors">
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">
               Gimnasios Totales
@@ -559,7 +559,7 @@ export function SuperAdminClient({
           </p>
         </div>
 
-        <div className="glass-card p-6 border-white/5 space-y-2 relative overflow-hidden group hover:border-emerald-500/30 transition-all">
+        <div className="glass-card p-6 border-white/5 space-y-2 relative overflow-hidden group hover:border-emerald-500/30 transition-colors">
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">
               Ingreso Recurrente (MRR)
@@ -576,7 +576,7 @@ export function SuperAdminClient({
           </p>
         </div>
 
-        <div className="glass-card p-6 border-white/5 space-y-2 relative overflow-hidden group hover:border-blue-500/30 transition-all">
+        <div className="glass-card p-6 border-white/5 space-y-2 relative overflow-hidden group hover:border-blue-500/30 transition-colors">
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">
               Socios en la Red
@@ -593,7 +593,7 @@ export function SuperAdminClient({
           </p>
         </div>
 
-        <div className="glass-card p-6 border-white/5 space-y-2 relative overflow-hidden group hover:border-purple-500/30 transition-all">
+        <div className="glass-card p-6 border-white/5 space-y-2 relative overflow-hidden group hover:border-purple-500/30 transition-colors">
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">
               Facturación Procesada
@@ -614,9 +614,9 @@ export function SuperAdminClient({
       {/* Main Content Tabs */}
       <div className="space-y-6">
         <div className="flex items-center gap-3 border-b border-white/10 pb-3">
-          <button
+          <button type="button"
             onClick={() => setActiveTab("directory")}
-            className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 ${
+            className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors flex items-center gap-2 ${
               activeTab === "directory"
                 ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                 : "bg-white/5 text-muted-foreground hover:text-foreground hover:bg-white/10"
@@ -626,9 +626,9 @@ export function SuperAdminClient({
             Directorio de Gimnasios ({filteredOrgs.length})
           </button>
 
-          <button
+          <button type="button"
             onClick={() => setActiveTab("plans")}
-            className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 ${
+            className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors flex items-center gap-2 ${
               activeTab === "plans"
                 ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                 : "bg-white/5 text-muted-foreground hover:text-foreground hover:bg-white/10"
@@ -752,7 +752,7 @@ export function SuperAdminClient({
                               <Button
                                 onClick={() => openEditModal(org)}
                                 variant="outline"
-                                className="size-9 p-0 rounded-xl bg-white/5 border-white/10 text-foreground hover:bg-primary/20 hover:text-primary transition-all"
+                                className="size-9 p-0 rounded-xl bg-white/5 border-white/10 text-foreground hover:bg-primary/20 hover:text-primary transition-colors"
                                 title="Editar Datos del Gimnasio"
                               >
                                 <Edit className="size-4" />
@@ -763,7 +763,7 @@ export function SuperAdminClient({
                                 onClick={() => handleToggleStatus(org.id, org.isActive)}
                                 disabled={togglingId === org.id}
                                 variant="outline"
-                                className={`size-9 p-0 rounded-xl transition-all ${
+                                className={`size-9 p-0 rounded-xl transition-colors ${
                                   org.isActive
                                     ? "bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border-amber-500/30"
                                     : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
@@ -781,7 +781,7 @@ export function SuperAdminClient({
                               <Button
                                 onClick={() => setDeletingOrg(org)}
                                 variant="outline"
-                                className="size-9 p-0 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border-rose-500/30 transition-all"
+                                className="size-9 p-0 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border-rose-500/30 transition-colors"
                                 title="Eliminar Gimnasio"
                               >
                                 <Trash2 className="size-4" />
@@ -798,7 +798,7 @@ export function SuperAdminClient({
           </section>
         ) : (
           /* SaaS Plan Tiers Showcase */
-          <section className="glass-card p-8 border-white/5 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+          <section className="glass-card p-8 border-white/5 space-y-8 animate-enter-fast">
             <div>
               <h2 className="text-2xl font-serif">Planes SaaS & Paquetes de Suscripción</h2>
               <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium">
@@ -807,12 +807,12 @@ export function SuperAdminClient({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {saasPlans.map((plan) => {
+              {SAAS_PLANS.map((plan) => {
                 const Icon = plan.icon;
                 return (
                   <div
                     key={plan.tier}
-                    className={`p-8 rounded-3xl bg-gradient-to-b ${plan.color} border space-y-6 flex flex-col justify-between relative shadow-xl backdrop-blur-md hover:scale-105 transition-all`}
+                    className={`p-8 rounded-3xl bg-gradient-to-b ${plan.color} border space-y-6 flex flex-col justify-between relative shadow-xl backdrop-blur-md hover:scale-105 transition-colors transition-transform`}
                   >
                     {plan.isPopular && (
                       <div className="absolute -top-3.5 right-6 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest shadow-lg">
@@ -848,9 +848,9 @@ export function SuperAdminClient({
                       </div>
 
                       <ul className="space-y-3 pt-4 border-t border-white/10">
-                        {plan.features.map((feat, index) => (
+                        {plan.features.map((feat) => (
                           <li
-                            key={index}
+                            key={feat}
                             className="flex items-center gap-2.5 text-xs text-foreground/90 font-sans"
                           >
                             <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
@@ -864,7 +864,7 @@ export function SuperAdminClient({
                       <Button
                         onClick={() => setIsCreateOpen(true)}
                         variant="outline"
-                        className="w-full h-11 rounded-xl bg-white/5 hover:bg-primary hover:text-primary-foreground font-bold text-xs uppercase tracking-wider border-white/10 transition-all"
+                        className="w-full h-11 rounded-xl bg-white/5 hover:bg-primary hover:text-primary-foreground font-bold text-xs uppercase tracking-wider border-white/10 transition-colors"
                       >
                         Asignar a Nuevo Gimnasio
                       </Button>

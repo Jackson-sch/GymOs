@@ -57,7 +57,7 @@ export function Combobox({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "w-full justify-between bg-white/5 border-white/10 h-10 rounded-xl hover:bg-white/8 text-left font-normal px-3 transition-all",
+              "w-full justify-between bg-white/5 border-white/10 h-10 rounded-xl hover:bg-white/8 text-left font-normal px-3 transition-colors",
               triggerClassName
             )}
           >

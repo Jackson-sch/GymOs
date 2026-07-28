@@ -29,7 +29,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 
 const memberSchema = z.object({
   fullName: z.string().min(3, "Mínimo 3 caracteres"),
-  email: z.string().email("Email inválido"),
+  email: z.email({ message: "Email inválido" }),
   phone: z.string().min(7, "Teléfono inválido"),
   dni: z.string().min(8, "DNI debe tener 8 dígitos"),
   address: z.string().optional(),
@@ -43,7 +43,7 @@ type MemberFormValues = z.infer<typeof memberSchema>;
 
 interface MemberFormProps {
   initialData?: any;
-  onSuccess: () => void;
+  onSuccess?: () => void;
 }
 
 export function MemberForm({ initialData, onSuccess }: MemberFormProps) {
@@ -75,18 +75,24 @@ export function MemberForm({ initialData, onSuccess }: MemberFormProps) {
   });
 
   const onSubmit = async (values: MemberFormValues) => {
+    if (loading) return;
     setLoading(true);
-    const result = initialData 
-      ? await updateMemberAction(initialData.id, values)
-      : await createMemberAction(values);
+    try {
+      const result = initialData 
+        ? await updateMemberAction(initialData.id, values)
+        : await createMemberAction(values);
 
-    if (result.success) {
-      toast.success(initialData ? "Socio actualizado" : "Socio registrado");
-      onSuccess();
-    } else {
-      toast.error(result.error);
+      if (result.success) {
+        toast.success(initialData ? "Socio actualizado" : "Socio registrado");
+        onSuccess?.();
+      } else {
+        toast.error(result.error);
+      }
+    } catch (err) {
+      toast.error("Error al procesar los datos del socio");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

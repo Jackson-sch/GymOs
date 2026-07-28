@@ -35,7 +35,7 @@ interface MemberIdentitySectionProps {
 export function MemberIdentitySection({ isEditing, member, formData, setFormData }: MemberIdentitySectionProps) {
   if (isEditing) {
     return (
-      <div className="grid gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
+      <div className="grid gap-6 animate-slide-down">
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label className="text-xs font-bold uppercase tracking-widest opacity-60 ml-1">Nombre Completo</Label>

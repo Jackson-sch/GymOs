@@ -28,7 +28,7 @@ import { Loader2, Save, X } from "lucide-react";
 
 const trainerSchema = z.object({
   fullName: z.string().min(2, "Nombre requerido"),
-  email: z.string().email("Email inválido"),
+  email: z.email({ message: "Email inválido" }),
   dni: z.string().min(6, "DNI/Documento requerido"),
   phone: z.string().min(6, "Teléfono requerido"),
   photo: z.string().optional(),

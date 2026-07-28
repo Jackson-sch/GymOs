@@ -45,7 +45,7 @@ export function PortalClient({ data }: { data: any }) {
   })).reverse();
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-8 animate-fade-in">
       {/* Header */}
       <div className="flex justify-between items-end">
         <div className="space-y-1">
@@ -86,7 +86,7 @@ export function PortalClient({ data }: { data: any }) {
             </div>
             <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-primary transition-all duration-1000" 
+                className="h-full bg-primary transition-colors duration-1000" 
                 style={{ width: `${Math.min(100, (daysLeft / 30) * 100)}%` }} 
               />
             </div>
@@ -163,7 +163,7 @@ export function PortalClient({ data }: { data: any }) {
             </div>
             <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-emerald-500 transition-all duration-1000" 
+                className="h-full bg-emerald-500 transition-colors duration-1000" 
                 style={{ width: "80%" }} 
               />
             </div>
@@ -201,7 +201,7 @@ export function PortalClient({ data }: { data: any }) {
                   <Link 
                    key={action.id} 
                   href={action.href}
-                  className="w-full p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all flex items-center justify-between group"
+                  className="w-full p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors flex items-center justify-between group"
                  >
                    <div className="flex items-center gap-3">
                      <action.icon className={cn("size-4", action.color)} />

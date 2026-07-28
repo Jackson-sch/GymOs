@@ -210,7 +210,7 @@ export function RoutineAssignmentDialog({ members, trainers, exercises, onSucces
 
               <div className="space-y-3">
                 {fields.map((field, idx) => (
-                  <div key={field.id} className="p-5 rounded-2xl bg-white/3 border border-white/10 hover:bg-white/6 transition-colors grid grid-cols-1 md:grid-cols-12 gap-5 items-end animate-in fade-in slide-in-from-right-4 duration-300 group">
+                  <div key={field.id} className="p-5 rounded-2xl bg-white/3 border border-white/10 hover:bg-white/6 transition-colors grid grid-cols-1 md:grid-cols-12 gap-5 items-end animate-slide-right-fast group">
                     <div className="md:col-span-4 space-y-2">
                       <FormLabel className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Ejercicio</FormLabel>
                       <FormField
@@ -350,7 +350,7 @@ export function RoutineAssignmentDialog({ members, trainers, exercises, onSucces
             <Button 
               type="submit" 
               disabled={loading} 
-              className="w-full h-14 rounded-2xl text-base font-bold uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
+              className="w-full h-14 rounded-2xl text-base font-bold uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-transform"
             >
               {loading ? "Guardando..." : "Asignar Rutina al Socio"}
             </Button>

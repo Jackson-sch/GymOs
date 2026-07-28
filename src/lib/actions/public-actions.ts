@@ -7,7 +7,7 @@ import { z } from "zod";
 
 const publicRegistrationSchema = z.object({
   fullName: z.string().min(3, "El nombre completo es muy corto"),
-  email: z.string().email("Correo electrónico no válido"),
+  email: z.email({ message: "Correo electrónico no válido" }),
   phone: z.string().min(6, "Número de teléfono no válido"),
   dni: z.string().min(6, "DNI/Documento no válido"),
   planId: z.string().optional()

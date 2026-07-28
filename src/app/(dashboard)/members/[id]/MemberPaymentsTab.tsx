@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CreditCard, Receipt, Calendar, CheckCircle2, ArrowUpRight } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import Link from "next/link";
 
 export function MemberPaymentsTab({ member }: { member: any }) {
@@ -43,7 +45,7 @@ export function MemberPaymentsTab({ member }: { member: any }) {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-fade-in-fast">
       <div className="glass-card border-white/10 rounded-3xl overflow-hidden">
         <div className="p-6 border-b border-white/5 bg-white/2 flex items-center justify-between">
           <div>
@@ -69,11 +71,7 @@ export function MemberPaymentsTab({ member }: { member: any }) {
             {payments.map((p: any) => (
               <TableRow key={p.id} className="border-white/5 hover:bg-white/5 transition-colors">
                 <TableCell className="py-4 font-mono text-xs text-muted-foreground">
-                  {new Date(p.createdAt).toLocaleDateString("es-PE", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
+                  {format(new Date(p.createdAt), "dd MMM yyyy", { locale: es })}
                 </TableCell>
                 <TableCell className="py-4">
                   <p className="text-sm font-semibold text-foreground">{p.planName}</p>

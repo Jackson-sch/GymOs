@@ -18,6 +18,16 @@ import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { StackedAreaChart } from "@/components/charts/StackedAreaChart";
 import { cn } from "@/lib/utils";
+
+const getChange = (current: number, prev: number) => {
+  if (!prev) return null;
+  const diff = current - prev;
+  return {
+    value: Math.abs(diff).toFixed(1),
+    isIncrease: diff > 0,
+    color: diff > 0 ? "text-red-500" : "text-green-500"
+  };
+};
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 
@@ -31,20 +41,10 @@ export function ProgressClient({ initialData }: ProgressClientProps) {
   const latest = bodyMetrics[0] || {};
   const previous = bodyMetrics[1] || {};
 
-  const getChange = (current: number, prev: number) => {
-    if (!prev) return null;
-    const diff = current - prev;
-    return {
-      value: Math.abs(diff).toFixed(1),
-      isIncrease: diff > 0,
-      color: diff > 0 ? "text-red-500" : "text-green-500"
-    };
-  };
-
   const weightChange = getChange(latest.weight, previous.weight);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
+    <div className="space-y-8 animate-slide-up pb-12">
       <div>
         <h1 className="text-4xl font-serif tracking-tight mb-2">Mi Progreso</h1>
         <p className="text-muted-foreground">Monitorea tus cambios físicos y actividad de entrenamiento</p>
@@ -237,9 +237,11 @@ export function ProgressClient({ initialData }: ProgressClientProps) {
           <Camera className="w-5 h-5 text-primary" />
           Galería de Progreso Visual
         </h2>
-        {bodyMetrics.filter((m: any) => m.photoFrontUrl || m.photoBackUrl || m.photoSideUrl).length > 0 ? (
+        {bodyMetrics.some((m: any) => m.photoFrontUrl || m.photoBackUrl || m.photoSideUrl) ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {bodyMetrics.filter((m: any) => m.photoFrontUrl || m.photoBackUrl || m.photoSideUrl).map((metric: any) => (
+            {bodyMetrics.flatMap((metric: any) => {
+              if (!(metric.photoFrontUrl || metric.photoBackUrl || metric.photoSideUrl)) return [];
+              return [
               <div key={metric.id} className="glass-card p-4 border-white/5 flex flex-col gap-3 bg-white/5">
                 <div className="flex justify-between items-center text-xs font-bold px-2 py-1 bg-black/40 rounded-lg">
                   <span>{format(parseISO(metric.measuredAt), "dd MMM yyyy", { locale: es })}</span>
@@ -248,25 +250,26 @@ export function ProgressClient({ initialData }: ProgressClientProps) {
                 <div className="grid grid-cols-3 gap-2">
                   {metric.photoFrontUrl ? (
                     <div className="relative aspect-square rounded-xl overflow-hidden bg-black/40 border border-white/10 group">
-                      <Image src={metric.photoFrontUrl} alt="Frontal" fill className="object-cover transition-transform duration-300 group-hover:scale-110" />
+                      <Image src={metric.photoFrontUrl} alt="Frontal" fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover transition-transform duration-300 group-hover:scale-110" />
                       <div className="absolute inset-x-0 bottom-0 bg-black/60 p-1 text-[9px] uppercase font-bold text-center tracking-wider text-primary">Frontal</div>
                     </div>
                   ) : <div className="aspect-square bg-white/5 rounded-xl flex items-center justify-center text-[9px] text-muted-foreground uppercase tracking-widest border border-dashed border-white/10">Sin Frontal</div>}
                   {metric.photoBackUrl ? (
                     <div className="relative aspect-square rounded-xl overflow-hidden bg-black/40 border border-white/10 group">
-                      <Image src={metric.photoBackUrl} alt="Espalda" fill className="object-cover transition-transform duration-300 group-hover:scale-110" />
+                      <Image src={metric.photoBackUrl} alt="Espalda" fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover transition-transform duration-300 group-hover:scale-110" />
                       <div className="absolute inset-x-0 bottom-0 bg-black/60 p-1 text-[9px] uppercase font-bold text-center tracking-wider text-primary">Espalda</div>
                     </div>
                   ) : <div className="aspect-square bg-white/5 rounded-xl flex items-center justify-center text-[9px] text-muted-foreground uppercase tracking-widest border border-dashed border-white/10">Sin Espalda</div>}
                   {metric.photoSideUrl ? (
                     <div className="relative aspect-square rounded-xl overflow-hidden bg-black/40 border border-white/10 group">
-                      <Image src={metric.photoSideUrl} alt="Perfil" fill className="object-cover transition-transform duration-300 group-hover:scale-110" />
+                      <Image src={metric.photoSideUrl} alt="Perfil" fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover transition-transform duration-300 group-hover:scale-110" />
                       <div className="absolute inset-x-0 bottom-0 bg-black/60 p-1 text-[9px] uppercase font-bold text-center tracking-wider text-primary">Perfil</div>
                     </div>
                   ) : <div className="aspect-square bg-white/5 rounded-xl flex items-center justify-center text-[9px] text-muted-foreground uppercase tracking-widest border border-dashed border-white/10">Sin Perfil</div>}
                 </div>
               </div>
-            ))}
+              ];
+            })}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center opacity-40 border-2 border-dashed border-white/10 rounded-2xl bg-background/30">

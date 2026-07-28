@@ -8,6 +8,15 @@ import { cn } from "@/lib/utils";
 import Avatar from "boring-avatars";
 import { QRScanner } from "@/components/shared/QRScanner";
 
+const playAudio = (path: string) => {
+  try {
+    const audio = new Audio(path);
+    audio.play().catch(e => console.log("Audio play prevented:", e));
+  } catch (e) {
+    // ignore
+  }
+};
+
 export function KioskClient() {
   const [code, setCode] = useState("");
   const [status, setStatus] = useState<"IDLE" | "LOADING" | "GRANTED" | "DENIED" | "NOT_FOUND">("IDLE");
@@ -70,15 +79,6 @@ export function KioskClient() {
     }, 4000);
   };
 
-  const playAudio = (path: string) => {
-    try {
-      const audio = new Audio(path);
-      audio.play().catch(e => console.log("Audio play prevented:", e));
-    } catch (e) {
-      // ignore
-    }
-  };
-
   const handleKeypad = (num: string) => {
     setCode(prev => prev + num);
   };
@@ -101,21 +101,21 @@ export function KioskClient() {
           ref={inputRef}
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          autoFocus
+          aria-label="Scanner input"
           className="opacity-0 w-1 h-1"
         />
       </form>
 
-      <div className="max-w-2xl w-full p-8 flex flex-col items-center justify-center animate-in zoom-in duration-500">
+      <div className="max-w-2xl w-full p-8 flex flex-col items-center justify-center animate-zoom-in">
         
         {status === "IDLE" && (
           <div className="text-center space-y-12 w-full max-w-sm">
             <div className="space-y-4">
               <div className="relative group">
                 {isScanning ? (
-                  <div className="w-full max-w-[300px] mx-auto overflow-hidden rounded-3xl border-2 border-primary shadow-[0_0_50px_rgba(var(--primary),0.2)] animate-in zoom-in duration-300">
+                  <div className="w-full max-w-[300px] mx-auto overflow-hidden rounded-3xl border-2 border-primary shadow-[0_0_50px_rgba(var(--primary),0.2)] animate-zoom-in">
                     <QRScanner onScan={handleScan} />
-                    <button 
+                    <button type="button" 
                       onClick={() => setIsScanning(false)}
                       className="w-full py-4 bg-destructive/10 text-destructive text-[10px] uppercase tracking-[0.2em] font-bold border-t border-destructive/20 hover:bg-destructive/20 transition-colors"
                     >
@@ -123,7 +123,8 @@ export function KioskClient() {
                     </button>
                   </div>
                 ) : (
-                  <button 
+                  <button type="button" 
+                    aria-label="Start scanning"
                     onClick={() => setIsScanning(true)}
                     className="w-28 h-28 bg-primary/20 rounded-full flex items-center justify-center mx-auto relative group interactive-hover"
                   >
@@ -148,7 +149,7 @@ export function KioskClient() {
             {/* Keypad for manual entry (Touch friendly) */}
             <div className="grid grid-cols-3 gap-4 mx-auto mt-8">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-                <button
+                <button type="button"
                   key={num}
                   onClick={() => handleKeypad(num.toString())}
                   className="h-16 text-2xl font-bold bg-white/5 hover:bg-white/10 rounded-2xl transition-colors active:scale-95"
@@ -156,19 +157,19 @@ export function KioskClient() {
                   {num}
                 </button>
               ))}
-              <button
+              <button type="button"
                 onClick={handleBackspace}
                 className="h-16 text-xl font-bold bg-destructive/20 hover:bg-destructive/30 text-destructive rounded-2xl transition-colors active:scale-95"
               >
                 DEL
               </button>
-              <button
+              <button type="button"
                 onClick={() => handleKeypad("0")}
                 className="h-16 text-2xl font-bold bg-white/5 hover:bg-white/10 rounded-2xl transition-colors active:scale-95"
               >
                 0
               </button>
-              <button
+              <button type="button"
                 onClick={() => handleSubmit()}
                 className="h-16 text-xl font-bold bg-primary text-primary-foreground rounded-2xl shadow-lg shadow-primary/20 transition-colors active:scale-95"
               >
@@ -186,14 +187,14 @@ export function KioskClient() {
         )}
 
         {status === "GRANTED" && memberInfo && (
-          <div className="text-center space-y-8 animate-in slide-in-from-bottom-8 duration-500">
+          <div className="text-center space-y-8 animate-slide-up">
             <div className="w-32 h-32 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto shadow-[0_0_100px_rgba(16,185,129,0.3)] border border-emerald-500/30">
               <CheckCircle2 className="w-16 h-16 text-emerald-500" />
             </div>
             <div className="space-y-6 flex flex-col items-center">
               <div className="w-48 h-48 rounded-full border-4 border-emerald-500/50 shadow-2xl overflow-hidden bg-muted/30 relative">
                 {memberInfo.photo ? (
-                  <Image src={memberInfo.photo} fill className="object-cover" alt="Socio" />
+                  <Image src={memberInfo.photo} fill sizes="192px" className="object-cover" alt="Socio" />
                 ) : (
                   <Avatar size={192} name={memberInfo.fullName} variant="beam" />
                 )}
@@ -214,7 +215,7 @@ export function KioskClient() {
         )}
 
         {(status === "DENIED" || status === "NOT_FOUND") && (
-          <div className="text-center space-y-8 animate-in slide-in-from-bottom-8 duration-500">
+          <div className="text-center space-y-8 animate-slide-up">
             <div className="w-32 h-32 bg-destructive/20 rounded-full flex items-center justify-center mx-auto shadow-[0_0_100px_rgba(239,68,68,0.3)] border border-destructive/30">
               <XCircle className="w-16 h-16 text-destructive" />
             </div>
@@ -222,7 +223,7 @@ export function KioskClient() {
               {memberInfo && (
                 <div className="w-40 h-40 rounded-full border-4 border-destructive/50 overflow-hidden bg-muted/30 opacity-70 grayscale relative">
                   {memberInfo.photo ? (
-                    <Image src={memberInfo.photo} fill className="object-cover" alt="Socio" />
+                    <Image src={memberInfo.photo} fill sizes="160px" className="object-cover" alt="Socio" />
                   ) : (
                     <Avatar size={160} name={memberInfo.fullName} variant="beam" />
                   )}

@@ -296,11 +296,17 @@ export function PaymentForm({ members, plans, trainers, onSuccess }: PaymentForm
                     </InputGroup>
                   </FormControl>
                   <FormMessage />
-                  {selectedPlanId && field.value && Number(field.value) < (plans.find(p => p.id === selectedPlanId)?.price || 0) && (
-                    <div className="flex items-center gap-1.5 text-[9px] text-rose-400 font-bold uppercase animate-pulse ml-1">
-                      Saldo Pendiente: S/. {(plans.find(p => p.id === selectedPlanId)!.price - Number(field.value)).toFixed(2)}
-                    </div>
-                  )}
+                  {(() => {
+                    const selectedPlan = plans.find(p => p.id === selectedPlanId);
+                    if (!selectedPlan || !field.value) return null;
+                    const diff = selectedPlan.price - Number(field.value);
+                    if (diff <= 0) return null;
+                    return (
+                      <div className="flex items-center gap-1.5 text-[9px] text-rose-400 font-bold uppercase animate-pulse ml-1">
+                        Saldo Pendiente: S/. {diff.toFixed(2)}
+                      </div>
+                    );
+                  })()}
                 </FormItem>
               )}
             />

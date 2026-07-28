@@ -14,7 +14,7 @@ export default async function ClassesPage() {
   const trainers = trainersRes.success ? (trainersRes.data as any[]) : [];
 
   return (
-    <div className="space-y-12 animate-in fade-in duration-700">
+    <div className="space-y-12 animate-fade-in">
       {/* Header Editorial */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="space-y-1">

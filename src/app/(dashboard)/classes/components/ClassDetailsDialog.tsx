@@ -144,7 +144,7 @@ export function ClassDetailsDialog({ classId, onClose }: ClassDetailsDialogProps
                         size="sm" 
                         variant="outline" 
                         onClick={() => setIsConfirmCompleteOpen(true)}
-                        className="h-6 rounded-full text-[9px] uppercase font-bold tracking-tighter border-white/10 hover:bg-emerald-500 hover:text-white transition-all"
+                        className="h-6 rounded-full text-[9px] uppercase font-bold tracking-tighter border-white/10 hover:bg-emerald-500 hover:text-white transition-colors"
                       >
                         Finalizar Sesión
                       </Button>
@@ -230,7 +230,7 @@ export function ClassDetailsDialog({ classId, onClose }: ClassDetailsDialogProps
                     <div 
                       key={booking.id} 
                       className={cn(
-                        "flex items-center justify-between p-3 rounded-2xl border transition-all",
+                        "flex items-center justify-between p-3 rounded-2xl border transition-colors",
                         booking.status === "CANCELLED" 
                           ? "bg-rose-500/5 border-rose-500/10 opacity-60" 
                           : "bg-white/5 border-white/5 hover:bg-white/10"

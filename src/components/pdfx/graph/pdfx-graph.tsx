@@ -339,9 +339,9 @@ function renderPieDonutChart(
         const lp = polarToCartesian(cx, cy, labelR, midAngle);
         const anchor = lp.x > cx ? 'start' : 'end';
 
+        const sliceKey = (d as any).id || (d as any).label || (d as any).name || `slice-${d.value}-${currentAngle}`;
         return (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static PDF chart data — index is the stable identity
-          <G key={`slice-${i}`}>
+          <G key={sliceKey}>
             <Path d={path} fill={color} stroke="white" strokeWidth={1} />
             {/* Show label only if slice is large enough to label */}
             {sweep > 15 && (
@@ -546,9 +546,9 @@ export function PdfGraph({
             </SvgText>
           )}
         </Svg>
-        {showLegend && legend === 'right' && Legend({ series, palette, styles, position: 'right' })}
+        {showLegend && legend === 'right' && <Legend series={series} palette={palette} styles={styles} position='right' />}
       </View>
-      {showLegend && legend === 'bottom' && Legend({ series, palette, styles, position: 'bottom' })}
+      {showLegend && legend === 'bottom' && <Legend series={series} palette={palette} styles={styles} position='bottom' />}
     </View>
   );
 

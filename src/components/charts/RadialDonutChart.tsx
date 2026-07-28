@@ -84,12 +84,12 @@ export function RadialDonutChart({ data = defaultData }: { data?: DataItem[] }) 
             <circle r={radius - thickness / 2} fill="none" stroke="white" strokeOpacity="0.03" strokeWidth={thickness} />
             
             {arcs.map((d, i) => (
-              <Tooltip key={i} delayDuration={0}>
+              <Tooltip key={(d.data as any)?.label || (d.data as any)?.name || (d.data as any)?.id || `arc-${(d.data as any)?.label}`} delayDuration={0}>
                 <TooltipTrigger asChild>
                   <path
                     d={arcGenerator(d)!}
                     fill={`url(#donut-grad-${i})`}
-                    className="opacity-90 hover:opacity-100 transition-all duration-500 hover:scale-[1.03] cursor-pointer drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]"
+                    className="opacity-90 hover:opacity-100 transition-opacity transition-transform duration-500 hover:scale-[1.03] cursor-pointer drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]"
                   />
                 </TooltipTrigger>
                 <TooltipContent className="bg-secondary/90 backdrop-blur-md border-white/10 text-foreground font-medium">
@@ -126,7 +126,7 @@ export function RadialDonutChart({ data = defaultData }: { data?: DataItem[] }) 
             <div key={i} className="flex flex-col gap-1.5 group">
               <div className="flex items-center gap-4">
               <div 
-                className="w-1.5 h-6 rounded-full transition-all duration-500 group-hover:h-8" 
+                className="w-1.5 h-6 rounded-full transition-colors duration-500 group-hover:h-8" 
                 style={{ backgroundColor: item.color }} 
               />
               <div>

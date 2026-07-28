@@ -14,34 +14,38 @@ interface AccountTabProps {
   user: any;
 }
 
+const ROLE_PERMISSIONS = [
+  "Acceso Total a Configuración & Canales API",
+  "Gestión Completa de Socios y Membresías",
+  "Cierre e Historial de Caja & Pagos",
+  "Apertura Remota de Molinetes y Accesos",
+  "Auditoría y Registros de Sesión",
+];
+
 export function AccountTab({ user }: AccountTabProps) {
   const [name, setName] = useState(user?.name || "");
   const [saving, setSaving] = useState(false);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!name.trim()) return;
+
     setSaving(true);
     try {
       await authClient.updateUser({ name });
       toast.success("Perfil de administrador actualizado correctamente.");
     } catch (err: any) {
       toast.error(err.message || "Error al actualizar perfil.");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const userRole = user?.role || "SUPER_ADMIN";
-
-  const rolePermissions = [
-    "Acceso Total a Configuración & Canales API",
-    "Gestión Completa de Socios y Membresías",
-    "Cierre e Historial de Caja & Pagos",
-    "Apertura Remota de Molinetes y Accesos",
-    "Auditoría y Registros de Sesión",
-  ];
+  const rolePermissions = ROLE_PERMISSIONS;
 
   return (
-    <section className="glass-card p-6 sm:p-8 md:p-10 border-white/10 space-y-8 animate-in slide-in-from-right-4 duration-500">
+    <section className="glass-card p-6 sm:p-8 md:p-10 border-white/10 space-y-8 animate-slide-right">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
         <div>
           <h2 className="text-2xl font-serif mb-1">Mi Cuenta & Perfil Admin</h2>
@@ -143,8 +147,8 @@ export function AccountTab({ user }: AccountTabProps) {
               <ShieldAlert className="size-3.5 text-primary" /> Permisos Habilitados para {userRole}
             </div>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground">
-              {rolePermissions.map((perm, idx) => (
-                <li key={idx} className="flex items-center gap-2">
+              {rolePermissions.map((perm) => (
+                <li key={perm} className="flex items-center gap-2">
                   <span className="size-1.5 rounded-full bg-primary shrink-0" />
                   <span>{perm}</span>
                 </li>

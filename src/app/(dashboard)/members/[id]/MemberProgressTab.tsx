@@ -240,24 +240,24 @@ export function MemberProgressTab({ member }: { member: any }) {
               {latestWithPhotos ? (
                 <div className="space-y-4">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                    Últimas fotos de progreso ({mounted && format(new Date(latestWithPhotos.measuredAt || latestWithPhotos.createdAt || new Date()), "dd MMM yyyy", { locale: es })})
+                    Últimas fotos de progreso ({mounted && format(new Date(latestWithPhotos.measuredAt || latestWithPhotos.createdAt || 0), "dd MMM yyyy", { locale: es })})
                   </p>
                   <div className="grid grid-cols-3 gap-2">
                     {latestWithPhotos.photoFrontUrl && (
                       <div className="relative aspect-square rounded-xl overflow-hidden border border-white/10 group bg-black/40">
-                        <Image src={latestWithPhotos.photoFrontUrl} alt="Frontal" fill className="object-cover transition-transform duration-300 group-hover:scale-110" />
+                        <Image src={latestWithPhotos.photoFrontUrl} alt="Frontal" fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover transition-transform duration-300 group-hover:scale-110" />
                         <div className="absolute inset-x-0 bottom-0 bg-black/60 p-1 text-[9px] uppercase font-bold text-center tracking-wider text-primary">Frontal</div>
                       </div>
                     )}
                     {latestWithPhotos.photoBackUrl && (
                       <div className="relative aspect-square rounded-xl overflow-hidden border border-white/10 group bg-black/40">
-                        <Image src={latestWithPhotos.photoBackUrl} alt="Espalda" fill className="object-cover transition-transform duration-300 group-hover:scale-110" />
+                        <Image src={latestWithPhotos.photoBackUrl} alt="Espalda" fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover transition-transform duration-300 group-hover:scale-110" />
                         <div className="absolute inset-x-0 bottom-0 bg-black/60 p-1 text-[9px] uppercase font-bold text-center tracking-wider text-primary">Espalda</div>
                       </div>
                     )}
                     {latestWithPhotos.photoSideUrl && (
                       <div className="relative aspect-square rounded-xl overflow-hidden border border-white/10 group bg-black/40">
-                        <Image src={latestWithPhotos.photoSideUrl} alt="Perfil" fill className="object-cover transition-transform duration-300 group-hover:scale-110" />
+                        <Image src={latestWithPhotos.photoSideUrl} alt="Perfil" fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover transition-transform duration-300 group-hover:scale-110" />
                         <div className="absolute inset-x-0 bottom-0 bg-black/60 p-1 text-[9px] uppercase font-bold text-center tracking-wider text-primary">Perfil</div>
                       </div>
                     )}
@@ -290,7 +290,7 @@ export function MemberProgressTab({ member }: { member: any }) {
                         <div className="text-sm font-bold">{m.weight ? `${m.weight}kg` : "---"}</div>
                         <div className="text-[10px] text-muted-foreground uppercase">
                           {mounted 
-                            ? format(new Date(m.measuredAt || m.createdAt || m.date || new Date()), "dd MMM yyyy", { locale: es }) 
+                            ? format(new Date(m.measuredAt || m.createdAt || m.date || 0), "dd MMM yyyy", { locale: es }) 
                             : "..."}
                         </div>
                       </div>

@@ -159,11 +159,12 @@ export function ReportsClient({
         new Date().toISOString().split("T")[0]
       }.csv`;
       a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 100);
     }
   };
 
   return (
-    <div className="space-y-8 pb-8 animate-in fade-in duration-500 w-full">
+    <div className="space-y-8 pb-8 animate-fade-in-fast w-full">
       {/* Header Editorial & Date Controls */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 glass-card p-6 sm:p-8 rounded-3xl border-white/10">
         <div className="space-y-1">
@@ -254,21 +255,21 @@ export function ReportsClient({
         <TabsList className="bg-white/5 border border-white/10 p-1 rounded-2xl grid grid-cols-3 max-w-xl">
           <TabsTrigger
             value="overview"
-            className="rounded-xl text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"
+            className="rounded-xl text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
           >
             <BarChart3 className="size-3.5" />
             Resumen Ejecutivo
           </TabsTrigger>
           <TabsTrigger
             value="finance"
-            className="rounded-xl text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"
+            className="rounded-xl text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
           >
             <CreditCard className="size-3.5" />
             Finanzas & Planes
           </TabsTrigger>
           <TabsTrigger
             value="attendance"
-            className="rounded-xl text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"
+            className="rounded-xl text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
           >
             <Users className="size-3.5" />
             Asistencia & Lealtad

@@ -122,7 +122,7 @@ export function JoinClient({ organization }: { organization: PublicOrganization 
   if (successData) {
     return (
       <div className="min-h-screen bg-background premium-gradient flex items-center justify-center p-4">
-        <div className="max-w-md w-full glass-card p-8 border-white/10 text-center space-y-6 animate-in zoom-in-95 duration-500">
+        <div className="max-w-md w-full glass-card p-8 border-white/10 text-center space-y-6 animate-zoom-in-95">
           <div className="size-16 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto shadow-2xl shadow-emerald-900/30">
             <CheckCircle2 className="size-10" />
           </div>
@@ -190,7 +190,7 @@ export function JoinClient({ organization }: { organization: PublicOrganization 
       </header>
 
       {/* Form Container */}
-      <main className="max-w-4xl w-full mx-auto my-8 space-y-8 animate-in fade-in duration-700">
+      <main className="max-w-4xl w-full mx-auto my-8 space-y-8 animate-fade-in">
         {/* Step Stepper */}
         <div className="flex items-center justify-center gap-4 text-xs font-bold uppercase tracking-wider">
           <div className={`flex items-center gap-2 ${step >= 1 ? "text-primary" : "text-muted-foreground"}`}>
@@ -238,8 +238,11 @@ export function JoinClient({ organization }: { organization: PublicOrganization 
                 return (
                   <div
                     key={plan.id}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     onClick={() => setSelectedPlan(plan)}
-                    className={`p-6 rounded-3xl border cursor-pointer transition-all flex flex-col justify-between space-y-6 shadow-xl ${
+                    className={`p-6 rounded-3xl border cursor-pointer transition-colors flex flex-col justify-between space-y-6 shadow-xl ${
                       isSelected
                         ? "bg-primary/10 border-primary shadow-primary/20 scale-105"
                         : "bg-white/5 border-white/10 hover:border-white/20"
@@ -405,7 +408,7 @@ export function JoinClient({ organization }: { organization: PublicOrganization 
                         key={m.id}
                         type="button"
                         onClick={() => setForm((p) => ({ ...p, paymentMethod: m.id as any }))}
-                        className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all ${
+                        className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-colors ${
                           isSel
                             ? "bg-primary/20 border-primary text-primary"
                             : "bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10"
@@ -423,7 +426,7 @@ export function JoinClient({ organization }: { organization: PublicOrganization 
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold text-sm tracking-wide shadow-xl shadow-primary/25 hover:bg-primary/90 transition-all"
+              className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold text-sm tracking-wide shadow-xl shadow-primary/25 hover:bg-primary/90 transition-colors"
             >
               {submitting ? (
                 <Loader2 className="size-5 animate-spin gap-2" />

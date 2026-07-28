@@ -26,7 +26,7 @@ export function MemberStats({
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
       {stats.map((stat) => (
-        <Card key={stat.label} className="group hover:border-primary/20 transition-all duration-500 border-border/10 bg-secondary/20 backdrop-blur-sm overflow-hidden border">
+        <Card key={stat.label} className="group hover:border-primary/20 transition-colors duration-500 border-border/10 bg-secondary/20 backdrop-blur-sm overflow-hidden border">
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
               <div className={cn("p-2.5 rounded-xl bg-background/50 border border-border/20 group-hover:border-primary/40 transition-colors", stat.color)}>

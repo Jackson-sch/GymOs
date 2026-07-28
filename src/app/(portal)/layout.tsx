@@ -26,7 +26,7 @@ export default async function PortalLayout({
   return (
     <div className="flex min-h-screen bg-background premium-gradient overflow-x-hidden">
       <PortalSidebar branding={branding} />
-      <main className="flex-1 md:ml-72 transition-all duration-500">
+      <main className="flex-1 md:ml-72 transition-colors duration-500">
         <header className="flex h-20 items-center justify-end px-8 gap-4">
           <NotificationCenter />
         </header>

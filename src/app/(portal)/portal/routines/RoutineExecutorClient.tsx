@@ -36,7 +36,7 @@ export function RoutineExecutorClient({ routines }: { routines: Routine[] }) {
   const [completedSets, setCompletedSets] = useState<Record<string, boolean>>({});
 
   const [restSecondsLeft, setRestSecondsLeft] = useState<number | null>(null);
-  const [timerInitial, setTimerInitial] = useState<number>(60);
+  const timerInitialRef = React.useRef<number>(60);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export function RoutineExecutorClient({ routines }: { routines: Routine[] }) {
   }, [isTimerRunning, restSecondsLeft]);
 
   const startRestTimer = (seconds: number) => {
-    setTimerInitial(seconds);
+    timerInitialRef.current = seconds;
     setRestSecondsLeft(seconds);
     setIsTimerRunning(true);
     toast.info(`⏱️ Temporizador de descanso iniciado: ${seconds} segundos`);
@@ -84,7 +84,7 @@ export function RoutineExecutorClient({ routines }: { routines: Routine[] }) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700 pb-16">
+    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in pb-16">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-semibold uppercase tracking-widest mb-2">
@@ -109,7 +109,7 @@ export function RoutineExecutorClient({ routines }: { routines: Routine[] }) {
       </div>
 
       {restSecondsLeft !== null && (
-        <div className="sticky top-4 z-50 glass-card p-4 border-primary/40 bg-zinc-950/95 backdrop-blur-2xl shadow-2xl flex items-center justify-between gap-4 animate-in slide-in-from-top-4 duration-300">
+        <div className="sticky top-4 z-50 glass-card p-4 border-primary/40 bg-zinc-950/95 backdrop-blur-2xl shadow-2xl flex items-center justify-between gap-4 animate-in slide-in-from-top-4">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-mono font-bold text-sm">
               {restSecondsLeft}s
@@ -123,13 +123,13 @@ export function RoutineExecutorClient({ routines }: { routines: Routine[] }) {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
+            <button type="button"
               onClick={() => setIsTimerRunning(!isTimerRunning)}
               className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold"
             >
               {isTimerRunning ? "Pausar" : "Reanudar"}
             </button>
-            <button
+            <button type="button"
               onClick={() => setRestSecondsLeft(null)}
               className="px-3 py-1.5 rounded-lg bg-white/10 text-xs text-muted-foreground hover:text-foreground font-semibold"
             >
@@ -144,8 +144,11 @@ export function RoutineExecutorClient({ routines }: { routines: Routine[] }) {
           {routines.map((routine) => (
             <div
               key={routine.id}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
               onClick={() => setActiveRoutine(routine)}
-              className="glass-card p-6 border-white/10 hover:border-primary/40 cursor-pointer transition-all space-y-4 group shadow-xl"
+              className="glass-card p-6 border-white/10 hover:border-primary/40 cursor-pointer transition-colors space-y-4 group shadow-xl"
             >
               <div className="flex items-center justify-between">
                 <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px] uppercase font-bold">
@@ -225,7 +228,7 @@ export function RoutineExecutorClient({ routines }: { routines: Routine[] }) {
                         key={setIdx}
                         type="button"
                         onClick={() => toggleSetCompleted(ex.id || String(exIdx), setIdx, ex.restSeconds || 60)}
-                        className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-between transition-all ${
+                        className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-between transition-colors ${
                           isDone
                             ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
                             : "bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10"

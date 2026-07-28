@@ -275,7 +275,7 @@ export default function DashboardPage() {
   if (!mounted) return <div className="w-full aspect-video animate-pulse bg-white/5 rounded-3xl" />;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 w-full pb-8">
+    <div className="space-y-8 animate-fade-in w-full pb-8">
       {/* Editorial Header & Multi-Branch Selector */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
         <div className="space-y-1">
@@ -334,7 +334,7 @@ export default function DashboardPage() {
           return (
             <Card
               key={kpi.label}
-              className="glass-card border-white/15 rounded-3xl overflow-hidden relative group backdrop-blur-md bg-zinc-950/85 hover:border-primary/40 transition-all shadow-xl"
+              className="glass-card border-white/15 rounded-3xl overflow-hidden relative group backdrop-blur-md bg-zinc-950/85 hover:border-primary/40 transition-colors shadow-xl"
             >
               <CardContent className="p-5 space-y-3">
                 <div className="flex items-center justify-between">
@@ -502,7 +502,7 @@ export default function DashboardPage() {
             {maintenanceAlerts.map((item: any) => (
               <div
                 key={item.id}
-                className="flex flex-col justify-between p-3.5 rounded-2xl bg-zinc-950/80 border border-rose-500/20 hover:border-rose-500/40 transition-all cursor-pointer group shadow-md"
+                className="flex flex-col justify-between p-3.5 rounded-2xl bg-zinc-950/80 border border-rose-500/20 hover:border-rose-500/40 transition-colors cursor-pointer group shadow-md"
               >
                 <div className="space-y-0.5">
                   <p className="text-xs font-bold text-foreground group-hover:text-rose-400 transition-colors truncate">
@@ -602,10 +602,10 @@ export default function DashboardPage() {
                 activityData.map((item: any) => {
                   const Icon = getActionIcon(item.type);
                   return (
-                    <div key={item.id} className="flex items-center gap-3 group p-2.5 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 transition-all">
+                    <div key={item.id} className="flex items-center gap-3 group p-2.5 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
                       <div
                         className={cn(
-                          "size-9 rounded-xl flex items-center justify-center shrink-0 transition-all font-bold",
+                          "size-9 rounded-xl flex items-center justify-center shrink-0 transition-colors font-bold",
                           item.status === "emerald"
                             ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
                             : item.status === "primary"

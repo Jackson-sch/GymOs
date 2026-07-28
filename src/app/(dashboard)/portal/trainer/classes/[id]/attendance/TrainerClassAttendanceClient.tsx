@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { 
   Users, 
   Search, 
@@ -29,6 +29,7 @@ export function TrainerClassAttendanceClient({ gymClass }: { gymClass: any }) {
     b.member.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     b.member.dni.includes(searchTerm)
   );
+  const loadingSet = useMemo(() => new Set(loadingIds), [loadingIds]);
 
   const handleToggleAttendance = async (memberId: string, currentStatus: string) => {
     setLoadingIds(prev => [...prev, memberId]);
@@ -56,7 +57,7 @@ export function TrainerClassAttendanceClient({ gymClass }: { gymClass: any }) {
   const attendedCount = gymClass.bookings.filter((b: any) => b.status === "ATTENDED").length;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-fade-in-fast">
       {/* Resumen de Clase */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="glass-card p-4 border-white/5 flex items-center gap-4">
@@ -110,7 +111,7 @@ export function TrainerClassAttendanceClient({ gymClass }: { gymClass: any }) {
             <div 
               key={booking.id} 
               className={cn(
-                "glass-card p-4 border-white/5 flex items-center justify-between transition-all group",
+                "glass-card p-4 border-white/5 flex items-center justify-between transition-colors group",
                 booking.status === "ATTENDED" && "bg-emerald-500/5 border-emerald-500/20"
               )}
             >
@@ -143,7 +144,7 @@ export function TrainerClassAttendanceClient({ gymClass }: { gymClass: any }) {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {loadingIds.includes(booking.memberId) ? (
+                  {loadingSet.has(booking.memberId) ? (
                     <Loader2 className="size-5 animate-spin text-primary" />
                   ) : (
                     <Switch 

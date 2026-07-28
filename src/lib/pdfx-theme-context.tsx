@@ -8,20 +8,12 @@
 
 import { type DependencyList, type ReactNode, createContext, useContext } from 'react';
 import { theme as defaultTheme } from './pdfx-theme';
+export { defaultTheme };
 
 export type PdfxTheme = typeof defaultTheme;
 
 export const PdfxThemeContext = createContext<PdfxTheme>(defaultTheme);
 
-export interface PdfxThemeProviderProps {
-  theme?: PdfxTheme;
-  children: ReactNode;
-}
-
-export function PdfxThemeProvider({ theme, children }: PdfxThemeProviderProps) {
-  const resolvedTheme = theme ?? defaultTheme;
-  return <PdfxThemeContext.Provider value={resolvedTheme}>{children}</PdfxThemeContext.Provider>;
-}
 
 /**
  * Returns the active theme from context.
@@ -31,18 +23,8 @@ export function PdfxThemeProvider({ theme, children }: PdfxThemeProviderProps) {
  * Unexpected errors are re-thrown.
  */
 export function usePdfxTheme(): PdfxTheme {
-  try {
-    return useContext(PdfxThemeContext);
-  } catch (error) {
-    // Suppress only known React dispatcher errors.
-    if (
-      error instanceof Error &&
-      /invalid hook call|useContext|cannot read properties of null/i.test(error.message)
-    ) {
-      return defaultTheme;
-    }
-    throw error;
-  }
+  const theme = useContext(PdfxThemeContext);
+  return theme ?? defaultTheme;
 }
 
 /**

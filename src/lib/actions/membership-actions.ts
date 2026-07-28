@@ -167,16 +167,4 @@ export async function renewMembershipAction(data: {
   }
 }
 
-export async function getMembershipHistoryAction(memberId: string) {
-  try {
-    await verifySession();
-    const memberships = await prisma.membership.findMany({
-      where: { memberId },
-      include: { plan: true },
-      orderBy: { createdAt: "desc" },
-    });
-    return { success: true, data: serialize(memberships) };
-  } catch (error) {
-    return { success: false, error: "Error al cargar historial" };
-  }
-}
+

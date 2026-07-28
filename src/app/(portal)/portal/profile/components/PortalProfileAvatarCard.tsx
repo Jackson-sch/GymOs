@@ -52,7 +52,7 @@ export function PortalProfileAvatarCard({
         )}
 
         <Avatar className={cn(
-          "w-36 h-36 border shadow-xl p-1 relative z-10 transition-all group-hover:scale-105 duration-300",
+          "w-36 h-36 border shadow-xl p-1 relative z-10 transition-colors transition-transform group-hover:scale-105 duration-300",
           isVip 
             ? "border-amber-400/60 ring-2 ring-amber-400/20"
             : isStandard
@@ -69,15 +69,15 @@ export function PortalProfileAvatarCard({
 
         {/* VIP Crown Badge */}
         {isVip && (
-          <div className="absolute -top-1 -right-1 z-30 bg-linear-to-br from-amber-400 to-yellow-500 rounded-full p-1.5 shadow-lg shadow-amber-500/30 border-2 border-background animate-in zoom-in duration-500">
+          <div className="absolute -top-1 -right-1 z-30 bg-linear-to-br from-amber-400 to-yellow-500 rounded-full p-1.5 shadow-lg shadow-amber-500/30 border-2 border-background animate-zoom-in">
             <Crown className="w-3.5 h-3.5 text-amber-900" />
           </div>
         )}
 
-        <button
+        <button type="button"
           onClick={onTriggerUpload}
           disabled={uploading}
-          className="absolute bottom-1 right-1 z-20 bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-full shadow-lg border border-white/20 transition-all flex items-center justify-center cursor-pointer disabled:opacity-50"
+          className="absolute bottom-1 right-1 z-20 bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-full shadow-lg border border-white/20 transition-colors flex items-center justify-center cursor-pointer disabled:opacity-50"
           title="Cambiar Foto"
         >
           {uploading ? (
@@ -105,7 +105,7 @@ export function PortalProfileAvatarCard({
           variant="ghost"
           type="button"
           onClick={onDeletePhotoClick}
-          className="text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl px-4 py-2 transition-all flex items-center gap-1.5"
+          className="text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl px-4 py-2 transition-colors flex items-center gap-1.5"
         >
           <Trash2 className="w-3.5 h-3.5" />
           Eliminar Foto

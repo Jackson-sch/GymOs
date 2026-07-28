@@ -1,5 +1,5 @@
 import React from "react";
-import { MemberForm } from "@/components/forms/MemberForm";
+import { MemberForm } from "@/components/shared/forms/MemberForm";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";

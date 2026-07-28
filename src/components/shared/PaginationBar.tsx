@@ -87,7 +87,7 @@ export function PaginationBar({
             variant={p === currentPage ? "default" : "outline"}
             size="sm"
             onClick={() => onPageChange(p)}
-            className={`h-9 min-w-9 px-2.5 rounded-xl text-xs font-bold transition-all ${
+            className={`h-9 min-w-9 px-2.5 rounded-xl text-xs font-bold transition-colors ${
               p === currentPage
                 ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
                 : "border-white/10 bg-white/5 hover:bg-white/10 text-foreground"
@@ -135,7 +135,7 @@ export function PaginationBar({
               key={opt}
               type="button"
               onClick={() => onPageSizeChange(opt)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
                 pageSize === opt
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"

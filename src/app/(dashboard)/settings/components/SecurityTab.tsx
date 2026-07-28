@@ -54,7 +54,7 @@ export function SecurityTab({
       : "bg-rose-500";
 
   return (
-    <section className="glass-card p-6 sm:p-8 md:p-10 border-white/10 space-y-10 animate-in slide-in-from-right-4 duration-500">
+    <section className="glass-card p-6 sm:p-8 md:p-10 border-white/10 space-y-10 animate-slide-right">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-6">
         <div>
           <h2 className="text-2xl font-serif mb-1">Seguridad & Credenciales</h2>
@@ -109,6 +109,7 @@ export function SecurityTab({
                 />
                 <button
                   type="button"
+                  aria-label={showCurrent ? "Hide password" : "Show password"}
                   onClick={() => setShowCurrent(!showCurrent)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
                 >
@@ -138,6 +139,7 @@ export function SecurityTab({
                 />
                 <button
                   type="button"
+                  aria-label={showNew ? "Hide password" : "Show password"}
                   onClick={() => setShowNew(!showNew)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
                 >
@@ -156,7 +158,7 @@ export function SecurityTab({
                   </div>
                   <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden flex">
                     <div
-                      className={`h-full transition-all duration-300 ${strengthColor}`}
+                      className={`h-full transition-colors duration-300 ${strengthColor}`}
                       style={{ width: `${(strengthScore / 3) * 100}%` }}
                     />
                   </div>
@@ -185,6 +187,7 @@ export function SecurityTab({
                 />
                 <button
                   type="button"
+                  aria-label={showConfirm ? "Hide password" : "Show password"}
                   onClick={() => setShowConfirm(!showConfirm)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
                 >
@@ -196,7 +199,7 @@ export function SecurityTab({
             <Button
               type="submit"
               disabled={passwordLoading}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-11 rounded-xl font-bold tracking-wider text-xs uppercase transition-all gap-2"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-11 rounded-xl font-bold tracking-wider text-xs uppercase transition-colors gap-2"
             >
               {passwordLoading ? (
                 <Loader2 className="size-4 animate-spin" />
@@ -243,7 +246,7 @@ export function SecurityTab({
               type="button"
               variant="outline"
               onClick={() => toast.info("Todas las demás sesiones inactivas han sido revocadas.")}
-              className="w-full h-9 bg-white/5 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/30 text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all"
+              className="w-full h-9 bg-white/5 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/30 text-[10px] font-bold uppercase tracking-wider rounded-xl transition-colors"
             >
               Cerrar Todas las Demás Sesiones
             </Button>

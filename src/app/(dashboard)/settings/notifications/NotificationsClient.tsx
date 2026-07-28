@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition, useMemo } from "react";
+import React, { useState, useTransition, useMemo, useCallback } from "react";
 import {
   Bell,
   Mail,
@@ -53,6 +53,29 @@ import { formatDate, formatTime } from "@/lib/formats";
 import { toast } from "sonner";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+
+// Helper to determine icon
+const getIcon = (item: NotificationItem) => {
+  const title = item.title?.toLowerCase() || "";
+  if (title.includes("email") || title.includes("correo") || title.includes("bienvenida") ||
+      title.includes("membresía") || title.includes("recibo") || title.includes("pago") || title.includes("reserva")) {
+    return { icon: Mail, bg: "bg-blue-500/20 text-blue-400 border-blue-500/30", label: "Correo / Email" };
+  }
+  if (title.includes("whatsapp") || title.includes("sms")) {
+    return { icon: Smartphone, bg: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30", label: "Móvil / WhatsApp" };
+  }
+  return { icon: Bell, bg: "bg-purple-500/20 text-purple-400 border-purple-500/30", label: "Sistema" };
+};
+
+// Helper for type badges
+const getTypeBadge = (type: string) => {
+  switch (type) {
+    case "SUCCESS": return { label: "Éxito", className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" };
+    case "WARNING": return { label: "Aviso", className: "bg-amber-500/10 text-amber-400 border-amber-500/30" };
+    case "ERROR": return { label: "Error", className: "bg-rose-500/10 text-rose-400 border-rose-500/30" };
+    default: return { label: "Info", className: "bg-blue-500/10 text-blue-400 border-blue-500/30" };
+  }
+};
 
 interface NotificationItem {
   id: string;
@@ -124,7 +147,7 @@ export function NotificationsClient({
     fetchNotifications(filterType, val);
   };
 
-  const handleDelete = async (id: string, e?: React.MouseEvent) => {
+  const handleDelete = useCallback(async (id: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setDeletingId(id);
     const res = await deleteNotificationAction(id);
@@ -138,65 +161,9 @@ export function NotificationsClient({
       toast.error(res.error || "Error al eliminar");
     }
     setDeletingId(null);
-  };
+  }, [selectedNotification]);
 
-  // Helper to determine icon
-  const getIcon = (item: NotificationItem) => {
-    const title = item.title?.toLowerCase() || "";
-    if (
-      title.includes("email") ||
-      title.includes("correo") ||
-      title.includes("bienvenida") ||
-      title.includes("membresía") ||
-      title.includes("recibo") ||
-      title.includes("pago") ||
-      title.includes("reserva")
-    ) {
-      return {
-        icon: Mail,
-        bg: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-        label: "Correo / Email",
-      };
-    }
-    if (title.includes("whatsapp") || title.includes("sms")) {
-      return {
-        icon: Smartphone,
-        bg: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-        label: "Móvil / WhatsApp",
-      };
-    }
-    return {
-      icon: Bell,
-      bg: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-      label: "Sistema",
-    };
-  };
 
-  // Helper for type badges
-  const getTypeBadge = (type: string) => {
-    switch (type) {
-      case "SUCCESS":
-        return {
-          label: "Éxito",
-          className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-        };
-      case "WARNING":
-        return {
-          label: "Aviso",
-          className: "bg-amber-500/10 text-amber-400 border-amber-500/30",
-        };
-      case "ERROR":
-        return {
-          label: "Error",
-          className: "bg-rose-500/10 text-rose-400 border-rose-500/30",
-        };
-      default:
-        return {
-          label: "Info",
-          className: "bg-blue-500/10 text-blue-400 border-blue-500/30",
-        };
-    }
-  };
 
   // Define TanStack Columns
   const columns = useMemo<ColumnDef<NotificationItem>[]>(
@@ -290,13 +257,14 @@ export function NotificationsClient({
       {
         accessorKey: "createdAt",
         header: ({ column }) => (
-          <div
-            className="flex items-center gap-1 cursor-pointer select-none"
+          <button
+            type="button"
+            className="flex items-center gap-1 cursor-pointer select-none appearance-none bg-transparent border-none p-0 text-inherit font-inherit"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Fecha & Hora
             <ArrowUpDown className="size-3 opacity-60" />
-          </div>
+          </button>
         ),
         cell: ({ row }) => {
           const date = row.original.createdAt;
@@ -351,7 +319,7 @@ export function NotificationsClient({
         },
       },
     ],
-    [deletingId],
+    [deletingId, handleDelete],
   );
 
   // TanStack Table Instance
@@ -392,7 +360,7 @@ export function NotificationsClient({
   }).length;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 w-full pb-8">
+    <div className="space-y-8 animate-fade-in-fast w-full pb-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 glass-card p-6 rounded-3xl border-white/10">
         <div className="flex items-center gap-4">
@@ -523,7 +491,7 @@ export function NotificationsClient({
               onClick={() => handleFilterChange(tab.id)}
               variant={filterType === tab.id ? "default" : "ghost"}
               className={cn(
-                "rounded-xl px-4 h-9 uppercase tracking-wider text-[10px] font-bold transition-all whitespace-nowrap",
+                "rounded-xl px-4 h-9 uppercase tracking-wider text-[10px] font-bold transition-colors whitespace-nowrap",
                 filterType === tab.id
                   ? "shadow-lg shadow-primary/20"
                   : "text-muted-foreground hover:text-foreground",
@@ -636,6 +604,9 @@ export function NotificationsClient({
                   {table.getRowModel().rows.map((row) => (
                     <tr
                       key={row.id}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                       onClick={() => setSelectedNotification(row.original)}
                       className="hover:bg-white/5 transition-colors cursor-pointer group"
                     >
@@ -701,6 +672,9 @@ export function NotificationsClient({
               return (
                 <div
                   key={item.id}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                   onClick={() => setSelectedNotification(item)}
                   className="glass-card p-6 rounded-3xl border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 hover:bg-white/5 transition-colors duration-300 group cursor-pointer"
                 >

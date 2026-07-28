@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const memberSchema = z.object({
   fullName: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
-  email: z.string().email("Email inválido").optional().nullable(),
+  email: z.email({ message: "Email inválido" }).optional().nullable(),
   phone: z.string().min(7, "Teléfono inválido"),
   dni: z.string().min(5, "DNI inválido").optional().nullable(),
   address: z.string().optional().nullable(),

@@ -156,7 +156,7 @@ export function ClassForm({ initialData, trainers, onSuccess }: ClassFormProps) 
           </div>
 
           {isRecurring && (
-            <div className="pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="pt-2 animate-slide-down-fast">
               <div className="flex items-center gap-4">
                 <div className="flex-1 space-y-2">
                   <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Durante cuántas semanas</Label>
@@ -170,7 +170,7 @@ export function ClassForm({ initialData, trainers, onSuccess }: ClassFormProps) 
                 </div>
                 <div className="flex-1 pt-6">
                   <p className="text-[10px] text-muted-foreground italic">
-                    Se crearán {watch("recurrenceWeeks") || 0} sesiones cada {format(new Date(watch("startTime") || new Date()), "EEEE", { locale: es })}.
+                    Se crearán {watch("recurrenceWeeks") || 0} sesiones cada {watch("startTime") ? format(new Date(watch("startTime")), "EEEE", { locale: es }) : "día seleccionado"}.
                   </p>
                 </div>
               </div>

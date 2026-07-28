@@ -53,7 +53,7 @@ export function ExpenseCard({ expense, onDelete }: ExpenseCardProps) {
               <Button 
                 variant="ghost" 
                 size="icon"
-                className="size-8 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive hover:bg-destructive/10 transition-all"
+                className="size-8 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive hover:bg-destructive/10 transition-colors transition-opacity"
               >
                 <Trash2 className="size-4" />
               </Button>

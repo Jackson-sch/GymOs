@@ -230,32 +230,6 @@ export function RoutinesClient({
     [planName, groupedRoutines],
   );
 
-  const handleCreateExerciseSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newExName.trim()) {
-      toast.error("Ingrese el nombre del ejercicio");
-      return;
-    }
-    setCreatingEx(true);
-    const res = await createExerciseAction({
-      name: newExName,
-      muscleGroup: newExMuscle,
-      demoUrl: newExVideo,
-    });
-    setCreatingEx(false);
-
-    if (res.success && res.data) {
-      toast.success("Ejercicio registrado en el catálogo");
-      setExercises((prev) => [res.data, ...prev]);
-      setNewExName("");
-      setNewExDesc("");
-      setNewExVideo("");
-      setIsNewExOpen(false);
-    } else {
-      toast.error(res.error || "Error al crear ejercicio");
-    }
-  };
-
   if (activePlan) {
     return <PlanDetail plan={activePlan} onBack={() => setPlanName(null)} />;
   }
@@ -263,7 +237,7 @@ export function RoutinesClient({
   const totalAssignedMembers = new Set(routines.map((r) => r.memberId)).size;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 w-full pb-8">
+    <div className="space-y-8 animate-fade-in-fast w-full pb-8">
       {/* Studio Header & Stats */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 glass-card p-6 sm:p-8 rounded-3xl border-white/10">
         <div className="space-y-1">
@@ -327,14 +301,14 @@ export function RoutinesClient({
         <TabsList className="bg-white/5 border border-white/10 p-1.5 rounded-2xl grid grid-cols-2 max-w-md">
           <TabsTrigger
             value="rutinas"
-            className="rounded-xl text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all uppercase tracking-wider"
+            className="rounded-xl text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors uppercase tracking-wider"
           >
             <ClipboardList className="size-4" />
             Planes de Entrenamiento
           </TabsTrigger>
           <TabsTrigger
             value="ejercicios"
-            className="rounded-xl text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all uppercase tracking-wider"
+            className="rounded-xl text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors uppercase tracking-wider"
           >
             <Dumbbell className="size-4" />
             Catálogo de Ejercicios
@@ -346,7 +320,7 @@ export function RoutinesClient({
         {/* ========================================== */}
         <TabsContent
           value="rutinas"
-          className="space-y-8 outline-none animate-in fade-in duration-300"
+          className="space-y-8 outline-none animate-fade-in-fast"
         >
           {/* Search & Actions Bar */}
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass-card p-4 rounded-3xl border-white/10">
@@ -375,7 +349,7 @@ export function RoutinesClient({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {paginatedGroups.map((group, idx) => (
               <PlanCard
-                key={idx}
+                key={group.name || group.id}
                 group={group}
                 onSelect={setPlanName}
                 onSimulate={(g) => setSimulatingPlan(g)}
@@ -413,7 +387,7 @@ export function RoutinesClient({
         {/* ========================================== */}
         <TabsContent
           value="ejercicios"
-          className="space-y-8 outline-none animate-in fade-in duration-300"
+          className="space-y-8 outline-none animate-fade-in-fast"
         >
           {/* Search, Muscle Group Pills & Controls */}
           <div className="space-y-4 glass-card p-5 rounded-3xl border-white/10">
@@ -435,7 +409,7 @@ export function RoutinesClient({
                     type="button"
                     onClick={() => setViewMode("grid")}
                     className={cn(
-                      "p-2 rounded-lg transition-all",
+                      "p-2 rounded-lg transition-colors",
                       viewMode === "grid"
                         ? "bg-primary text-primary-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground",
@@ -448,7 +422,7 @@ export function RoutinesClient({
                     type="button"
                     onClick={() => setViewMode("list")}
                     className={cn(
-                      "p-2 rounded-lg transition-all",
+                      "p-2 rounded-lg transition-colors",
                       viewMode === "list"
                         ? "bg-primary text-primary-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground",
@@ -499,8 +473,10 @@ export function RoutinesClient({
                           Nombre del Ejercicio
                         </Label>
                         <Input
-                          value={newExName}
-                          onChange={(e) => setNewExName(e.target.value)}
+                          value={newExForm.name}
+                          onChange={(e) =>
+                            setNewExForm((prev) => ({ ...prev, name: e.target.value }))
+                          }
                           placeholder="Ej: Sentadilla Búlgara con Mancuernas"
                           className="bg-white/5 border-white/10 h-11 text-xs"
                         />
@@ -511,8 +487,10 @@ export function RoutinesClient({
                           Grupo Muscular Principal
                         </Label>
                         <Select
-                          value={newExMuscle}
-                          onValueChange={setNewExMuscle}
+                          value={newExForm.muscleGroup}
+                          onValueChange={(val) =>
+                            setNewExForm((prev) => ({ ...prev, muscleGroup: val }))
+                          }
                         >
                           <SelectTrigger className="bg-white/5 border-white/10 h-11 text-xs">
                             <SelectValue placeholder="Seleccionar grupo" />
@@ -533,20 +511,25 @@ export function RoutinesClient({
                           URL de Demostración (Video YouTube / GIF)
                         </Label>
                         <Input
-                          value={newExVideo}
-                          onChange={(e) => setNewExVideo(e.target.value)}
+                          value={newExForm.demoUrl}
+                          onChange={(e) =>
+                            setNewExForm((prev) => ({ ...prev, demoUrl: e.target.value }))
+                          }
                           placeholder="https://youtube.com/watch?v=..."
                           className="bg-white/5 border-white/10 h-11 text-xs font-mono"
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label className="text-xs font-semibold uppercase tracking-wider">
+                        <Label htmlFor="new-ex-desc" className="text-xs font-semibold uppercase tracking-wider">
                           Instrucciones Técnicas de Ejecución
                         </Label>
                         <textarea
-                          value={newExDesc}
-                          onChange={(e) => setNewExDesc(e.target.value)}
+                          id="new-ex-desc"
+                          value={newExForm.description}
+                          onChange={(e) =>
+                            setNewExForm((prev) => ({ ...prev, description: e.target.value }))
+                          }
                           placeholder="Consejos de postura, respiración y recorrido del movimiento..."
                           className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs h-24 focus:outline-none focus:border-primary/50 text-foreground"
                         />
@@ -586,7 +569,7 @@ export function RoutinesClient({
                   key={mg.id}
                   type="button"
                   onClick={() => setSelectedMuscle(mg.id)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
                     selectedMuscle === mg.id
                       ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
                       : "bg-white/5 text-muted-foreground hover:text-foreground hover:bg-white/10"
@@ -604,7 +587,7 @@ export function RoutinesClient({
               {paginatedExercises.map((ex) => (
                 <div
                   key={ex.id}
-                  className="glass-card p-5 rounded-3xl border-white/10 hover:border-primary/30 transition-all group flex flex-col justify-between backdrop-blur-md bg-white/2"
+                  className="glass-card p-5 rounded-3xl border-white/10 hover:border-primary/30 transition-colors group flex flex-col justify-between backdrop-blur-md bg-white/2"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -634,7 +617,7 @@ export function RoutinesClient({
                       <a
                         href={ex.demoUrl || ex.videoUrl}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1.5 hover:underline"
                       >
                         <Video className="size-3.5" /> Ver Demo Video
@@ -685,7 +668,7 @@ export function RoutinesClient({
                       <a
                         href={ex.demoUrl || ex.videoUrl}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1 hover:underline shrink-0"
                       >
                         <Video className="size-3.5" /> Demo Video

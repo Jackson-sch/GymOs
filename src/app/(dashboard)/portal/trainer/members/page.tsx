@@ -23,7 +23,7 @@ export default async function TrainerMembersPage() {
   const assignedMembers = (res.data as any).assignedMembers || [];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-8 animate-fade-in">
       <div className="space-y-1">
         <h1 className="text-4xl font-serif">Mis Alumnos</h1>
         <p className="text-muted-foreground">Gestiona las rutinas y el progreso de tus alumnos asignados.</p>
@@ -31,7 +31,7 @@ export default async function TrainerMembersPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {assignedMembers.map((member: any) => (
-          <div key={member.id} className="glass-card p-6 border-white/5 hover:border-white/10 transition-all group relative">
+          <div key={member.id} className="glass-card p-6 border-white/5 hover:border-white/10 transition-colors group relative">
             <div className="flex items-start gap-4 mb-6">
               <Avatar className="size-16 border-2 border-white/10">
                 <AvatarImage src={member.photo || ""} />

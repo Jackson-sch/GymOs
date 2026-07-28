@@ -9,7 +9,7 @@ import crypto from "crypto";
 
 const trainerSchema = z.object({
   fullName: z.string().min(2, "Nombre requerido"),
-  email: z.string().email("Email inválido"),
+  email: z.email({ message: "Email inválido" }),
   dni: z.string().min(6, "DNI/Documento debe tener al menos 6 caracteres").or(z.literal("")).nullish(),
   phone: z.string().min(6, "Teléfono requerido"),
   photo: z.string().nullish(),

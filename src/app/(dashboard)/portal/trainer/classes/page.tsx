@@ -23,7 +23,7 @@ export default async function TrainerClassesPage() {
   const upcomingClasses = (res.data as any).upcomingClasses || [];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-8 animate-fade-in">
       <div className="space-y-1">
         <h1 className="text-4xl font-serif">Gestión de Clases</h1>
         <p className="text-muted-foreground">Consulta tu horario y gestiona la asistencia de tus clases próximas.</p>
@@ -31,7 +31,7 @@ export default async function TrainerClassesPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {upcomingClasses.map((cls: any) => (
-          <div key={cls.id} className="glass-card overflow-hidden border-white/5 hover:border-white/10 transition-all group flex flex-col">
+          <div key={cls.id} className="glass-card overflow-hidden border-white/5 hover:border-white/10 transition-colors group flex flex-col">
             <div className="p-6 space-y-4 flex-1">
               <div className="flex justify-between items-start">
                 <div className="space-y-1">

@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { serialize } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/security";
+import { requireAdmin, verifySession } from "@/lib/security";
 
 export async function getNotifications() {
   const session = await auth.api.getSession({
@@ -43,6 +43,7 @@ export async function getNotifications() {
 
 export async function markNotificationAsRead(id: string) {
   try {
+    await verifySession();
     await prisma.appNotification.update({
       where: { id },
       data: { read: true }
@@ -59,6 +60,7 @@ export async function markNotificationAsRead(id: string) {
  */
 export async function createNotification(memberId: string, title: string, message: string, type: "INFO" | "SUCCESS" | "WARNING" | "ERROR" = "INFO") {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     const notification = await prisma.appNotification.create({
       data: {
         memberId,

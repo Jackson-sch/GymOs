@@ -80,7 +80,6 @@ export default function RegisterPage() {
 
       if (authErr) {
         setError(authErr.message || "No se pudo crear la identidad digital. El correo podría estar en uso.");
-        setLoading(false);
         return;
       }
 
@@ -113,10 +112,10 @@ export default function RegisterPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-accent/10 rounded-full blur-[140px] pointer-events-none" />
       
       <div className={cn(
-        "w-full glass-card p-8 sm:p-10 relative z-10 transition-all duration-500",
+        "w-full glass-card p-8 sm:p-10 relative z-10 transition-colors duration-500",
         step === 2 ? "max-w-4xl" : "max-w-md"
       )}>
-        <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
+        <div className="space-y-8 animate-in fade-in zoom-in-95">
           
           {/* Header */}
           <div className="flex flex-col items-center text-center space-y-4">
@@ -142,14 +141,14 @@ export default function RegisterPage() {
 
             {step < 3 && (
               <div className="flex items-center justify-center gap-2 pt-2">
-                <div className={cn("h-1.5 rounded-full transition-all duration-300", step >= 1 ? "w-12 bg-primary" : "w-6 bg-white/10")} />
-                <div className={cn("h-1.5 rounded-full transition-all duration-300", step >= 2 ? "w-12 bg-primary" : "w-6 bg-white/10")} />
+                <div className={cn("h-1.5 rounded-full transition-colors duration-300", step >= 1 ? "w-12 bg-primary" : "w-6 bg-white/10")} />
+                <div className={cn("h-1.5 rounded-full transition-colors duration-300", step >= 2 ? "w-12 bg-primary" : "w-6 bg-white/10")} />
               </div>
             )}
           </div>
 
           {error && (
-            <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl animate-in shake duration-300">
+            <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl animate-in shake">
               <p className="text-xs text-rose-500 text-center font-bold tracking-wide">{error}</p>
             </div>
           )}
@@ -169,7 +168,7 @@ export default function RegisterPage() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required 
-                    className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-all text-sm font-medium"
+                    className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-colors text-sm font-medium"
                   />
                 </div>
 
@@ -185,7 +184,7 @@ export default function RegisterPage() {
                       value={dni}
                       onChange={(e) => setDni(e.target.value.replace(/\D/g, ''))}
                       required 
-                      className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-all text-sm font-medium"
+                      className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-colors text-sm font-medium"
                     />
                   </div>
 
@@ -200,7 +199,7 @@ export default function RegisterPage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
                       required 
-                      className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-all text-sm font-medium"
+                      className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-colors text-sm font-medium"
                     />
                   </div>
                 </div>
@@ -216,7 +215,7 @@ export default function RegisterPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required 
-                    className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-all text-sm font-medium"
+                    className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-colors text-sm font-medium"
                   />
                 </div>
 
@@ -231,14 +230,14 @@ export default function RegisterPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required 
-                    className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-all text-sm font-medium"
+                    className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 focus:border-primary/50 transition-colors text-sm font-medium"
                   />
                 </div>
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold uppercase tracking-wider text-xs shadow-lg shadow-primary/20 transition-all group duration-300" 
+                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold uppercase tracking-wider text-xs shadow-lg shadow-primary/20 transition-colors group duration-300" 
               >
                 Continuar a Planes
                 <ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
@@ -257,7 +256,7 @@ export default function RegisterPage() {
 
           {/* STEP 2: Plan Selection */}
           {step === 2 && (
-            <div className="space-y-8 animate-in fade-in duration-300">
+            <div className="space-y-8 animate-fade-in-fast">
               {loadingPlans ? (
                 <div className="flex flex-col items-center justify-center py-12 gap-3">
                   <Loader2 className="size-8 text-primary animate-spin" />
@@ -271,9 +270,12 @@ export default function RegisterPage() {
                     return (
                       <div 
                         key={plan.id}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                         onClick={() => setSelectedPlanId(plan.id)}
                         className={cn(
-                          "glass-card p-6 rounded-2xl relative cursor-pointer transition-all duration-300 flex flex-col justify-between group overflow-hidden border",
+                          "glass-card p-6 rounded-2xl relative cursor-pointer transition-colors duration-300 flex flex-col justify-between group overflow-hidden border",
                           isSelected ? "border-primary bg-primary/10 shadow-2xl shadow-primary/20 scale-105" : "border-white/10 hover:border-white/20 hover:bg-white/5",
                           isVip && !isSelected && "border-amber-500/30 bg-amber-500/5 hover:border-amber-500/50"
                         )}
@@ -305,7 +307,7 @@ export default function RegisterPage() {
                           <Button 
                             variant={isSelected ? "default" : "outline"}
                             className={cn(
-                              "w-full h-11 rounded-xl text-xs font-bold uppercase tracking-wider transition-all",
+                              "w-full h-11 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors",
                               isSelected ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30" : "border-white/10 hover:bg-white/10"
                             )}
                           >
@@ -342,7 +344,7 @@ export default function RegisterPage() {
 
           {/* STEP 3: Success Screen */}
           {step === 3 && (
-            <div className="py-8 text-center space-y-6 animate-in fade-in zoom-in duration-500">
+            <div className="py-8 text-center space-y-6 animate-zoom-in">
               <div className="size-20 mx-auto rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-500 shadow-2xl shadow-emerald-500/20 animate-bounce">
                 <ShieldCheck className="size-10" />
               </div>
@@ -365,7 +367,7 @@ export default function RegisterPage() {
               <div className="pt-6">
                 <Button 
                   onClick={() => router.push("/login")}
-                  className="h-12 px-8 bg-emerald-500 hover:bg-emerald-600 text-black font-extrabold uppercase tracking-widest text-xs rounded-xl shadow-xl shadow-emerald-500/20 transition-all duration-300"
+                  className="h-12 px-8 bg-emerald-500 hover:bg-emerald-600 text-black font-extrabold uppercase tracking-widest text-xs rounded-xl shadow-xl shadow-emerald-500/20 transition-colors duration-300"
                 >
                   Ingresar a Mi Portal
                   <ArrowRight className="ml-2 size-4" />

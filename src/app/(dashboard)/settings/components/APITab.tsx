@@ -32,6 +32,7 @@ import {
   Code,
   Trash2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -62,8 +63,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { toast } from "sonner";
 import { testApiConnectionAction } from "@/lib/actions/api-test-actions";
+
+const copyToClipboard = (text: string, label: string) => {
+  navigator.clipboard.writeText(text);
+  toast.success(`${label} copiado al portapapeles`);
+};
 
 interface APITabProps {
   formState: Record<string, string>;
@@ -438,47 +443,46 @@ export function APITab({
   const testAllConnections = async () => {
     setGlobalTesting(true);
     const testableChannels = CHANNELS.filter((c) => c.provider !== "IOT_ACCESS");
+
+    const channelResults = await Promise.all(
+      testableChannels.map(async (channel) => {
+        const start = performance.now();
+        const res = await testApiConnectionAction(channel.provider, formState);
+        const end = performance.now();
+        const latencyMs = Math.round(end - start);
+        return { provider: channel.provider, res, latencyMs };
+      })
+    );
+
     let successCount = 0;
+    const newResults: Record<string, { success: boolean; message: string; latencyMs: number }> = {};
 
-    for (const channel of testableChannels) {
-      const start = performance.now();
-      const res = await testApiConnectionAction(channel.provider, formState);
-      const end = performance.now();
-      const latencyMs = Math.round(end - start);
-
+    for (const { provider, res, latencyMs } of channelResults) {
       if (res.success) {
         successCount++;
-        setTestResults((prev) => ({
-          ...prev,
-          [channel.provider]: {
-            success: true,
-            message: res.message,
-            latencyMs,
-          },
-        }));
+        newResults[provider] = {
+          success: true,
+          message: res.message || "Conectado",
+          latencyMs,
+        };
       } else {
-        setTestResults((prev) => ({
-          ...prev,
-          [channel.provider]: {
-            success: false,
-            message: res.error,
-            latencyMs,
-          },
-        }));
+        newResults[provider] = {
+          success: false,
+          message: res.error || "Error de conexión",
+          latencyMs,
+        };
       }
     }
 
-    setGlobalTesting(false);
+    setTestResults((prev) => ({ ...prev, ...newResults }));
 
     if (successCount === testableChannels.length) {
-      toast.success(
-        "¡Excelente! Todos los canales y servicios externos responden adecuadamente.",
-      );
+      toast.success("Todas las conexiones activas respondieron correctamente");
     } else {
-      toast.warning(
-        `${successCount} de ${testableChannels.length} servicios verificados con éxito. Revisa los canales marcados con error.`,
-      );
+      toast.warning(`Prueba finalizada: ${successCount}/${testableChannels.length} integraciones operativas`);
     }
+
+    setGlobalTesting(false);
   };
 
   // Calculate status badge helper for a channel
@@ -523,11 +527,7 @@ export function APITab({
     };
   };
 
-  // Copy helper
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(`${label} copiado al portapapeles`);
-  };
+
 
   // Add webhook handler
   const handleAddWebhook = () => {
@@ -578,7 +578,7 @@ export function APITab({
   };
 
   return (
-    <section className="glass-card p-6 sm:p-8 md:p-10 border-white/10 space-y-8 animate-in slide-in-from-right-4 duration-500">
+    <section className="glass-card p-6 sm:p-8 md:p-10 border-white/10 space-y-8 animate-slide-right">
       {/* Top Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-white/10 pb-6">
         <div className="space-y-1">
@@ -604,7 +604,7 @@ export function APITab({
             disabled={globalTesting}
             type="button"
             variant="outline"
-            className="h-11 rounded-2xl bg-primary/20 text-primary border-primary/30 hover:bg-primary/30 hover:text-primary uppercase text-xs font-bold tracking-widest gap-2 shadow-lg shadow-primary/10 transition-all"
+            className="h-11 rounded-2xl bg-primary/20 text-primary border-primary/30 hover:bg-primary/30 hover:text-primary uppercase text-xs font-bold tracking-widest gap-2 shadow-lg shadow-primary/10 transition-colors"
           >
             {globalTesting ? (
               <Loader2 className="size-4 animate-spin text-primary" />
@@ -625,21 +625,21 @@ export function APITab({
         <TabsList className="bg-white/5 border border-white/10 p-1 rounded-2xl grid grid-cols-3 max-w-xl">
           <TabsTrigger
             value="connectors"
-            className="rounded-xl text-xs font-semibold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"
+            className="rounded-xl text-xs font-semibold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
           >
             <Sliders className="size-3.5" />
             Servicios Integrados
           </TabsTrigger>
           <TabsTrigger
             value="webhooks"
-            className="rounded-xl text-xs font-semibold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"
+            className="rounded-xl text-xs font-semibold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
           >
             <Webhook className="size-3.5" />
             Webhooks Outbound
           </TabsTrigger>
           <TabsTrigger
             value="apikeys"
-            className="rounded-xl text-xs font-semibold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"
+            className="rounded-xl text-xs font-semibold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
           >
             <Key className="size-3.5" />
             Developer API Keys
@@ -1076,7 +1076,7 @@ export function APITab({
                     <a
                       href={selectedChannel.docUrl}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       className="text-[10px] text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
                     >
                       Documentación Oficial <ExternalLink className="size-3" />
@@ -1084,8 +1084,8 @@ export function APITab({
                   )}
                 </div>
                 <ul className="text-xs text-muted-foreground space-y-2 list-disc pl-4 leading-relaxed font-sans">
-                  {selectedChannel.guideSteps.map((step, idx) => (
-                    <li key={idx}>{step}</li>
+                  {selectedChannel.guideSteps.map((step) => (
+                    <li key={step}>{step}</li>
                   ))}
                 </ul>
               </div>
@@ -1407,7 +1407,7 @@ function ChannelCardItem({
   }[statusInfo.variant];
 
   return (
-    <div className="p-6 rounded-3xl bg-white/2 border border-white/5 space-y-4 hover:border-white/20 transition-all flex flex-col justify-between shadow-xl backdrop-blur-md relative group">
+    <div className="p-6 rounded-3xl bg-white/2 border border-white/5 space-y-4 hover:border-white/20 transition-colors flex flex-col justify-between shadow-xl backdrop-blur-md relative group">
       <div className="space-y-3">
         {/* Card Header */}
         <div className="flex items-start justify-between gap-3 border-b border-white/5 pb-3">
@@ -1450,7 +1450,7 @@ function ChannelCardItem({
           disabled={isTesting}
           type="button"
           variant="outline"
-          className="bg-white/5 hover:bg-primary/20 hover:text-primary hover:border-primary/40 text-[10px] font-bold uppercase tracking-wider h-10 rounded-xl transition-all shadow-md gap-1.5"
+          className="bg-white/5 hover:bg-primary/20 hover:text-primary hover:border-primary/40 text-[10px] font-bold uppercase tracking-wider h-10 rounded-xl transition-colors shadow-md gap-1.5"
         >
           {isTesting ? (
             <Loader2 className="size-3.5 animate-spin text-primary" />
@@ -1463,7 +1463,7 @@ function ChannelCardItem({
         <Button
           onClick={onConfigure}
           type="button"
-          className="bg-white/5 hover:bg-white/10 text-foreground text-[10px] font-bold uppercase tracking-wider h-10 rounded-xl transition-all gap-1.5 border border-white/10"
+          className="bg-white/5 hover:bg-white/10 text-foreground text-[10px] font-bold uppercase tracking-wider h-10 rounded-xl transition-colors gap-1.5 border border-white/10"
         >
           <Sliders className="size-3.5 text-muted-foreground" />
           Configurar

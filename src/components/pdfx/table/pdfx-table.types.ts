@@ -67,7 +67,8 @@ export interface TableCellProps {
   /** Custom styles to merge with component defaults */
   style?: Style;
   /** Content to render */
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  text?: string;
   header?: boolean;
   footer?: boolean;
   align?: 'left' | 'center' | 'right';

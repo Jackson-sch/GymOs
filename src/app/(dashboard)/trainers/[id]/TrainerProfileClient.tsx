@@ -87,7 +87,7 @@ function useDragReposition(
     if (isDragging.current) {
       window.addEventListener("mousemove", onMouseMove);
       window.addEventListener("mouseup", onMouseUp);
-      window.addEventListener("touchmove", onTouchMove);
+      window.addEventListener("touchmove", onTouchMove, { passive: true });
       window.addEventListener("touchend", onMouseUp);
     }
     return () => {
@@ -252,16 +252,12 @@ export default function TrainerProfileClient({
     selectedClassId: null,
   });
 
-  const [mounted, setMounted] = React.useState(false);
+  const [mounted] = React.useState(() => typeof window !== "undefined");
   const [isPhotoDeleteOpen, setIsPhotoDeleteOpen] = React.useState(false);
   const [isPhotoDeleteLoading, setIsPhotoDeleteLoading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const router = useRouter();
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Sincronizar datos cuando el prop 'trainer' cambia desde el servidor
   React.useEffect(() => {
@@ -323,6 +319,10 @@ export default function TrainerProfileClient({
         method: "POST",
         body: formDataUpload,
       });
+      if (!res.ok) {
+        toast.error("Error al subir el archivo");
+        return;
+      }
       const data = await res.json();
       if (data.url) {
         dispatch({ type: "UPDATE_FORM", payload: { photo: data.url } });
@@ -363,11 +363,11 @@ export default function TrainerProfileClient({
 
       <div className="w-full relative space-y-8">
         {/* Navigation Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 animate-in fade-in slide-in-from-top-4">
           <div className="flex items-center gap-4">
             <Link 
               href="/trainers" 
-              className="size-10 flex items-center justify-center rounded-full border border-border/10 bg-secondary/20 hover:bg-secondary/40 transition-all hover:scale-110 group"
+              className="size-10 flex items-center justify-center rounded-full border border-border/10 bg-secondary/20 hover:bg-secondary/40 transition-colors transition-transform hover:scale-110 group"
             >
               <ArrowLeft className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
             </Link>
@@ -382,10 +382,10 @@ export default function TrainerProfileClient({
           </div>
 
           <div className="flex items-center gap-2 bg-background/50 backdrop-blur-xl p-1 rounded-2xl border border-white/10">
-            <button
+            <button type="button"
               onClick={() => dispatch({ type: "SET_TAB", payload: "GENERAL" })}
               className={cn(
-                "px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all",
+                "px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors",
                 activeTab === "GENERAL"
                   ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                   : "text-muted-foreground hover:text-foreground hover:bg-white/5",
@@ -393,10 +393,10 @@ export default function TrainerProfileClient({
             >
               Información General
             </button>
-            <button
+            <button type="button"
               onClick={() => dispatch({ type: "SET_TAB", payload: "ROUTINES" })}
               className={cn(
-                "px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all",
+                "px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors",
                 activeTab === "ROUTINES"
                   ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                   : "text-muted-foreground hover:text-foreground hover:bg-white/5",
@@ -404,10 +404,10 @@ export default function TrainerProfileClient({
             >
               Rutinas & Alumnos
             </button>
-            <button
+            <button type="button"
               onClick={() => dispatch({ type: "SET_TAB", payload: "PAYROLL" })}
               className={cn(
-                "px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all",
+                "px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors",
                 activeTab === "PAYROLL"
                   ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                   : "text-muted-foreground hover:text-foreground hover:bg-white/5",
@@ -419,7 +419,7 @@ export default function TrainerProfileClient({
         </div>
 
         {/* Profile Header Card */}
-        <div className="relative mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="relative mb-12 animate-enter">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/15 via-transparent to-transparent blur-3xl opacity-40" />
           <div className="relative rounded-[2.5rem] border border-white/15 bg-zinc-950/85 backdrop-blur-2xl overflow-hidden shadow-2xl">
             {/* Top accent line */}
@@ -428,9 +428,9 @@ export default function TrainerProfileClient({
             {/* Action Controls - Top Bar */}
             <div className="flex items-center justify-end gap-2 px-8 pt-6 pb-0">
               {!isEditing ? (
-                <button
+                <button type="button"
                   onClick={() => dispatch({ type: "TOGGLE_EDIT" })}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/30 hover:bg-primary hover:text-primary-foreground transition-all text-xs font-bold uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-[0.98]"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/30 hover:bg-primary hover:text-primary-foreground transition-colors transition-transform text-xs font-bold uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <Edit2 className="size-3.5" />
                   Editar Perfil

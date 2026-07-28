@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { serialize } from "@/lib/utils";
 import { auth } from "../auth";
 import { createAuditLog } from "@/lib/audit";
@@ -259,18 +260,7 @@ export async function searchMembersAction(query: string) {
   }
 }
 
-export async function getMemberPortalStatus(memberId: string) {
-  await verifySession(["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"]);
-  const member = await prisma.member.findUnique({
-    where: { id: memberId },
-    select: { userId: true, email: true }
-  });
-  
-  if (!member) return { success: false, error: "Socio no encontrado" };
-  
-  const hasUser = !!member.userId;
-  return { success: true, hasUser, email: member.email };
-}
+
 
 export async function enablePortalAccess(memberId: string) {
   try {
@@ -361,7 +351,7 @@ export async function disablePortalAccess(memberId: string) {
         where: { id: userId }
       });
     } catch (err) {
-      console.warn("Could not delete user record, deactivating instead:", err);
+      after(() => console.warn("Could not delete user record, deactivating instead:", err));
       await prisma.user.update({
         where: { id: userId },
         data: { isActive: false }

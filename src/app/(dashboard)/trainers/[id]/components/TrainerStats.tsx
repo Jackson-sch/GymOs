@@ -51,7 +51,7 @@ export function TrainerStats({
         return (
           <Card
             key={stat.label}
-            className="glass-card border-white/10 rounded-3xl overflow-hidden hover:border-primary/30 transition-all group backdrop-blur-md"
+            className="glass-card border-white/10 rounded-3xl overflow-hidden hover:border-primary/30 transition-colors group backdrop-blur-md"
           >
             <CardContent className="p-6 space-y-3">
               <div className="flex items-center justify-between">

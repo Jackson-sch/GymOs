@@ -62,7 +62,7 @@ export function PortalClassesClient({ classes, memberId }: { classes: ClassItem[
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700 pb-16">
+    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in pb-16">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-semibold uppercase tracking-widest mb-2">
@@ -97,7 +97,7 @@ export function PortalClassesClient({ classes, memberId }: { classes: ClassItem[
             return (
               <div
                 key={cls.id}
-                className={`glass-card p-6 border-white/10 space-y-5 transition-all shadow-xl flex flex-col justify-between ${
+                className={`glass-card p-6 border-white/10 space-y-5 transition-colors shadow-xl flex flex-col justify-between ${
                   isBooked ? "bg-primary/10 border-primary/40" : "hover:border-white/20"
                 }`}
               >

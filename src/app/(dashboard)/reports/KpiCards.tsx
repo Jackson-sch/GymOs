@@ -59,11 +59,11 @@ export function KpiCards({ kpis }: { kpis: any }) {
         return (
           <div
             key={kpi.title}
-            className="glass-card p-6 rounded-3xl border-white/10 relative overflow-hidden group hover:-translate-y-1 transition-all duration-500 backdrop-blur-md flex flex-col justify-between"
+            className="glass-card p-6 rounded-3xl border-white/10 relative overflow-hidden group hover:-translate-y-1 transition-colors duration-500 backdrop-blur-md flex flex-col justify-between"
           >
             {/* Background Glow */}
             <div
-              className={`absolute top-0 right-0 size-32 -mr-12 -mt-12 bg-${kpi.accent}-500/10 blur-3xl rounded-full transition-all duration-700 group-hover:scale-150 group-hover:bg-${kpi.accent}-500/20`}
+              className={`absolute top-0 right-0 size-32 -mr-12 -mt-12 bg-${kpi.accent}-500/10 blur-3xl rounded-full transition-colors transition-transform duration-700 group-hover:scale-150 group-hover:bg-${kpi.accent}-500/20`}
             />
 
             <div>

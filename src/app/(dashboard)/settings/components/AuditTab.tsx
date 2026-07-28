@@ -25,7 +25,7 @@ export function AuditTab({
   setCurrentPage,
 }: AuditTabProps) {
   return (
-    <section className="glass-card p-10 border-white/5 space-y-8 animate-in slide-in-from-right-4 duration-500">
+    <section className="glass-card p-10 border-white/5 space-y-8 animate-slide-right">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-serif mb-1">Registro de Auditoría</h2>

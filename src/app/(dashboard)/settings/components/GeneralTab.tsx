@@ -21,7 +21,7 @@ export function GeneralTab({ formState, handleChange }: GeneralTabProps) {
   const currentFormat = formState["RECEIPT_FORMAT"] || "A4";
 
   return (
-    <section className="glass-card p-6 sm:p-8 md:p-10 border-white/10 space-y-8 animate-in slide-in-from-right-4 duration-500">
+    <section className="glass-card p-6 sm:p-8 md:p-10 border-white/10 space-y-8 animate-slide-right">
       <div>
         <h2 className="text-2xl font-serif mb-1">General & Operación</h2>
         <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium">
@@ -176,7 +176,7 @@ export function GeneralTab({ formState, handleChange }: GeneralTabProps) {
           <button
             type="button"
             onClick={() => handleChange("RECEIPT_FORMAT", "A4")}
-            className={`p-5 rounded-2xl border text-left transition-all flex items-start gap-4 ${
+            className={`p-5 rounded-2xl border text-left transition-colors flex items-start gap-4 ${
               currentFormat === "A4"
                 ? "bg-white/10 border-primary shadow-lg"
                 : "bg-white/2 border-white/5 hover:border-white/20"
@@ -198,7 +198,7 @@ export function GeneralTab({ formState, handleChange }: GeneralTabProps) {
           <button
             type="button"
             onClick={() => handleChange("RECEIPT_FORMAT", "TICKET")}
-            className={`p-5 rounded-2xl border text-left transition-all flex items-start gap-4 ${
+            className={`p-5 rounded-2xl border text-left transition-colors flex items-start gap-4 ${
               currentFormat === "TICKET"
                 ? "bg-white/10 border-primary shadow-lg"
                 : "bg-white/2 border-white/5 hover:border-white/20"

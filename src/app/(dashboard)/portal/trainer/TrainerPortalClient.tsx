@@ -30,7 +30,7 @@ export function TrainerPortalClient({ data }: { data: any }) {
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-8 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="space-y-1">
@@ -77,7 +77,7 @@ export function TrainerPortalClient({ data }: { data: any }) {
           <div className="space-y-4">
             {upcomingClasses.length > 0 ? (
               upcomingClasses.map((cls: any) => (
-                <div key={cls.id} className="glass-card p-5 border-white/5 hover:border-white/10 transition-all group">
+                <div key={cls.id} className="glass-card p-5 border-white/5 hover:border-white/10 transition-colors group">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary">
@@ -101,7 +101,7 @@ export function TrainerPortalClient({ data }: { data: any }) {
                       </div>
                     </div>
                     <Link href={`/portal/trainer/classes/${cls.id}/attendance`}>
-                      <Button size="sm" variant="ghost" className="h-8 rounded-lg hover:bg-primary/10 hover:text-primary group-hover:translate-x-1 transition-all">
+                      <Button size="sm" variant="ghost" className="h-8 rounded-lg hover:bg-primary/10 hover:text-primary group-hover:translate-x-1 transition-colors transition-transform">
                         Pasar Lista <ChevronRight className="size-3.5 ml-1" />
                       </Button>
                     </Link>
@@ -134,7 +134,7 @@ export function TrainerPortalClient({ data }: { data: any }) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {filteredMembers.map((member: any) => (
-              <div key={member.id} className="glass-card p-5 border-white/5 hover:border-white/10 transition-all group">
+              <div key={member.id} className="glass-card p-5 border-white/5 hover:border-white/10 transition-colors group">
                 <div className="flex items-start gap-4 mb-4">
                   <Avatar className="size-12 border border-white/10">
                     <AvatarImage src={member.photo || ""} />

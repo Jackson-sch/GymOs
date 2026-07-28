@@ -48,7 +48,7 @@ export function DashboardContent({
           <NotificationCenter />
           <Sheet>
             <SheetTrigger asChild>
-              <button className="p-2 hover:bg-white/5 rounded-lg transition-colors">
+              <button type="button" aria-label="Toggle menu" className="p-2 hover:bg-white/5 rounded-lg transition-colors">
                 <Menu className="size-6" />
               </button>
             </SheetTrigger>
@@ -76,7 +76,7 @@ export function DashboardContent({
       <Sidebar branding={branding} />
       <main 
         className={cn(
-          "flex-1 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] overflow-hidden",
+          "flex-1 transition-colors duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] overflow-hidden",
           isSidebarOpen ? "md:ml-72" : "md:ml-28",
           "ml-0"
         )}

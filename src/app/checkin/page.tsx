@@ -19,11 +19,11 @@ export default function CheckInPage({ initialStats }: { initialStats?: any }) {
   const [stats, setStats] = React.useState(initialStats || { checkedIn: 0, totalActive: 0, occupancyRate: 0 });
 
   React.useEffect(() => {
+    let isMounted = true;
     const refreshStats = async () => {
       try {
-        const res = await fetch("/api/checkin/stats");
-        const data = await res.json();
-        if (data.checkedIn !== undefined) {
+        const data = await getCheckInStats();
+        if (isMounted && data.checkedIn !== undefined) {
           setStats((prev: any) => ({
             ...prev,
             checkedIn: data.checkedIn,
@@ -35,19 +35,26 @@ export default function CheckInPage({ initialStats }: { initialStats?: any }) {
     };
     
     const interval = setInterval(refreshStats, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   const handleScan = async (qrCode: string) => {
+    if (isScanning) return;
     setIsScanning(true);
-    setResult(null);
-    
     try {
+      setResult(null);
       const res = await fetch("/api/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ qrCode, method: "QR" }),
       });
+      if (!res.ok) {
+        setResult({ success: false, error: "Error en el servidor de accesos" });
+        return;
+      }
       const data = await res.json();
       setResult(data);
       
@@ -61,19 +68,26 @@ export default function CheckInPage({ initialStats }: { initialStats?: any }) {
     }
   };
 
+  const isScanningRef = React.useRef(false);
+
   const handlePinSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (isScanningRef.current || isScanning) return;
     if (!pinInput.trim() || pinInput.length < 4) return;
     
+    isScanningRef.current = true;
     setIsScanning(true);
-    setResult(null);
-    
     try {
+      setResult(null);
       const res = await fetch("/api/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pin: pinInput.trim(), method: "PIN" }),
       });
+      if (!res.ok) {
+        setResult({ success: false, error: "Error en la verificación de PIN" });
+        return;
+      }
       const data = await res.json();
       setResult(data);
       if (data.success) {
@@ -83,18 +97,23 @@ export default function CheckInPage({ initialStats }: { initialStats?: any }) {
     } catch (err) {
       setResult({ success: false, error: "Error al verificar PIN" });
     } finally {
+      isScanningRef.current = false;
       setIsScanning(false);
     }
   };
 
   const handleManualSearch = async () => {
+    if (isScanning) return;
     if (!searchQuery.trim()) return;
     
-    setIsScanning(true);
-    setResult(null);
-    
     try {
+      setIsScanning(true);
+      setResult(null);
       const res = await fetch(`/api/checkin/manual?q=${encodeURIComponent(searchQuery)}`);
+      if (!res.ok) {
+        setResult({ success: false, error: "Error en la búsqueda de miembros" });
+        return;
+      }
       const data = await res.json();
       setResult(data);
     } catch (err) {
@@ -107,7 +126,7 @@ export default function CheckInPage({ initialStats }: { initialStats?: any }) {
   return (
     <div className="min-h-screen bg-zinc-950 text-white pb-16">
       <div className="max-w-lg mx-auto p-4 space-y-6">
-        <div className="text-center py-8 animate-in fade-in zoom-in duration-500">
+        <div className="text-center py-8 animate-zoom-in">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/20 border border-primary/30 mb-4 shadow-lg shadow-primary/20">
             <Dumbbell className="w-8 h-8 text-primary" />
           </div>
@@ -137,7 +156,7 @@ export default function CheckInPage({ initialStats }: { initialStats?: any }) {
         </div>
 
         {result && (
-          <Card className={`bg-white/5 border-white/10 backdrop-blur-2xl shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300 ${result.success ? "border-emerald-500/50 bg-emerald-500/5" : "border-rose-500/50 bg-rose-500/5"}`}>
+          <Card className={`bg-white/5 border-white/10 backdrop-blur-2xl shadow-2xl animate-slide-down-fast ${result.success ? "border-emerald-500/50 bg-emerald-500/5" : "border-rose-500/50 bg-rose-500/5"}`}>
             <CardContent className="p-6 text-center">
               {result.success ? (
                 <>
@@ -182,7 +201,7 @@ export default function CheckInPage({ initialStats }: { initialStats?: any }) {
 
         <div className="space-y-3">
           <Button 
-            className="w-full h-16 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm uppercase tracking-widest shadow-xl shadow-primary/20 transition-all duration-300" 
+            className="w-full h-16 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm uppercase tracking-widest shadow-xl shadow-primary/20 transition-colors duration-300" 
             onClick={() => setIsQRScannerOpen(true)}
             disabled={isScanning}
           >
@@ -239,7 +258,7 @@ export default function CheckInPage({ initialStats }: { initialStats?: any }) {
         </Card>
 
         {isQRScannerOpen && (
-          <div className="fixed inset-0 bg-black/95 backdrop-blur-2xl z-50 p-6 animate-in fade-in duration-300">
+          <div className="fixed inset-0 bg-black/95 backdrop-blur-2xl z-50 p-6 animate-fade-in-fast">
             <div className="flex flex-col h-full max-w-md mx-auto justify-center space-y-6">
               <div className="flex items-center justify-between">
                 <div>

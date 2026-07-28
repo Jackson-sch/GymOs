@@ -18,7 +18,7 @@ export default async function MembershipsPage() {
   }) as any;
 
   return (
-    <div className="space-y-12 animate-in fade-in duration-700">
+    <div className="space-y-12 animate-fade-in">
       {/* Header Editorial */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="space-y-1">
@@ -48,8 +48,8 @@ export default async function MembershipsPage() {
             },
             { label: "Tasa de Renovación", value: `${stats.renewalRate.toFixed(0)}%`, trend: "AVG" },
             { label: "Conversión", value: `${stats.conversionRate.toFixed(1)}%`, trend: "RATIO" },
-          ].map((stat, i) => (
-            <div key={i} className="space-y-1 border-l border-white/5 pl-6">
+          ].map((stat) => (
+            <div key={stat.label} className="space-y-1 border-l border-white/5 pl-6">
               <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold">{stat.label}</p>
               <div className="flex items-end gap-2">
                 <p className="text-3xl font-serif leading-none">{stat.value}</p>

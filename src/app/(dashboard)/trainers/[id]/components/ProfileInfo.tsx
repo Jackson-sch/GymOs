@@ -66,7 +66,7 @@ export function ProfileInfo({
 }: ProfileInfoProps) {
   if (isEditing) {
     return (
-      <div className="flex-1 w-full space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+      <div className="flex-1 w-full space-y-8 animate-slide-down">
         {/* Identity Section */}
         <div className="space-y-3">
           <div className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
@@ -198,6 +198,7 @@ export function ProfileInfo({
                     {spec}
                     <button
                       type="button"
+                      aria-label="Remove specialty"
                       onClick={() => dispatch({ type: "REMOVE_SPECIALTY", payload: i })}
                       className="hover:text-rose-400 transition-colors"
                     >
@@ -217,8 +218,9 @@ export function ProfileInfo({
               />
               <button
                 type="button"
+                aria-label="Add specialty"
                 onClick={() => dispatch({ type: "ADD_SPECIALTY" })}
-                className="size-11 shrink-0 flex items-center justify-center bg-primary text-primary-foreground rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 shadow-md shadow-primary/20"
+                className="size-11 shrink-0 flex items-center justify-center bg-primary text-primary-foreground rounded-2xl font-bold transition-transform hover:scale-105 active:scale-95 shadow-md shadow-primary/20"
               >
                 <Plus className="size-4" />
               </button>
@@ -228,18 +230,18 @@ export function ProfileInfo({
 
         {/* Action Buttons */}
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-          <button
+          <button type="button"
             onClick={onCancel}
-            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-rose-500/10 text-rose-400 border border-rose-500/30 hover:bg-rose-500/20 font-bold text-xs uppercase tracking-wider transition-all"
+            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-rose-500/10 text-rose-400 border border-rose-500/30 hover:bg-rose-500/20 font-bold text-xs uppercase tracking-wider transition-colors"
           >
             <X className="size-4" />
             Cancelar
           </button>
 
-          <button
+          <button type="button"
             onClick={onSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-transform disabled:opacity-50"
           >
             {isSaving ? (
               <>

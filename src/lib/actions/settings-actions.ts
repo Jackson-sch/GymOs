@@ -58,23 +58,25 @@ export async function updateConfigsAction(
     const user = session.user as any;
     const orgId = user.organizationId || null;
 
-    for (const c of configs) {
-      const isEncrypted = c.isEncrypted ?? (
-        c.key.includes("KEY") || 
-        c.key.includes("TOKEN") || 
-        c.key.includes("SECRET") || 
-        c.key.includes("SID")
-      );
+    await Promise.all(
+      configs.map((c) => {
+        const isEncrypted = c.isEncrypted ?? (
+          c.key.includes("KEY") || 
+          c.key.includes("TOKEN") || 
+          c.key.includes("SECRET") || 
+          c.key.includes("SID")
+        );
 
-      await setConfig(
-        c.key,
-        c.value,
-        c.category || "GENERAL",
-        isEncrypted,
-        session.user.id,
-        orgId
-      );
-    }
+        return setConfig(
+          c.key,
+          c.value,
+          c.category || "GENERAL",
+          isEncrypted,
+          session.user.id,
+          orgId
+        );
+      })
+    );
 
     revalidatePath("/settings");
     revalidatePath("/settings/integrations");

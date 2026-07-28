@@ -43,8 +43,11 @@ export function SessionTimeline({ classes, mounted, onSelectClass }: SessionTime
               {(classes || []).slice(0, 10).map((classItem: any) => (
                 <div
                   key={classItem.id}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                   onClick={() => onSelectClass(classItem.id)}
-                  className="group flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-white/5 hover:border-primary/40 hover:bg-white/10 transition-all cursor-pointer"
+                  className="group flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-white/5 hover:border-primary/40 hover:bg-white/10 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-4">
                     <div className="flex flex-col items-center min-w-[50px] border-r border-white/10 pr-4">
@@ -91,7 +94,7 @@ export function SessionTimeline({ classes, mounted, onSelectClass }: SessionTime
                         ? "En Curso"
                         : "Programada"}
                     </Badge>
-                    <ChevronRight className="size-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                    <ChevronRight className="size-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-colors transition-transform" />
                   </div>
                 </div>
               ))}

@@ -17,6 +17,15 @@ import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case "SUCCESS": return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+    case "WARNING": return <AlertTriangle className="w-4 h-4 text-amber-500" />;
+    case "ERROR": return <XCircle className="w-4 h-4 text-rose-500" />;
+    default: return <Info className="w-4 h-4 text-primary" />;
+  }
+};
+
 export function NotificationCenter() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -45,19 +54,10 @@ export function NotificationCenter() {
     }
   };
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "SUCCESS": return <CheckCircle className="w-4 h-4 text-emerald-500" />;
-      case "WARNING": return <AlertTriangle className="w-4 h-4 text-amber-500" />;
-      case "ERROR": return <XCircle className="w-4 h-4 text-rose-500" />;
-      default: return <Info className="w-4 h-4 text-primary" />;
-    }
-  };
-
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-white/5 transition-all">
+        <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-white/5 transition-colors">
           <Bell className="w-5 h-5 text-muted-foreground" />
           {unreadCount > 0 && (
             <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
@@ -78,6 +78,9 @@ export function NotificationCenter() {
             notifications.map((n) => (
               <div 
                 key={n.id} 
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                 onClick={() => !n.read && handleMarkRead(n.id)}
                 className={cn(
                   "p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer flex gap-3",

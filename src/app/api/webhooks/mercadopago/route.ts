@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getConfig } from "@/lib/config";
 import { createAuditLog } from "@/lib/audit";
@@ -18,9 +19,22 @@ export async function POST(req: NextRequest) {
     const topic = url.searchParams.get("topic") || url.searchParams.get("type");
     const id = url.searchParams.get("id") || url.searchParams.get("data.id");
 
+    const rawBody = await req.text();
+    const signature = req.headers.get("x-signature");
+    const secret = process.env.MP_WEBHOOK_SECRET;
+    
+    if (secret && signature) {
+      const hmac = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
+      if (signature.length === hmac.length) {
+        if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(hmac))) {
+          return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+        }
+      }
+    }
+    
     let body: any = {};
     try {
-      body = await req.json();
+      body = JSON.parse(rawBody);
     } catch (_) {}
 
     const paymentId = id || body?.data?.id || body?.id;

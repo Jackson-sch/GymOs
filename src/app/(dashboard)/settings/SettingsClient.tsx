@@ -64,6 +64,18 @@ const auditReducer = (state: any, action: any) => {
   }
 };
 
+const TABS = [
+  { id: "general", label: "General", icon: Globe },
+  { id: "branding", label: "Marca & UI", icon: Cpu },
+  { id: "account", label: "Mi Cuenta", icon: User },
+  { id: "automations", label: "Automatizaciones & Marketing", icon: Zap },
+  { id: "notifications", label: "Notificaciones", icon: Bell },
+  { id: "api", label: "Canales API", icon: Key },
+  { id: "security", label: "Seguridad", icon: Shield },
+  { id: "audit", label: "Registro de Auditoría", icon: Eye },
+  { id: "system", label: "Sistema & Mantenimiento", icon: Cpu },
+];
+
 export function SettingsClient({ initialData }: { initialData: any[] }) {
   const [activeTab, setActiveTab] = useQueryState(
     "tab",
@@ -103,35 +115,39 @@ export function SettingsClient({ initialData }: { initialData: any[] }) {
     }
 
     setPasswordLoading(true);
-    const { error } = await authClient.changePassword({
-      newPassword: passwordForm.newPassword,
-      currentPassword: passwordForm.currentPassword,
-      revokeOtherSessions: true,
-    });
+    try {
+      const { error } = await authClient.changePassword({
+        newPassword: passwordForm.newPassword,
+        currentPassword: passwordForm.currentPassword,
+        revokeOtherSessions: true,
+      });
 
-    if (error) {
-      toast.error(error.message || "Error al cambiar la contraseña");
-    } else {
-      const { clearMustChangePasswordFlag } = await import("@/lib/actions/auth-actions");
-      await clearMustChangePasswordFlag();
-      toast.success("Contraseña actualizada correctamente");
-      dispatchPassword({ type: "RESET" });
+      if (error) {
+        toast.error(error.message || "Error al cambiar la contraseña");
+      } else {
+        const { clearMustChangePasswordFlag } = await import("@/lib/actions/auth-actions");
+        await clearMustChangePasswordFlag();
+        toast.success("Contraseña actualizada correctamente");
+        dispatchPassword({ type: "RESET" });
+      }
+    } finally {
+      setPasswordLoading(false);
     }
-    setPasswordLoading(false);
   };
 
-  const loadLogs = async (page: number = 1) => {
+  const loadLogs = (page: number) => {
     dispatchAudit({ type: "FETCH_START" });
-    const result = await getAuditLogsAction({ page, limit: 15 });
-    if (result.success) {
-      dispatchAudit({
-        type: "FETCH_SUCCESS",
-        logs: result.data || [],
-        totalPages: result.totalPages || 1,
-      });
-    } else {
-      dispatchAudit({ type: "FETCH_ERROR" });
-    }
+    getAuditLogsAction({ page, limit: 15 }).then((result) => {
+      if (result.success) {
+        dispatchAudit({
+          type: "FETCH_SUCCESS",
+          logs: result.data || [],
+          totalPages: result.totalPages || 1,
+        });
+      } else {
+        dispatchAudit({ type: "FETCH_ERROR" });
+      }
+    });
   };
 
   useEffect(() => {
@@ -185,18 +201,6 @@ export function SettingsClient({ initialData }: { initialData: any[] }) {
     setLoading(false);
   };
 
-  const tabs = [
-    { id: "general", label: "General", icon: Globe },
-    { id: "branding", label: "Marca & UI", icon: Cpu },
-    { id: "account", label: "Mi Cuenta", icon: User },
-    { id: "automations", label: "Automatizaciones & Marketing", icon: Zap },
-    { id: "notifications", label: "Notificaciones", icon: Bell },
-    { id: "api", label: "Canales API", icon: Key },
-    { id: "security", label: "Seguridad", icon: Shield },
-    { id: "audit", label: "Registro de Auditoría", icon: Eye },
-    { id: "system", label: "Sistema & Mantenimiento", icon: Cpu },
-  ];
-
   const handleTriggerCron = async () => {
     setLoading(true);
     const res = await triggerCronJobsAction();
@@ -209,12 +213,12 @@ export function SettingsClient({ initialData }: { initialData: any[] }) {
   };
 
   return (
-    <div className="space-y-12 animate-in fade-in duration-700">
+    <div className="space-y-12 animate-fade-in">
       <SettingsHeader loading={loading} onSave={handleSave} />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         <SettingsTabs
-          tabs={tabs}
+          tabs={TABS}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           setCurrentPage={setCurrentPage}

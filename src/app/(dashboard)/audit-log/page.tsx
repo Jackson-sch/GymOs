@@ -29,7 +29,7 @@ export default async function AuditLogPage(props: { searchParams: Promise<{ [key
   };
 
   return (
-    <div className="space-y-12 animate-in fade-in duration-700">
+    <div className="space-y-12 animate-fade-in">
       {/* Header Editorial */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="space-y-1">
@@ -70,13 +70,13 @@ export default async function AuditLogPage(props: { searchParams: Promise<{ [key
             color: "text-primary",
             bg: "bg-primary/5",
           },
-        ].map((stat, i) => (
+        ].map((stat) => (
           <div
-            key={i}
+            key={stat.label}
             className="glass-card p-8 border-white/5 flex items-center gap-5 interactive-hover group"
           >
             <div
-              className={`p-4 rounded-2xl border border-white/10 transition-all duration-500 group-hover:scale-110 ${stat.bg} ${stat.color}`}
+              className={`p-4 rounded-2xl border border-white/10 transition-transform duration-500 group-hover:scale-110 ${stat.bg} ${stat.color}`}
             >
               <stat.icon className="size-6" />
             </div>

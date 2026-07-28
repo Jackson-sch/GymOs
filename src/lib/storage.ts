@@ -7,9 +7,11 @@ import { join } from "path";
  * Configura Cloudinary dinámicamente usando variables de sistema de la base de datos.
  */
 async function configureCloudinary() {
-  const cloudName = await getConfig("CLOUDINARY_CLOUD_NAME");
-  const apiKey = await getConfig("CLOUDINARY_API_KEY");
-  const apiSecret = await getConfig("CLOUDINARY_API_SECRET");
+  const [cloudName, apiKey, apiSecret] = await Promise.all([
+    getConfig("CLOUDINARY_CLOUD_NAME"),
+    getConfig("CLOUDINARY_API_KEY"),
+    getConfig("CLOUDINARY_API_SECRET"),
+  ]);
 
   if (cloudName && apiKey && apiSecret) {
     cloudinary.config({
@@ -27,8 +29,10 @@ async function configureCloudinary() {
  * Sube un archivo a Cloudinary o Localmente.
  */
 export async function uploadFile(file: File): Promise<string> {
-  const isCloudinaryActive = await configureCloudinary();
-  const arrayBuffer = await file.arrayBuffer();
+  const [isCloudinaryActive, arrayBuffer] = await Promise.all([
+    configureCloudinary(),
+    file.arrayBuffer(),
+  ]);
   const buffer = Buffer.from(arrayBuffer);
 
   if (isCloudinaryActive) {

@@ -37,7 +37,7 @@ export default function AttendanceFeed({
         return (
           <div
             key={entry.id}
-            className="group flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-zinc-950/80 hover:border-primary/40 hover:bg-white/10 transition-all shadow-md backdrop-blur-md"
+            className="group flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-zinc-950/80 hover:border-primary/40 hover:bg-white/10 transition-colors shadow-md backdrop-blur-md"
           >
             <div className="flex items-center gap-4">
               <div className="size-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-xs shrink-0 group-hover:scale-105 transition-transform">

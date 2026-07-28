@@ -94,15 +94,11 @@ export function AttendanceClient({
 }) {
   const [state, dispatch] = useReducer(attendanceReducer, initialState);
   const { isCheckInOpen, isQRScannerOpen, loading, selectedMember, open } = state;
-  const [mounted, setMounted] = useState(false);
+  const [mounted] = useState(() => typeof window !== "undefined");
   const [search, setSearch] = useState("");
   const [methodFilter, setMethodFilter] = useState<string>("ALL");
   const [dateFrom, setDateFrom] = useState<string | null>(null);
   const [dateTo, setDateTo] = useState<string | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleCheckIn = async (
     memberId: string,
@@ -175,7 +171,7 @@ export function AttendanceClient({
               placeholder="Buscar por socio o plan..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-11 h-11 bg-white/5 border-white/10 rounded-2xl text-xs focus-visible:ring-primary/30 transition-all"
+              className="pl-11 h-11 bg-white/5 border-white/10 rounded-2xl text-xs focus-visible:ring-primary/30 transition-colors"
             />
           </div>
 
@@ -198,11 +194,11 @@ export function AttendanceClient({
               { id: "QR", label: "Acceso QR" },
               { id: "MANUAL", label: "Check-in Manual" },
             ].map((m) => (
-              <button
+              <button type="button"
                 key={m.id}
                 onClick={() => setMethodFilter(m.id)}
                 className={cn(
-                  "px-3.5 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap",
+                  "px-3.5 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap",
                   methodFilter === m.id
                     ? "bg-primary text-primary-foreground shadow-md"
                     : "text-muted-foreground hover:text-foreground hover:bg-white/5",
@@ -221,7 +217,7 @@ export function AttendanceClient({
             onOpenChange={(val) => dispatch({ type: "SET_QR_OPEN", payload: val })}
           >
             <DialogTrigger asChild>
-              <Button className="h-11 rounded-2xl bg-emerald-500 text-black font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all">
+              <Button className="h-11 rounded-2xl bg-emerald-500 text-black font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-transform">
                 <QrCode className="size-4 mr-2" /> Escanear QR
               </Button>
             </DialogTrigger>
@@ -245,7 +241,7 @@ export function AttendanceClient({
             <DialogTrigger asChild>
               <Button
                 variant="outline"
-                className="h-11 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 font-bold text-xs uppercase tracking-wider transition-all"
+                className="h-11 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 font-bold text-xs uppercase tracking-wider transition-colors"
               >
                 <UserCheck className="size-4 mr-2 text-primary" /> Check-in Manual
               </Button>

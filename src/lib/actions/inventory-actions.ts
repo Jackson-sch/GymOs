@@ -14,7 +14,7 @@ const equipmentSchema = z.object({
   serialNumber: z.string().nullish(),
   purchaseDate: z.date().nullish().or(z.string().nullish().transform(val => val ? new Date(val) : null)),
   purchasePrice: z.number().nullish().or(z.string().nullish().transform(val => val ? Number(val) : null)),
-  status: z.nativeEnum(EquipmentStatus).default(EquipmentStatus.OPERATIONAL),
+  status: z.enum(Object.values(EquipmentStatus) as [string, ...string[]]).default(EquipmentStatus.OPERATIONAL),
   lastMaintenance: z.date().nullish().or(z.string().nullish().transform(val => val ? new Date(val) : null)),
   nextMaintenance: z.date().nullish().or(z.string().nullish().transform(val => val ? new Date(val) : null)),
   notes: z.string().nullish(),

@@ -6,6 +6,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+const getOccupancyLevel = (pct: number) => {
+  if (pct >= 85) {
+    return {
+      label: "Aforo Concurrido",
+      color: "text-rose-400 bg-rose-500/10 border-rose-500/30",
+      barColor: "bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.6)]",
+    };
+  }
+  if (pct >= 50) {
+    return {
+      label: "Aforo Moderado",
+      color: "text-amber-400 bg-amber-500/10 border-amber-500/30",
+      barColor: "bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.6)]",
+    };
+  }
+  return {
+    label: "Aforo Óptimo",
+    color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
+    barColor: "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.6)]",
+  };
+};
+
 export function LiveStatusMonitor({
   occupancy,
   stats,
@@ -15,28 +37,6 @@ export function LiveStatusMonitor({
 }) {
   const maxCapacity = 100;
   const occupancyPct = Math.min(100, Math.round((occupancy / maxCapacity) * 100));
-
-  const getOccupancyLevel = (pct: number) => {
-    if (pct >= 85) {
-      return {
-        label: "Aforo Concurrido",
-        color: "text-rose-400 bg-rose-500/10 border-rose-500/30",
-        barColor: "bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.6)]",
-      };
-    }
-    if (pct >= 50) {
-      return {
-        label: "Aforo Moderado",
-        color: "text-amber-400 bg-amber-500/10 border-amber-500/30",
-        barColor: "bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.6)]",
-      };
-    }
-    return {
-      label: "Aforo Fluido",
-      color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
-      barColor: "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.6)]",
-    };
-  };
 
   const level = getOccupancyLevel(occupancyPct);
 
@@ -74,7 +74,7 @@ export function LiveStatusMonitor({
           <div className="space-y-1.5 pt-2">
             <div className="w-full h-2.5 bg-black/60 rounded-full overflow-hidden border border-white/10 p-0.5">
               <div
-                className={cn("h-full rounded-full transition-all duration-1000 ease-out", level.barColor)}
+                className={cn("h-full rounded-full transition-colors duration-1000 ease-out", level.barColor)}
                 style={{ width: `${occupancyPct}%` }}
               />
             </div>
@@ -140,7 +140,7 @@ export function LiveStatusMonitor({
                   </div>
                   <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/5">
                     <div
-                      className="h-full bg-primary rounded-full transition-all duration-700"
+                      className="h-full bg-primary rounded-full transition-colors duration-700"
                       style={{ width: `${planPct}%` }}
                     />
                   </div>

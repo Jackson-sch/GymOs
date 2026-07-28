@@ -27,41 +27,69 @@ interface MemberPortalInfo {
 
 export function DynamicQRClient({ member }: { member: MemberPortalInfo }) {
   const [timeLeft, setTimeLeft] = useState(30);
-  const [tokenSuffix, setTokenSuffix] = useState(Date.now().toString().slice(-6));
+  const tokenSuffixRef = React.useRef<string | null>(null);
+  if (tokenSuffixRef.current === null) {
+    tokenSuffixRef.current = Date.now().toString().slice(-6);
+  }
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
 
+  // Regenerate token and update QR data URL
   useEffect(() => {
-    const timer = setInterval(() => {
+    const updateQR = () => {
+      const suffix = Date.now().toString().slice(-6);
+      tokenSuffixRef.current = suffix;
+      const payload = `GYMOS:${member.id}:${member.qrCode}:${suffix}`;
+      QRCode.toDataURL(payload, {
+        width: 300,
+        margin: 2,
+        color: {
+          dark: "#ffffff",
+          light: "#00000000"
+        }
+      })
+        .then((url) => setQrDataUrl(url))
+        .catch((err) => console.error("Error al generar QR:", err));
+    };
+
+    updateQR();
+
+    const interval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          setTokenSuffix(Date.now().toString().slice(-6));
-          return 30;
+          return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, []);
+    return () => clearInterval(interval);
+  }, [member.id, member.qrCode]);
 
   useEffect(() => {
-    const payload = `GYMOS:${member.id}:${member.qrCode}:${tokenSuffix}`;
-    QRCode.toDataURL(payload, {
-      width: 300,
-      margin: 2,
-      color: {
-        dark: "#ffffff",
-        light: "#00000000"
-      }
-    })
-      .then((url) => setQrDataUrl(url))
-      .catch((err) => console.error("Error al generar QR:", err));
-  }, [member.id, member.qrCode, tokenSuffix]);
+    if (timeLeft === 0) {
+      const suffix = Date.now().toString().slice(-6);
+      tokenSuffixRef.current = suffix;
+      const payload = `GYMOS:${member.id}:${member.qrCode}:${suffix}`;
+      QRCode.toDataURL(payload, {
+        width: 300,
+        margin: 2,
+        color: {
+          dark: "#ffffff",
+          light: "#00000000"
+        }
+      })
+        .then((url) => {
+          setQrDataUrl(url);
+          setTimeLeft(30);
+        })
+        .catch((err) => console.error("Error al generar QR:", err));
+    }
+  }, [timeLeft, member.id, member.qrCode]);
 
   const progressPct = (timeLeft / 30) * 100;
 
   return (
-    <div className="max-w-md mx-auto space-y-6 animate-in fade-in duration-700 pb-12">
+    <div className="max-w-md mx-auto space-y-6 animate-fade-in pb-12">
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-semibold uppercase tracking-widest">
           <ShieldCheck className="size-3.5" />
@@ -153,7 +181,7 @@ export function DynamicQRClient({ member }: { member: MemberPortalInfo }) {
 
             <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
               <div
-                className="h-full bg-primary transition-all duration-1000 ease-linear rounded-full"
+                className="h-full bg-primary transition-colors duration-1000 ease-linear rounded-full"
                 style={{ width: `${progressPct}%` }}
               />
             </div>

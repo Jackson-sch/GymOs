@@ -7,6 +7,11 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import Image from "next/image"
 
+const handleDragOver = (e: React.DragEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+}
+
 interface ImageUploadProps {
   value?: string
   onChange: (value: string) => void
@@ -38,9 +43,13 @@ export function ImageUpload({
         body: formData,
       })
 
+      if (!response.ok) {
+        throw new Error("Error en el servidor al subir la imagen")
+      }
+
       const data = await response.json()
 
-      if (response.ok && data.url) {
+      if (data.url) {
         onChange(data.url)
         toast.success("Imagen subida correctamente")
       } else {
@@ -65,11 +74,6 @@ export function ImageUpload({
     }
   }
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-  }
-
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -84,11 +88,14 @@ export function ImageUpload({
   return (
     <div className={cn("space-y-4 w-full flex flex-col items-center justify-center", className)}>
       <div
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
         onClick={() => !disabled && fileInputRef.current?.click()}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         className={cn(
-          "relative group cursor-pointer flex flex-col items-center justify-center gap-4 transition-all duration-300",
+          "relative group cursor-pointer flex flex-col items-center justify-center gap-4 transition-colors duration-300",
           "w-48 h-48 rounded-3xl overflow-hidden border-2 border-dashed",
           value
             ? "border-primary/50 bg-primary/5 shadow-inner"
@@ -106,7 +113,7 @@ export function ImageUpload({
         />
 
         {isUploading && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm animate-fade-in-fast">
             <Loader2 className="w-10 h-10 text-primary animate-spin" />
             <p className="text-[10px] font-bold uppercase tracking-widest mt-2 text-primary text-center px-4">Subiendo...</p>
           </div>
@@ -118,6 +125,7 @@ export function ImageUpload({
               src={value}
               alt="Preview"
               fill
+              sizes="(max-width: 768px) 100vw, 300px"
               unoptimized
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
@@ -133,7 +141,7 @@ export function ImageUpload({
               }}
               variant="destructive"
               size="icon"
-              className="absolute top-2 right-2 w-8 h-8 rounded-full shadow-lg scale-0 group-hover:scale-100 transition-transform hover:scale-110 active:scale-90"
+              className="absolute top-2 right-2 w-8 h-8 rounded-full shadow-lg scale-95 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-transform transition-opacity hover:scale-110 active:scale-90"
               disabled={isUploading}
             >
               <X className="w-4 h-4" />

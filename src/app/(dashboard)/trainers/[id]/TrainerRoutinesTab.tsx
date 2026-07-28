@@ -1,6 +1,8 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dumbbell, Users, ExternalLink, ClipboardList } from "lucide-react";
@@ -25,7 +27,7 @@ export function TrainerRoutinesTab({ trainer }: { trainer: any }) {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-fade-in-fast">
       <div className="glass-card p-6 rounded-3xl border-white/10 flex items-center justify-between">
         <div>
           <h3 className="text-xl font-serif font-bold text-foreground">Planes Prescritos por {trainer.fullName}</h3>
@@ -38,7 +40,7 @@ export function TrainerRoutinesTab({ trainer }: { trainer: any }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {routines.map((r: any) => (
-          <Card key={r.id} className="glass-card border-white/10 rounded-3xl overflow-hidden hover:border-primary/30 transition-all group">
+          <Card key={r.id} className="glass-card border-white/10 rounded-3xl overflow-hidden hover:border-primary/30 transition-colors group">
             <CardContent className="p-6 space-y-4">
               <div className="flex items-start justify-between">
                 <div>
@@ -71,7 +73,7 @@ export function TrainerRoutinesTab({ trainer }: { trainer: any }) {
 
               <div className="flex items-center justify-between text-xs text-muted-foreground pt-2">
                 <span className="font-mono text-[10px]">
-                  {r.createdAt ? new Date(r.createdAt).toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" }) : "N/A"}
+                  {r.createdAt ? format(new Date(r.createdAt), "dd MMM yyyy", { locale: es }) : "N/A"}
                 </span>
                 <Badge variant="outline" className="bg-white/5 border-white/10 text-[9px] uppercase text-muted-foreground">
                   {r.exercises?.length || 0} Ejercicios

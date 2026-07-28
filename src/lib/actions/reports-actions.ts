@@ -247,32 +247,15 @@ export async function getTopMembers(limit = 10, startDate?: Date, endDate?: Date
   
   const memberMap = new Map(members.map(m => [m.id, m]));
   
-  return attendances.map(a => ({
-    ...memberMap.get(a.memberId),
-    visitCount: a._count.id,
-  })).filter(m => m.id);
+  return attendances.reduce((acc: any[], a) => {
+    const member = memberMap.get(a.memberId);
+    if (member && member.id) {
+      acc.push({
+        ...member,
+        visitCount: a._count.id,
+      });
+    }
+    return acc;
+  }, []);
 }
 
-export async function getClassStats() {
-  await verifySession();
-  const now = new Date();
-  const weekStart = startOfWeek(now);
-  const weekEnd = endOfWeek(now);
-  
-  const [totalClasses, completedClasses, totalBookings, attendedBookings] = await Promise.all([
-    prisma.class.count({
-      where: { startTime: { gte: weekStart, lte: weekEnd }, status: { not: "CANCELLED" } },
-    }),
-    prisma.class.count({
-      where: { startTime: { gte: weekStart, lte: weekEnd }, status: "COMPLETED" },
-    }),
-    prisma.classBooking.count({
-      where: { class: { startTime: { gte: weekStart, lte: weekEnd } } },
-    }),
-    prisma.classBooking.count({
-      where: { class: { startTime: { gte: weekStart, lte: weekEnd } }, status: "ATTENDED" },
-    }),
-  ]);
-  
-  return { totalClasses, completedClasses, totalBookings, attendedBookings };
-}

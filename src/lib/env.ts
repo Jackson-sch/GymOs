@@ -1,15 +1,15 @@
 import { z } from 'zod';
 
 const serverSchema = z.object({
-  DATABASE_URL: z.string().url('DATABASE_URL debe ser una URL válida de PostgreSQL'),
+  DATABASE_URL: z.url({ message: 'DATABASE_URL debe ser una URL válida de PostgreSQL' }),
   BETTER_AUTH_SECRET: z.string().min(1, 'BETTER_AUTH_SECRET es requerido'),
   CRON_SECRET: z.string().optional(),
   ALLOWED_DEV_ORIGIN: z.string().optional(),
 });
 
 const clientSchema = z.object({
-  NEXT_PUBLIC_SITE_URL: z.string().url('NEXT_PUBLIC_SITE_URL debe ser una URL válida').optional(),
-  NEXT_PUBLIC_SENTRY_DSN: z.string().url('NEXT_PUBLIC_SENTRY_DSN debe ser una URL válida'),
+  NEXT_PUBLIC_SITE_URL: z.url({ message: 'NEXT_PUBLIC_SITE_URL debe ser una URL válida' }).optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.url({ message: 'NEXT_PUBLIC_SENTRY_DSN debe ser una URL válida' }),
 });
 
 const processEnv = {

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { serialize } from "@/lib/utils";
-import { differenceInDays, startOfWeek, endOfWeek } from "date-fns";
+import { differenceInDays } from "date-fns";
 import { revalidatePath } from "next/cache";
 import { verifySession } from "@/lib/security";
 
@@ -75,170 +75,6 @@ export async function getPortalMemberAction() {
   return { success: true, data: serialize(member) };
 }
 
-export async function getPortalClassesAction() {
-  const session = await verifySession();
-
-  const member = await prisma.member.findUnique({
-    where: { userId: session.user.id },
-    select: { id: true }
-  });
-
-  if (!member) return { success: false, error: "Socio no encontrado" };
-
-  const today = new Date();
-  const weekStart = startOfWeek(today, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
-
-  const [availableClasses, myBookings] = await Promise.all([
-    prisma.class.findMany({
-      where: {
-        startTime: {
-          gte: weekStart,
-          lte: weekEnd
-        }
-      },
-      include: {
-        trainer: true,
-        _count: { select: { bookings: { where: { status: "CONFIRMED" } } } }
-      },
-      orderBy: { startTime: "asc" }
-    }),
-    prisma.classBooking.findMany({
-      where: {
-        memberId: member.id,
-        class: { startTime: { gte: today } }
-      },
-      include: { 
-        class: {
-          include: {
-            _count: { select: { bookings: { where: { status: "WAITLISTED" } } } }
-          }
-        } 
-      }
-    })
-  ]);
-
-  return {
-    success: true,
-    data: serialize({
-      availableClasses,
-      myBookings,
-      memberId: member.id
-    })
-  };
-}
-
-export async function bookPortalClassAction(classId: string) {
-  const session = await verifySession();
-
-  const member = await prisma.member.findUnique({
-    where: { userId: session.user.id },
-    select: { id: true }
-  });
-
-  if (!member) return { success: false, error: "Socio no encontrado" };
-
-  // Check if class exists and is full
-  const classItem = await prisma.class.findUnique({
-    where: { id: classId },
-    include: { _count: { select: { bookings: { where: { status: "CONFIRMED" } } } } }
-  });
-
-  if (!classItem) return { success: false, error: "Clase no encontrada" };
-
-  if (new Date(classItem.startTime) < new Date()) {
-    return { success: false, error: "Esta clase ya ha comenzado o ha finalizado" };
-  }
-
-  // Check if already booked
-  const existing = await prisma.classBooking.findFirst({
-    where: {
-      memberId: member.id,
-      classId,
-      status: { in: ["CONFIRMED", "WAITLISTED"] }
-    }
-  });
-
-  if (existing) return { success: false, error: "Ya estás registrado en esta clase" };
-
-  const isFull = classItem._count.bookings >= classItem.maxCapacity;
-  const status = isFull ? "WAITLISTED" : "CONFIRMED";
-
-  await prisma.classBooking.create({
-    data: {
-      memberId: member.id,
-      classId,
-      status,
-    }
-  });
-
-  revalidatePath("/portal/classes");
-  return { 
-    success: true, 
-    message: isFull ? "Añadido a la lista de espera" : "Reserva confirmada" 
-  };
-}
-
-export async function cancelPortalBookingAction(bookingId: string) {
-  const session = await verifySession();
-
-  try {
-    const booking = await prisma.classBooking.findUnique({
-      where: { id: bookingId },
-      include: { 
-        member: true,
-        class: true
-      }
-    });
-
-    if (!booking) return { success: false, error: "Reserva no encontrada" };
-
-    // IDOR Protection: Verify owner
-    if (booking.member.userId !== session.user.id) {
-      return { success: false, error: "No autorizado para cancelar esta reserva" };
-    }
-
-    // Update status to CANCELLED
-    await prisma.classBooking.update({
-      where: { id: bookingId },
-      data: { status: "CANCELLED" }
-    });
-
-    // If it was confirmed, promote someone from waitlist
-    if (booking.status === "CONFIRMED") {
-      const nextInLine = await prisma.classBooking.findFirst({
-        where: {
-          classId: booking.classId,
-          status: "WAITLISTED"
-        },
-        orderBy: { bookedAt: "asc" }
-      });
-
-      if (nextInLine) {
-        await prisma.classBooking.update({
-          where: { id: nextInLine.id },
-          data: { status: "CONFIRMED" }
-        });
-        
-        // Notify the promoted member
-        await prisma.appNotification.create({
-          data: {
-            memberId: nextInLine.memberId,
-            title: "¡Ya tienes cupo!",
-            message: `Tu reserva para la clase '${booking.class.name}' ha sido confirmada desde la lista de espera.`,
-            type: "SUCCESS"
-          }
-        });
-      }
-    }
-
-    revalidatePath("/portal/classes");
-    return { success: true, message: "Reserva cancelada" };
-  } catch (error) {
-    return { success: false, error: "Error al cancelar la reserva" };
-  }
-}
-
 export async function getPortalProgressAction() {
   const session = await verifySession();
 
@@ -275,29 +111,6 @@ export async function getPortalProgressAction() {
   };
 }
 
-import crypto from "crypto";
-
-export async function regeneratePortalQRAction() {
-  const session = await verifySession();
-
-  const member = await prisma.member.findUnique({
-    where: { userId: session.user.id },
-    select: { id: true }
-  });
-
-  if (!member) return { success: false, error: "Socio no encontrado" };
-
-  // Generate a new secure UUID
-  const newQrCode = crypto.randomUUID();
-
-  await prisma.member.update({
-    where: { id: member.id },
-    data: { qrCode: newQrCode }
-  });
-
-  revalidatePath("/portal/qr");
-  return { success: true, message: "Código QR regenerado con éxito" };
-}
 
 export async function updatePortalMemberProfileAction(data: {
   fullName?: string;

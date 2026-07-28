@@ -14,6 +14,7 @@ export function QRScanner({ onScan }: QRScannerProps) {
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
+    let isCancelled = false;
     const qrCodeId = "reader";
     const html5QrCode = new Html5Qrcode(qrCodeId);
     html5QrCodeRef.current = html5QrCode;
@@ -36,20 +37,18 @@ export function QRScanner({ onScan }: QRScannerProps) {
             // Scan error (usually just means no QR found in frame)
           }
         );
-        setIsReady(true);
+        if (!isCancelled) setIsReady(true);
       } catch (err: any) {
-        console.error("Scanner start error:", err);
-        setError("No se pudo acceder a la cámara");
+        if (!isCancelled) setError("No se pudo iniciar la cámara para el escaneo de QR.");
       }
     };
 
     startScanner();
 
     return () => {
-      if (html5QrCode.isScanning) {
-        html5QrCode.stop().then(() => {
-          html5QrCode.clear();
-        }).catch(err => console.error("Scanner stop error", err));
+      isCancelled = true;
+      if (html5QrCodeRef.current?.isScanning) {
+        html5QrCodeRef.current.stop().catch(() => {});
       }
     };
   }, [onScan]);

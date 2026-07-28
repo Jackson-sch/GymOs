@@ -128,7 +128,7 @@ export function MembershipsClient({ data }: { data: any[] }) {
               placeholder="Buscar plan por nombre o beneficios..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-11 h-11 bg-white/5 border-white/10 rounded-2xl text-xs focus-visible:ring-primary/30 transition-all"
+              className="pl-11 h-11 bg-white/5 border-white/10 rounded-2xl text-xs focus-visible:ring-primary/30 transition-colors"
             />
           </div>
 
@@ -140,11 +140,11 @@ export function MembershipsClient({ data }: { data: any[] }) {
               { id: "GYM_ONLY", label: "Solo Musculación" },
               { id: "LONG_TERM", label: "Larga Duración (90+ Días)" },
             ].map((c) => (
-              <button
+              <button type="button"
                 key={c.id}
                 onClick={() => setCategoryFilter(c.id)}
                 className={cn(
-                  "px-3.5 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap",
+                  "px-3.5 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap",
                   categoryFilter === c.id
                     ? "bg-primary text-primary-foreground shadow-md"
                     : "text-muted-foreground hover:text-foreground hover:bg-white/5",
@@ -160,7 +160,7 @@ export function MembershipsClient({ data }: { data: any[] }) {
         <div className="flex items-center justify-end shrink-0">
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
-              <Button className="h-11 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+              <Button className="h-11 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-transform">
                 <Plus className="size-4 mr-2" /> Crear Nuevo Plan
               </Button>
             </DialogTrigger>
@@ -194,7 +194,7 @@ export function MembershipsClient({ data }: { data: any[] }) {
               <div
                 key={plan.id}
                 className={cn(
-                  "glass-card group relative flex flex-col p-8 rounded-3xl border transition-all duration-300 shadow-xl overflow-hidden backdrop-blur-md",
+                  "glass-card group relative flex flex-col p-8 rounded-3xl border transition-colors duration-300 shadow-xl overflow-hidden backdrop-blur-md",
                   isBestValue
                     ? "border-primary/50 bg-gradient-to-b from-primary/10 via-zinc-950/90 to-zinc-950 shadow-primary/10"
                     : "border-white/15 bg-zinc-950/80 hover:border-primary/30",

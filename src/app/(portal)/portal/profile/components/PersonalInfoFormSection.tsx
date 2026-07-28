@@ -65,7 +65,7 @@ export function PersonalInfoFormSection({
               onChange={(e) => setFullName(e.target.value)}
               required
               placeholder="Ingresa tu nombre"
-              className="h-11 bg-white/5 border-white/10 rounded-xl transition-all font-sans"
+              className="h-11 bg-white/5 border-white/10 rounded-xl transition-colors font-sans"
             />
           ) : (
             <p className="text-sm font-medium h-11 flex items-center bg-white/2 border border-transparent rounded-xl px-3 text-muted-foreground/80 font-sans">
@@ -86,7 +86,7 @@ export function PersonalInfoFormSection({
               onChange={(e) => setPhone(e.target.value)}
               required
               placeholder="Ej. +51 987 654 321"
-              className="h-11 bg-white/5 border-white/10 rounded-xl transition-all font-sans"
+              className="h-11 bg-white/5 border-white/10 rounded-xl transition-colors font-sans"
             />
           ) : (
             <p className="text-sm font-medium h-11 flex items-center bg-white/2 border border-transparent rounded-xl px-3 text-muted-foreground/80 font-sans">
@@ -121,7 +121,7 @@ export function PersonalInfoFormSection({
           </Label>
           {isEditing ? (
             <Select value={gender} onValueChange={(value: any) => setGender(value)}>
-              <SelectTrigger className="h-11 bg-white/5 border-white/10 rounded-xl transition-all font-sans">
+              <SelectTrigger className="h-11 bg-white/5 border-white/10 rounded-xl transition-colors font-sans">
                 <SelectValue placeholder="Selecciona género" />
               </SelectTrigger>
               <SelectContent className="bg-zinc-900/90 border-white/10 backdrop-blur-xl">
@@ -148,7 +148,7 @@ export function PersonalInfoFormSection({
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Ingresa tu dirección"
-              className="h-11 bg-white/5 border-white/10 rounded-xl transition-all font-sans"
+              className="h-11 bg-white/5 border-white/10 rounded-xl transition-colors font-sans"
             />
           ) : (
             <p className="text-sm font-medium h-11 flex items-center bg-white/2 border border-transparent rounded-xl px-3 text-muted-foreground/80 font-sans">

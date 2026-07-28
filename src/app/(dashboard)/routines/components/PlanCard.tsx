@@ -12,31 +12,29 @@ interface PlanCardProps {
   onSimulate?: (group: any) => void;
 }
 
+const getPlanCategory = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes("fuerza") || n.includes("power") || n.includes("5x5")) {
+    return { label: "Fuerza & Potencia", color: "bg-rose-500/10 text-rose-400 border-rose-500/30" };
+  }
+  if (n.includes("hipertrofia") || n.includes("volumen") || n.includes("muscle")) {
+    return { label: "Hipertrofia", color: "bg-primary/10 text-primary border-primary/30" };
+  }
+  if (n.includes("cardio") || n.includes("hiit") || n.includes("definicion")) {
+    return { label: "Definición & HIIT", color: "bg-amber-500/10 text-amber-400 border-amber-500/30" };
+  }
+  return { label: "Acondicionamiento", color: "bg-blue-500/10 text-blue-400 border-blue-500/30" };
+};
+
 export function PlanCard({ group, onSelect, onSimulate }: PlanCardProps) {
-  const members = group.routines.map((r: any) => r.member).filter(Boolean);
+  const members = group.routines.flatMap((r: any) => r.member ? [r.member] : []);
   const trainerName = group.trainer || "Staff Entrenador";
-
-  // Determine workout category badge based on plan name keywords
-  const getPlanCategory = (name: string) => {
-    const n = name.toLowerCase();
-    if (n.includes("fuerza") || n.includes("power") || n.includes("5x5")) {
-      return { label: "Fuerza & Potencia", color: "bg-rose-500/10 text-rose-400 border-rose-500/30" };
-    }
-    if (n.includes("hipertrofia") || n.includes("volumen") || n.includes("muscle")) {
-      return { label: "Hipertrofia", color: "bg-primary/10 text-primary border-primary/30" };
-    }
-    if (n.includes("cardio") || n.includes("hiit") || n.includes("definicion")) {
-      return { label: "Definición & HIIT", color: "bg-amber-500/10 text-amber-400 border-amber-500/30" };
-    }
-    return { label: "Acondicionamiento", color: "bg-blue-500/10 text-blue-400 border-blue-500/30" };
-  };
-
   const category = getPlanCategory(group.name);
 
   return (
-    <div className="glass-card p-6 border-white/10 hover:border-primary/40 transition-all duration-300 group hover:-translate-y-1 bg-white/2 rounded-3xl shadow-xl flex flex-col justify-between backdrop-blur-md relative overflow-hidden">
+    <div className="glass-card p-6 border-white/10 hover:border-primary/40 transition-colors transition-transform duration-300 group hover:-translate-y-1 bg-white/2 rounded-3xl shadow-xl flex flex-col justify-between backdrop-blur-md relative overflow-hidden">
       {/* Background Subtle Accent */}
-      <div className="absolute top-0 right-0 size-32 -mr-10 -mt-10 bg-primary/5 blur-2xl rounded-full group-hover:bg-primary/15 transition-all" />
+      <div className="absolute top-0 right-0 size-32 -mr-10 -mt-10 bg-primary/5 blur-2xl rounded-full group-hover:bg-primary/15 transition-colors" />
 
       <div className="space-y-4 relative z-10">
         {/* Card Header: Icon + Category Badge */}
@@ -83,7 +81,7 @@ export function PlanCard({ group, onSelect, onSimulate }: PlanCardProps) {
             <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Asignado a:</span>
             <div className="flex items-center -space-x-2">
               {members.slice(0, 4).map((m: any, idx: number) => (
-                <Avatar key={m.id || idx} className="size-6 border-2 border-background shadow-md">
+                <Avatar key={m.id || m.dni || m.fullName} className="size-6 border-2 border-background shadow-md">
                   <AvatarFallback className="bg-primary/20 text-primary text-[8px] font-bold">
                     {m.fullName?.substring(0, 2).toUpperCase() || "M"}
                   </AvatarFallback>

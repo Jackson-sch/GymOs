@@ -133,7 +133,7 @@ export const getColumns = (defaultReceiptFormat: string = "A4"): ColumnDef<any>[
               onClick={() =>
                 window.open(`/api/payments/${row.original.id}/receipt?format=a4`, "_blank")
               }
-              className="flex items-center justify-between gap-2 rounded-xl cursor-pointer focus:bg-primary/20 focus:text-primary transition-all p-2.5 text-xs font-semibold"
+              className="flex items-center justify-between gap-2 rounded-xl cursor-pointer focus:bg-primary/20 focus:text-primary transition-colors p-2.5 text-xs font-semibold"
             >
               <div className="flex items-center gap-2">
                 <FileText className="size-4 text-primary" />
@@ -149,7 +149,7 @@ export const getColumns = (defaultReceiptFormat: string = "A4"): ColumnDef<any>[
               onClick={() =>
                 window.open(`/api/payments/${row.original.id}/receipt?format=ticket`, "_blank")
               }
-              className="flex items-center justify-between gap-2 rounded-xl cursor-pointer focus:bg-primary/20 focus:text-primary transition-all p-2.5 text-xs font-semibold"
+              className="flex items-center justify-between gap-2 rounded-xl cursor-pointer focus:bg-primary/20 focus:text-primary transition-colors p-2.5 text-xs font-semibold"
             >
               <div className="flex items-center gap-2">
                 <Receipt className="size-4 text-emerald-400" />

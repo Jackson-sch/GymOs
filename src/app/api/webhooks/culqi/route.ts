@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getConfig } from "@/lib/config";
 import { createAuditLog } from "@/lib/audit";
@@ -14,7 +15,18 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const rawBody = await req.text();
+    const signature = req.headers.get("x-culqi-signature");
+    const secret = process.env.CULQI_WEBHOOK_SECRET;
+    
+    if (secret && signature) {
+      const hmac = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
+      if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(hmac))) {
+        return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+      }
+    }
+    
+    const body = JSON.parse(rawBody);
 
     if (!body || body.object !== "event") {
       return NextResponse.json({ error: "Invalid webhook format" }, { status: 400 });

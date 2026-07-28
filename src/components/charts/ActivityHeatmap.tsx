@@ -50,7 +50,7 @@ export function ActivityHeatmap({ data }: { data?: number[][] }) {
                     <TooltipTrigger asChild>
                       <div
                         className={cn(
-                          "h-12 rounded-lg transition-all duration-500 hover:scale-[1.02] cursor-pointer relative group",
+                          "h-12 rounded-lg transition-transform duration-500 hover:scale-[1.02] cursor-pointer relative group",
                           intensity > 0.7 ? "shadow-[0_0_20px_rgba(var(--color-primary-rgb),0.2)]" : ""
                         )}
                         style={{

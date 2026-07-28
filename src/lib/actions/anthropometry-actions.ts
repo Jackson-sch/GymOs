@@ -41,17 +41,4 @@ export async function addBodyMetricAction(data: {
   }
 }
 
-export async function getBodyMetricsAction(memberId: string) {
-  try {
-    await verifySession();
-    const metrics = await prisma.bodyMetric.findMany({
-      where: { memberId },
-      orderBy: { measuredAt: "asc" }
-    });
 
-    return { success: true, metrics };
-  } catch (error) {
-    console.error("Error fetching body metrics:", error);
-    return { success: false, error: "No se pudo obtener el progreso" };
-  }
-}

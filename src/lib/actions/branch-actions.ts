@@ -49,12 +49,12 @@ export async function createBranchAction(data: {
   email?: string;
 }) {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN"]);
+
     const { organizationId } = await getCurrentTenant();
     if (!organizationId) {
       return { success: false, error: "Organización no identificada" };
     }
-
-    await verifySession(["ADMIN", "SUPER_ADMIN"]);
 
     if (!data.name || !data.slug) {
       return { success: false, error: "Nombre y slug de la sede son requeridos" };
@@ -108,12 +108,12 @@ export async function updateBranchAction(data: {
   isActive?: boolean;
 }) {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN"]);
+
     const { organizationId } = await getCurrentTenant();
     if (!organizationId) {
       return { success: false, error: "Organización no identificada" };
     }
-
-    await verifySession(["ADMIN", "SUPER_ADMIN"]);
 
     if (!data.id || !data.name || !data.slug) {
       return { success: false, error: "ID, nombre y slug son requeridos" };
@@ -163,12 +163,12 @@ export async function updateBranchAction(data: {
  */
 export async function deleteBranchAction(branchId: string) {
   try {
+    await verifySession(["ADMIN", "SUPER_ADMIN"]);
+
     const { organizationId } = await getCurrentTenant();
     if (!organizationId) {
       return { success: false, error: "Organización no identificada" };
     }
-
-    await verifySession(["ADMIN", "SUPER_ADMIN"]);
 
     const branch = await prisma.branch.findUnique({
       where: { id: branchId }

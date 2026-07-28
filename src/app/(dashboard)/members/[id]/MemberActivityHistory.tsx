@@ -24,7 +24,7 @@ export function MemberActivityHistory({ attendances }: { attendances: any[] }) {
         ) : (
           <div className="space-y-3">
             {attendances.slice(0, 5).map((att: any) => (
-              <div key={att.id} className="flex items-center justify-between p-4 rounded-xl border border-border/10 bg-background/20 group hover:border-primary/30 transition-all">
+              <div key={att.id} className="flex items-center justify-between p-4 rounded-xl border border-border/10 bg-background/20 group hover:border-primary/30 transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">{format(new Date(att.checkIn), "dd")}</div>
                   <div>

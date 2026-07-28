@@ -311,14 +311,19 @@ export async function seedOpenExerciseCatalogAction() {
 
     // 1. Traducir ejercicios existentes en la base de datos a español si están en inglés
     const currentDbExercises = await prisma.exercise.findMany();
-    for (const ex of currentDbExercises) {
+    const updatePromises = currentDbExercises.flatMap((ex) => {
       const spanishName = translateExerciseNameToSpanish(ex.name);
-      if (spanishName !== ex.name) {
-        await prisma.exercise.update({
-          where: { id: ex.id },
-          data: { name: spanishName },
-        });
-      }
+      return spanishName !== ex.name
+        ? [
+            prisma.exercise.update({
+              where: { id: ex.id },
+              data: { name: spanishName },
+            }),
+          ]
+        : [];
+    });
+    if (updatePromises.length > 0) {
+      await Promise.all(updatePromises);
     }
 
     const updatedDbExercises = await prisma.exercise.findMany({
@@ -344,24 +349,27 @@ export async function seedOpenExerciseCatalogAction() {
       neck: "Hombros",
     };
 
-    const newItems = rawExercises
-      .map((item: any) => {
-        const spanishName = translateExerciseNameToSpanish(item.name);
-        const primaryMuscle = item.primaryMuscles?.[0] || "general";
-        const muscleGroup = MUSCLE_MAP[primaryMuscle.toLowerCase()] || "General";
-        const imagePath = item.images?.[0]
-          ? `https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${item.images[0]}`
-          : undefined;
+    const newItems = rawExercises.reduce((acc: any[], item: any) => {
+      const spanishName = translateExerciseNameToSpanish(item.name);
+      const primaryMuscle = item.primaryMuscles?.[0] || "general";
+      const muscleGroup = MUSCLE_MAP[primaryMuscle.toLowerCase()] || "General";
+      const imagePath = item.images?.[0]
+        ? `https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${item.images[0]}`
+        : undefined;
 
-        return {
-          name: spanishName,
-          category: item.category || "strength",
-          equipment: item.equipment || "bodyweight",
-          muscleGroup: muscleGroup,
-          demoUrl: imagePath,
-        };
-      })
-      .filter((item: any) => item.name && !existingSet.has(item.name.toLowerCase()));
+      const newItem = {
+        name: spanishName,
+        category: item.category || "strength",
+        equipment: item.equipment || "bodyweight",
+        muscleGroup: muscleGroup,
+        demoUrl: imagePath,
+      };
+
+      if (newItem.name && !existingSet.has(newItem.name.toLowerCase())) {
+        acc.push(newItem);
+      }
+      return acc;
+    }, []);
 
     if (newItems.length > 0) {
       await prisma.exercise.createMany({

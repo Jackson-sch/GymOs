@@ -55,13 +55,11 @@ export async function createClassAction(data: ClassInput) {
     // Lógica de Recurrencia
     if (data.isRecurring && data.recurrenceWeeks) {
       const weeks = typeof data.recurrenceWeeks === 'string' ? parseInt(data.recurrenceWeeks) : data.recurrenceWeeks;
-      const createdClasses = [];
-
-      for (let i = 0; i < weeks; i++) {
+      const classPromises = Array.from({ length: weeks }, (_, i) => {
         const currentStartTime = new Date(startDate.getTime() + (i * 7 * 24 * 60 * 60 * 1000));
         const currentEndTime = new Date(currentStartTime.getTime() + duration * 60000);
 
-        const newClass = await prisma.class.create({
+        return prisma.class.create({
           data: {
             name: data.name,
             description: data.description,
@@ -76,8 +74,8 @@ export async function createClassAction(data: ClassInput) {
             recurrence: { index: i, total: weeks }
           }
         });
-        createdClasses.push(newClass);
-      }
+      });
+      const createdClasses = await Promise.all(classPromises);
 
       revalidatePath("/classes");
       return { success: true, data: serialize(createdClasses[0]), count: createdClasses.length };

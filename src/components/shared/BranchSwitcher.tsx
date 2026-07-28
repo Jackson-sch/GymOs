@@ -16,20 +16,22 @@ import { Button } from "@/components/ui/button";
 
 export function BranchSwitcher() {
   const { selectedBranchId, branches, setSelectedBranchId, setBranches } = useBranchStore();
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    let isCancelled = false;
     async function loadBranches() {
       if (branches.length === 0) {
-        setLoading(true);
         const res = await getBranchesAction();
-        setLoading(false);
+        if (isCancelled) return;
         if (res.success && res.data) {
           setBranches(res.data);
         }
       }
     }
     loadBranches();
+    return () => {
+      isCancelled = true;
+    };
   }, [branches.length, setBranches]);
 
   const activeBranch = branches.find((b) => b.id === selectedBranchId);
@@ -39,7 +41,7 @@ export function BranchSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="h-10 px-3.5 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 text-foreground font-bold text-xs gap-2 transition-all hover:scale-102"
+          className="h-10 px-3.5 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 text-foreground font-bold text-xs gap-2 transition-colors transition-transform hover:scale-102"
         >
           {selectedBranchId === "ALL" ? (
             <div className="flex items-center gap-2 text-primary">

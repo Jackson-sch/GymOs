@@ -24,17 +24,32 @@ async function main() {
 
   // 1. Configuración Inicial
   console.log("⚙️ Configurando sistema...");
-  const existingGymName = await prisma.systemConfig.findFirst({ where: { organizationId: demoOrg.id, key: "GYM_NAME" } });
+  const existingGymName = await prisma.systemConfig.findFirst({
+    where: { organizationId: demoOrg.id, key: "GYM_NAME" },
+  });
   if (!existingGymName) {
     await prisma.systemConfig.create({
-      data: { organizationId: demoOrg.id, key: "GYM_NAME", value: "GymOS - Elite Fitness", category: "GENERAL" },
+      data: {
+        organizationId: demoOrg.id,
+        key: "GYM_NAME",
+        value: "GymOS - Elite Fitness",
+        category: "GENERAL",
+      },
     });
   }
 
-  const existingMaxCap = await prisma.systemConfig.findFirst({ where: { organizationId: demoOrg.id, key: "MAX_CAPACITY" } });
+  const existingMaxCap = await prisma.systemConfig.findFirst({
+    where: { organizationId: demoOrg.id, key: "MAX_CAPACITY" },
+  });
   if (!existingMaxCap) {
     await prisma.systemConfig.create({
-      data: { organizationId: demoOrg.id, key: "MAX_CAPACITY", value: "50", category: "GENERAL", description: "Capacidad máxima del local" },
+      data: {
+        organizationId: demoOrg.id,
+        key: "MAX_CAPACITY",
+        value: "50",
+        category: "GENERAL",
+        description: "Capacidad máxima del local",
+      },
     });
   }
 
@@ -84,7 +99,7 @@ async function main() {
   ];
 
   const plans = await Promise.all(
-    plansData.map(async (p) => {
+    plansData.map(async p => {
       const existing = await prisma.plan.findFirst({
         where: { name: { equals: p.name, mode: "insensitive" } },
       });
@@ -121,11 +136,17 @@ async function main() {
 
   // 3. Entrenadores
   console.log("💪 Creando entrenadores...");
-  
-  async function createTrainerWithUser(data: { fullName: string, email: string, phone: string, specialties: string[], dni: string }) {
+
+  async function createTrainerWithUser(data: {
+    fullName: string;
+    email: string;
+    phone: string;
+    specialties: string[];
+    dni: string;
+  }) {
     try {
       const userEmail = data.email;
-      
+
       const existingUser = await prisma.user.findUnique({ where: { email: userEmail } });
       if (existingUser) {
         console.log(`♻️ Recreando usuario para ${userEmail}...`);
@@ -133,36 +154,41 @@ async function main() {
       }
 
       await auth.api.signUpEmail({
-        body: { 
-          email: userEmail, 
+        body: {
+          email: userEmail,
           password: data.dni,
-          name: data.fullName 
-        }
+          name: data.fullName,
+        },
       });
-      
+
       const user = await prisma.user.findUnique({ where: { email: userEmail } });
 
       if (user) {
         await prisma.user.update({
           where: { id: user.id },
-          data: { role: "TRAINER", mustChangePassword: true, emailVerified: true, organizationId: demoOrg.id }
+          data: {
+            role: "TRAINER",
+            mustChangePassword: true,
+            emailVerified: true,
+            organizationId: demoOrg.id,
+          },
         });
 
         return await prisma.trainer.upsert({
           where: { email: userEmail },
-          update: { 
+          update: {
             userId: user.id,
             dni: data.dni,
-            organizationId: demoOrg.id
+            organizationId: demoOrg.id,
           },
-          create: { 
-            fullName: data.fullName, 
-            email: userEmail, 
-            phone: data.phone, 
+          create: {
+            fullName: data.fullName,
+            email: userEmail,
+            phone: data.phone,
             specialties: data.specialties,
             userId: user.id,
             dni: data.dni,
-            organizationId: demoOrg.id
+            organizationId: demoOrg.id,
           },
         });
       }
@@ -172,114 +198,175 @@ async function main() {
   }
 
   const trainers = await Promise.all([
-    createTrainerWithUser({ 
-      fullName: "Carlos Rodriguez", 
-      email: "carlos.fit@gymos.com", 
-      phone: "999111222", 
+    createTrainerWithUser({
+      fullName: "Carlos Rodriguez",
+      email: "carlos.fit@gymos.com",
+      phone: "999111222",
       dni: "19086514",
-      specialties: ["Crossfit", "HIIT"] 
+      specialties: ["Crossfit", "HIIT"],
     }),
-    createTrainerWithUser({ 
-      fullName: "Ana Martínez", 
-      email: "ana.yoga@gymos.com", 
-      phone: "999333444", 
+    createTrainerWithUser({
+      fullName: "Ana Martínez",
+      email: "ana.yoga@gymos.com",
+      phone: "999333444",
       dni: "20212223",
-      specialties: ["Yoga", "Pilates"] 
+      specialties: ["Yoga", "Pilates"],
     }),
   ]);
 
   // 4. Miembros y Membresías
   console.log("👥 Creando 200 miembros con historial...");
-  const firstNames = ["Juan", "Maria", "Pedro", "Lucia", "Carlos", "Elena", "Roberto", "Sofia", "Diego", "Paula", "Andres", "Camila", "Mateo", "Valentina", "Gabriel", "Isabella", "Lucas", "Mia", "Sebastian", "Victoria"];
-  const lastNames = ["Perez", "Garcia", "Lopez", "Rodriguez", "Sanchez", "Martinez", "Gomez", "Fernandez", "Diaz", "Torres", "Vargas", "Castro", "Rios", "Morales", "Suarez", "Ortega", "Rojas", "Flores", "Soto", "Luna"];
+  const firstNames = [
+    "Juan",
+    "Maria",
+    "Pedro",
+    "Lucia",
+    "Carlos",
+    "Elena",
+    "Roberto",
+    "Sofia",
+    "Diego",
+    "Paula",
+    "Andres",
+    "Camila",
+    "Mateo",
+    "Valentina",
+    "Gabriel",
+    "Isabella",
+    "Lucas",
+    "Mia",
+    "Sebastian",
+    "Victoria",
+  ];
+  const lastNames = [
+    "Perez",
+    "Garcia",
+    "Lopez",
+    "Rodriguez",
+    "Sanchez",
+    "Martinez",
+    "Gomez",
+    "Fernandez",
+    "Diaz",
+    "Torres",
+    "Vargas",
+    "Castro",
+    "Rios",
+    "Morales",
+    "Suarez",
+    "Ortega",
+    "Rojas",
+    "Flores",
+    "Soto",
+    "Luna",
+  ];
 
-  for (let i = 0; i < 200; i++) {
-    const fn = firstNames[Math.floor(Math.random() * firstNames.length)];
-    const ln = lastNames[Math.floor(Math.random() * lastNames.length)];
-    const dni = (10000000 + i).toString();
-    const email = `${fn.toLowerCase()}.${ln.toLowerCase()}${i}@example.com`;
+  const CHUNK_SIZE = 20;
+  for (let chunkStart = 0; chunkStart < 200; chunkStart += CHUNK_SIZE) {
+    await Promise.all(
+      Array.from({ length: Math.min(CHUNK_SIZE, 200 - chunkStart) }, async (_, j) => {
+        const i = chunkStart + j;
+        const fn = firstNames[Math.floor(Math.random() * firstNames.length)];
+        const ln = lastNames[Math.floor(Math.random() * lastNames.length)];
+        const dni = (10000000 + i).toString();
+        const email = `${fn.toLowerCase()}.${ln.toLowerCase()}${i}@example.com`;
 
-    const member = await prisma.member.upsert({
-      where: { dni },
-      update: { organizationId: demoOrg.id },
-      create: {
-        fullName: `${fn} ${ln}`,
-        email,
-        phone: `9${Math.floor(100000000 + Math.random() * 900000000)}`,
-        dni,
-        status: Math.random() > 0.05 ? "ACTIVE" : "INACTIVE",
-        organizationId: demoOrg.id,
-      },
-    });
-
-    if (member.status === "ACTIVE") {
-      const plan = plans[Math.floor(Math.random() * plans.length)];
-      if (!plan) continue;
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - Math.floor(Math.random() * 60));
-      const endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + plan.durationDays);
-
-      const membership = await prisma.membership.create({
-        data: {
-          memberId: member.id,
-          planId: plan.id,
-          startDate,
-          endDate,
-          status: "ACTIVE",
-          price: plan.price,
-        },
-      });
-
-      const monthsToPay = Math.floor(Math.random() * 6) + 1;
-      for (let m = 0; m < monthsToPay; m++) {
-        const payDate = new Date();
-        payDate.setMonth(payDate.getMonth() - m);
-        payDate.setDate(Math.floor(Math.random() * 28) + 1);
-        await prisma.payment.create({
-          data: {
-            memberId: member.id,
-            membershipId: membership.id,
-            amount: plan.price,
-            method: Math.random() > 0.5 ? "CASH" : "CARD",
-            status: "COMPLETED",
-            paidAt: payDate,
-            createdAt: payDate,
+        const member = await prisma.member.upsert({
+          where: { dni },
+          update: { organizationId: demoOrg.id },
+          create: {
+            fullName: `${fn} ${ln}`,
+            email,
+            phone: `9${Math.floor(100000000 + Math.random() * 900000000)}`,
+            dni,
+            status: Math.random() > 0.05 ? "ACTIVE" : "INACTIVE",
+            organizationId: demoOrg.id,
           },
         });
-      }
 
-      const attendancesCount = Math.floor(Math.random() * 20);
-      for (let d = 0; d < attendancesCount; d++) {
-        const attDate = new Date();
-        const daysAgo = Math.floor(Math.random() * 30);
-        const hoursAgo = Math.floor(Math.random() * 16) + 1;
-        const minutesAgo = Math.floor(Math.random() * 60);
-        attDate.setTime(attDate.getTime() - (daysAgo * 86400000) - (hoursAgo * 3600000) - (minutesAgo * 60000));
+        if (member.status === "ACTIVE") {
+          const plan = plans[Math.floor(Math.random() * plans.length)];
+          if (!plan) return;
+          const startDate = new Date();
+          startDate.setDate(startDate.getDate() - Math.floor(Math.random() * 60));
+          const endDate = new Date(startDate);
+          endDate.setDate(endDate.getDate() + plan.durationDays);
 
-        const isToday = daysAgo === 0;
-        const isStillIn = isToday && Math.random() > 0.9;
-        
-        const checkOut = isStillIn ? null : new Date(attDate.getTime() + (Math.floor(Math.random() * 75) + 45) * 60000);
+          const membership = await prisma.membership.create({
+            data: {
+              memberId: member.id,
+              planId: plan.id,
+              startDate,
+              endDate,
+              status: "ACTIVE",
+              price: plan.price,
+            },
+          });
 
-        await prisma.attendance.create({
-          data: {
-            memberId: member.id,
-            checkIn: attDate,
-            checkOut: checkOut,
-            method: "QR",
-          },
-        });
-      }
-    }
+          const monthsToPay = Math.floor(Math.random() * 6) + 1;
+          await Promise.all(
+            Array.from({ length: monthsToPay }, async (_, m) => {
+              const payDate = new Date();
+              payDate.setMonth(payDate.getMonth() - m);
+              payDate.setDate(Math.floor(Math.random() * 28) + 1);
+              await prisma.payment.create({
+                data: {
+                  memberId: member.id,
+                  membershipId: membership.id,
+                  amount: plan.price,
+                  method: Math.random() > 0.5 ? "CASH" : "CARD",
+                  status: "COMPLETED",
+                  paidAt: payDate,
+                  createdAt: payDate,
+                },
+              });
+            })
+          );
+
+          const attendancesCount = Math.floor(Math.random() * 20);
+          await Promise.all(
+            Array.from({ length: attendancesCount }, async (_, d) => {
+              const attDate = new Date();
+              const daysAgo = Math.floor(Math.random() * 30);
+              const hoursAgo = Math.floor(Math.random() * 16) + 1;
+              const minutesAgo = Math.floor(Math.random() * 60);
+              attDate.setTime(
+                attDate.getTime() - daysAgo * 86400000 - hoursAgo * 3600000 - minutesAgo * 60000
+              );
+
+              const isToday = daysAgo === 0;
+              const isStillIn = isToday && Math.random() > 0.9;
+
+              const checkOut = isStillIn
+                ? null
+                : new Date(attDate.getTime() + (Math.floor(Math.random() * 75) + 45) * 60000);
+
+              await prisma.attendance.create({
+                data: {
+                  memberId: member.id,
+                  checkIn: attDate,
+                  checkOut: checkOut,
+                  method: "QR",
+                },
+              });
+            })
+          );
+        }
+      })
+    );
   }
 
   // 5. Usuarios Administrador y Super Administrador
   console.log("🔐 Asegurando usuarios administradores...");
-  
+
   // 5.1 Super Admin (Plataforma SaaS Global)
   const superAdminEmail = "superadmin@gymos.com";
-  const superAdminPassword = process.env.SEED_SUPER_ADMIN_PASSWORD || "superadmin123";
+  const superAdminPassword = process.env.SEED_SUPER_ADMIN_PASSWORD || process.env.NEXTAUTH_SECRET;
+  if (!superAdminPassword) {
+    throw new Error(
+      "CRITICAL SECURITY ERROR: SEED_SUPER_ADMIN_PASSWORD o NEXTAUTH_SECRET debe estar configurada en las variables de entorno"
+    );
+  }
   const existingSuperAdmin = await prisma.user.findUnique({ where: { email: superAdminEmail } });
 
   if (!existingSuperAdmin) {
@@ -289,7 +376,7 @@ async function main() {
       });
       await prisma.user.update({
         where: { email: superAdminEmail },
-        data: { role: "SUPER_ADMIN", mustChangePassword: false, emailVerified: true }
+        data: { role: "SUPER_ADMIN", mustChangePassword: false, emailVerified: true },
       });
       console.log("✅ Super Admin creado: superadmin@gymos.com");
     } catch (e) {
@@ -298,15 +385,20 @@ async function main() {
   } else {
     await prisma.user.update({
       where: { email: superAdminEmail },
-      data: { role: "SUPER_ADMIN" }
+      data: { role: "SUPER_ADMIN" },
     });
   }
 
   // 5.2 Admin Local del Gimnasio
   const adminEmail = "admin@gymos.com";
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD || "admin123";
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD || process.env.NEXTAUTH_SECRET;
+  if (!adminPassword) {
+    throw new Error(
+      "CRITICAL SECURITY ERROR: SEED_ADMIN_PASSWORD o NEXTAUTH_SECRET debe estar configurada en las variables de entorno"
+    );
+  }
   const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
-  
+
   if (!existingAdmin) {
     try {
       await auth.api.signUpEmail({
@@ -314,7 +406,12 @@ async function main() {
       });
       await prisma.user.update({
         where: { email: adminEmail },
-        data: { role: "ADMIN", mustChangePassword: true, emailVerified: true, organizationId: demoOrg.id }
+        data: {
+          role: "ADMIN",
+          mustChangePassword: true,
+          emailVerified: true,
+          organizationId: demoOrg.id,
+        },
       });
       console.log("✅ Admin local creado: admin@gymos.com");
     } catch (e) {
@@ -323,77 +420,78 @@ async function main() {
   } else {
     await prisma.user.update({
       where: { email: adminEmail },
-      data: { organizationId: demoOrg.id }
+      data: { organizationId: demoOrg.id },
     });
   }
-
-  
 
   // 7. Datos de Entrenamiento (Clases y Rutinas) para probar el Portal
   console.log("🏋️ Generando clases y rutinas para el portal...");
-  
+
   const allMembers = await prisma.member.findMany({ where: { status: "ACTIVE" }, take: 50 });
-  
-  for (const trainer of trainers) {
-    if (!trainer) continue;
 
-    // Crear una clase para cada entrenador
-    const startTime = new Date();
-    startTime.setHours(startTime.getHours() + 2);
-    const endTime = new Date(startTime);
-    endTime.setHours(endTime.getHours() + 1);
+  await Promise.all(
+    trainers.map(async trainer => {
+      if (!trainer) return;
 
-    const classRecord = await prisma.class.create({
-      data: {
-        name: trainer.fullName === "Ana Martínez" ? "Yoga Flow" : "Entrenamiento Funcional",
-        description: "Clase de prueba para el portal",
-        trainerId: trainer.id,
-        maxCapacity: 15,
-        durationMins: 60,
-        startTime,
-        endTime,
-        status: "SCHEDULED",
-        location: "Sala A"
-      }
-    });
+      // Crear una clase para cada entrenador
+      const startTime = new Date();
+      startTime.setHours(startTime.getHours() + 2);
+      const endTime = new Date(startTime);
+      endTime.setHours(endTime.getHours() + 1);
 
-    // Inscribir 12 miembros aleatorios a la clase
-    const shuffled = [...allMembers].sort(() => 0.5 - Math.random()).slice(0, 12);
-    for (const member of shuffled) {
-      if (!member) continue;
-      await prisma.classBooking.upsert({
-        where: {
-          classId_memberId: {
-            classId: classRecord.id,
-            memberId: member.id
-          }
+      const classRecord = await prisma.class.create({
+        data: {
+          name: trainer.fullName === "Ana Martínez" ? "Yoga Flow" : "Entrenamiento Funcional",
+          description: "Clase de prueba para el portal",
+          trainerId: trainer.id,
+          maxCapacity: 15,
+          durationMins: 60,
+          startTime,
+          endTime,
+          status: "SCHEDULED",
+          location: "Sala A",
         },
-        update: {},
-        create: {
-          classId: classRecord.id,
-          memberId: member.id,
-          status: "CONFIRMED"
-        }
       });
-    }
 
-    // Crear una rutina para un miembro aleatorio
-    await prisma.routine.create({
-      data: {
-        name: "Rutina de Definición",
-        description: "Enfoque en resistencia",
-        trainerId: trainer.id,
-        memberId: allMembers[Math.floor(Math.random() * allMembers.length)].id,
-        isActive: true
-      }
-    });
-  }
+      // Inscribir 12 miembros aleatorios a la clase
+      const shuffled = [...allMembers].sort(() => 0.5 - Math.random()).slice(0, 12);
+      await Promise.all(
+        shuffled.map(async member => {
+          if (!member) return;
+          await prisma.classBooking.upsert({
+            where: {
+              classId_memberId: {
+                classId: classRecord.id,
+                memberId: member.id,
+              },
+            },
+            update: {},
+            create: {
+              classId: classRecord.id,
+              memberId: member.id,
+              status: "CONFIRMED",
+            },
+          });
+        })
+      );
+
+      // Crear una rutina para un miembro aleatorio
+      await prisma.routine.create({
+        data: {
+          name: "Rutina de Definición",
+          description: "Enfoque en resistencia",
+          trainerId: trainer.id,
+          memberId: allMembers[Math.floor(Math.random() * allMembers.length)].id,
+          isActive: true,
+        },
+      });
+    })
+  );
 
   console.log("✅ Seeding masivo completado.");
 }
 
-main()
-  .catch((e) => {
-    console.error("❌ Error en el seeding:", e);
-    process.exit(1);
-  });
+main().catch(e => {
+  console.error("❌ Error en el seeding:", e);
+  process.exit(1);
+});

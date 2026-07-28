@@ -22,7 +22,7 @@ export function SystemTab({ loading, onTriggerCron }: SystemTabProps) {
   };
 
   return (
-    <section className="glass-card p-6 sm:p-8 md:p-10 border-white/10 space-y-8 animate-in slide-in-from-right-4 duration-500">
+    <section className="glass-card p-6 sm:p-8 md:p-10 border-white/10 space-y-8 animate-slide-right">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-6">
         <div>
           <h2 className="text-2xl font-serif mb-1">Sistema & Mantenimiento</h2>
@@ -106,7 +106,7 @@ export function SystemTab({ loading, onTriggerCron }: SystemTabProps) {
           <Button
             onClick={onTriggerCron}
             disabled={loading}
-            className="w-full bg-white/5 hover:bg-white/10 text-foreground border border-white/10 rounded-xl h-11 text-xs uppercase tracking-wider font-bold gap-2 transition-all mt-4"
+            className="w-full bg-white/5 hover:bg-white/10 text-foreground border border-white/10 rounded-xl h-11 text-xs uppercase tracking-wider font-bold gap-2 transition-colors mt-4"
           >
             {loading ? (
               <Loader2 className="size-4 animate-spin text-primary" />
@@ -149,7 +149,7 @@ export function SystemTab({ loading, onTriggerCron }: SystemTabProps) {
           <Button
             onClick={handleClearCache}
             disabled={clearingCache}
-            className="w-full bg-white/5 hover:bg-white/10 text-foreground border border-white/10 rounded-xl h-11 text-xs uppercase tracking-wider font-bold gap-2 transition-all mt-4"
+            className="w-full bg-white/5 hover:bg-white/10 text-foreground border border-white/10 rounded-xl h-11 text-xs uppercase tracking-wider font-bold gap-2 transition-colors mt-4"
           >
             {clearingCache ? (
               <Loader2 className="size-4 animate-spin text-primary" />

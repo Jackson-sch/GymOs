@@ -159,6 +159,8 @@ export async function registerAttendanceAction(memberId: string, method: "QR" | 
 
 export async function processKioskCheckInAction(code: string) {
   try {
+    // Note: If kiosk runs on a dedicated device, it should be logged in as an admin or have a special role.
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
     // 1. Find member by DNI, QR Code, or PIN
     const member = await prisma.member.findFirst({
       where: {

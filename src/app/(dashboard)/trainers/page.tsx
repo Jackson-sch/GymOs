@@ -16,7 +16,7 @@ export default async function TrainersPage() {
   };
   
   return (
-    <div className="space-y-12 animate-in fade-in duration-700">
+    <div className="space-y-12 animate-fade-in">
       {/* Header Editorial */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="space-y-1">
@@ -54,9 +54,9 @@ export default async function TrainersPage() {
             icon: Award,
             color: "text-primary",
           },
-        ].map((stat, i) => (
+        ].map((stat) => (
           <div
-            key={i}
+            key={stat.label}
             className="glass-card p-6 border-white/5 flex items-center gap-4"
           >
             <div

@@ -82,16 +82,3 @@ export async function sendSMSWithLog(options: SendSMSOptions, memberId?: string,
   }
 }
 
-export async function sendWhatsApp({ to, body }: SendSMSOptions) {
-  const { client, phone } = await getTwilio();
-  
-  const formattedTo = to.startsWith("+") ? to : `+51${to}`;
-  
-  const result = await client.messages.create({
-    body,
-    from: `whatsapp:${phone}`,
-    to: `whatsapp:${formattedTo}`,
-  });
-
-  return result;
-}
