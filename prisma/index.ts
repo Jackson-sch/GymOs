@@ -9,8 +9,16 @@ const connectionString =
   process.env.POSTGRES_PRISMA_URL ||
   "postgresql://postgres:postgres@localhost:5432/gymos";
 
-const pool = new pg.Pool({ connectionString });
-const adapter = new PrismaPg(pool);
+// Strip sslmode parameters from connection string to allow pg driver ssl configuration
+const cleanConnectionString = connectionString.split("?")[0];
+
+const pool = new pg.Pool({
+  connectionString: cleanConnectionString,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
+const adapter = new PrismaPg(pool, { schema: "public" });
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
