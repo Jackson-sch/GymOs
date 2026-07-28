@@ -73,12 +73,24 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador para comenza
 ## 🧪 Pruebas y Compilación de Producción
 
 ```bash
-# Ejecutar suite de pruebas Vitest (14 tests)
+# Ejecutar suite de pruebas Vitest (16 tests)
 bunx vitest run
 
-# Compilación optimizada de producción (49 rutas)
+# Compilación optimizada de producción (52 rutas)
 bun run build
 ```
+
+---
+
+## 🔄 Migración a Tailwind CSS v4
+
+El proyecto fue migrado de Tailwind CSS v3 a **v4.2.4**. Los cambios de clases deprecadas aplicados:
+
+- `bg-gradient-*` → `bg-linear-*` (10 ocurrencias)
+- `flex-shrink-0` → `shrink-0` (1 ocurrencia)
+- `outline-none` → `outline-hidden` (8 ocurrencias)
+
+Ver `docs/ARCHITECTURE.md` para más detalles.
 
 ---
 

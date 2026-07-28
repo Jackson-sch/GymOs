@@ -71,6 +71,20 @@ Toda la interfaz visual de GymOS se adhiere al sistema de diseño **Liquid Glass
 - **Tipografía**: Combinación de tipografías sans-serif modernas para legibilidad de datos y fuentes serif para títulos elegantes.
 - **Micro-animaciones**: Transiciones fluidas al pasar el cursor (`transition-all duration-300 hover:scale-[1.02]`) y animaciones de entrada (`animate-in fade-in slide-in-from-bottom-4`).
 
+### Migración a Tailwind CSS v4
+
+El proyecto fue migrado exitosamente de Tailwind CSS v3 a **v4.2.4**, aplicando los siguientes cambios de clases deprecadas:
+
+| Clase v3 (deprecada) | Reemplazo v4 | Ocurrencias |
+|---|---|---|
+| `bg-gradient-to-{dir}` | `bg-linear-to-{dir}` | 10 en 9 archivos |
+| `flex-shrink-0` | `shrink-0` | 1 en 1 archivo |
+| `outline-none` | `outline-hidden` | 8 en 3 archivos |
+
+**Nota:** Los componentes de shadcn/ui mantienen `outline-none` deliberadamente, ya que en v4 esta clase aplica `outline-style: none` y se complementa con `focus-visible:ring-*` para indicadores de foco personalizados.
+
+El resto de clases deprecadas (`bg-opacity-*`, `text-opacity-*`, `border-opacity-*`, `divide-opacity-*`, `ring-opacity-*`, `placeholder-opacity-*`, `ring-offset-*`, `overflow-ellipsis`, `decoration-slice/clone`, `flex-grow`) no tenían ocurrencias en el código fuente.
+
 ---
 
 ## 🛡️ 4. Capa de Seguridad y Middleware (RBAC)
