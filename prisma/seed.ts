@@ -361,7 +361,16 @@ async function main() {
 
   // 5.1 Super Admin (Plataforma SaaS Global)
   const superAdminEmail = "superadmin@gymos.com";
-  const superAdminPassword = process.env.SEED_SUPER_ADMIN_PASSWORD || process.env.BETTER_AUTH_SECRET || process.env.NEXTAUTH_SECRET || "superadmin123!";
+  const superAdminPassword =
+    process.env.SEED_SUPER_ADMIN_PASSWORD ||
+    process.env.BETTER_AUTH_SECRET ||
+    process.env.NEXTAUTH_SECRET;
+
+  if (!superAdminPassword) {
+    throw new Error(
+      "SECURITY ERROR: SEED_SUPER_ADMIN_PASSWORD o BETTER_AUTH_SECRET debe estar configurada.",
+    );
+  }
   const existingSuperAdmin = await prisma.user.findUnique({ where: { email: superAdminEmail } });
 
   if (!existingSuperAdmin) {
@@ -373,7 +382,7 @@ async function main() {
         where: { email: superAdminEmail },
         data: { role: "SUPER_ADMIN", mustChangePassword: false, emailVerified: true },
       });
-      console.log("✅ Super Admin creado: superadmin@gymos.com con clave default");
+      console.log("✅ Super Admin creado: superadmin@gymos.com");
     } catch (e) {
       console.log("Super Admin ya existe o error al registrar:", e);
     }
@@ -386,7 +395,16 @@ async function main() {
 
   // 5.2 Admin Local del Gimnasio
   const adminEmail = "admin@gymos.com";
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD || process.env.BETTER_AUTH_SECRET || process.env.NEXTAUTH_SECRET || "admin123!";
+  const adminPassword =
+    process.env.SEED_ADMIN_PASSWORD ||
+    process.env.BETTER_AUTH_SECRET ||
+    process.env.NEXTAUTH_SECRET;
+
+  if (!adminPassword) {
+    throw new Error(
+      "SECURITY ERROR: SEED_ADMIN_PASSWORD o BETTER_AUTH_SECRET debe estar configurada.",
+    );
+  }
   const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
 
   if (!existingAdmin) {
