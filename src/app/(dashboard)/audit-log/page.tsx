@@ -39,8 +39,8 @@ export default async function AuditLogPage(props: { searchParams: Promise<{ [key
               Transparencia & Seguridad
             </span>
           </div>
-          <h1 className="text-6xl font-serif leading-tight">Auditoría</h1>
-          <p className="text-muted-foreground font-sans max-w-md">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold leading-tight text-foreground">Auditoría</h1>
+          <p className="text-muted-foreground font-sans text-sm">
             Registro histórico de cada acción administrativa ejecutada en <span className="text-foreground font-medium">GymOS</span>.
           </p>
         </div>
@@ -73,7 +73,7 @@ export default async function AuditLogPage(props: { searchParams: Promise<{ [key
         ].map((stat) => (
           <div
             key={stat.label}
-            className="glass-card p-8 border-white/5 flex items-center gap-5 interactive-hover group"
+            className="glass-card p-5 sm:p-8 border-white/5 flex items-center gap-5 interactive-hover group"
           >
             <div
               className={`p-4 rounded-2xl border border-white/10 transition-transform duration-500 group-hover:scale-110 ${stat.bg} ${stat.color}`}

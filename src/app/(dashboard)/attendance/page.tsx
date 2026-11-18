@@ -18,19 +18,17 @@ export default async function AttendancePage() {
   const stats = statsRes.success ? statsRes.stats : { totalToday: 0, birthdaysToday: 0, planDistribution: [] };
 
   return (
-    <div className="space-y-12 animate-fade-in">
+    <div className="space-y-8 animate-fade-in pb-10">
       {/* Header Editorial */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-emerald-500">
-            <Activity className="size-4" />
-            <span className="text-[10px] uppercase tracking-[0.3em] font-bold">Monitor de Tráfico</span>
-          </div>
-          <h1 className="text-6xl font-serif leading-tight">Asistencia</h1>
-          <p className="text-muted-foreground font-sans max-w-md">
-            Supervisando el flujo de socios en tiempo real para garantizar una <span className="text-foreground font-medium">experiencia fluida</span>.
-          </p>
+      <div className="space-y-1">
+        <div className="flex items-center gap-2 text-primary">
+          <Activity className="size-4" />
+          <span className="text-[10px] uppercase tracking-[0.3em] font-bold">Monitor de Tráfico</span>
         </div>
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold leading-tight text-foreground">Asistencia</h1>
+        <p className="text-sm text-muted-foreground font-sans">
+          Supervisando el flujo de socios en tiempo real para garantizar una <span className="text-foreground font-medium">experiencia fluida</span>.
+        </p>
       </div>
 
       {/* Main Client Component */}

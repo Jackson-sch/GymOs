@@ -36,7 +36,7 @@ export function PortalProfileAvatarCard({
   const isBasic = /b[aá]sico/i.test(planName);
 
   return (
-    <div className="lg:col-span-1 glass-card p-8 border-white/5 flex flex-col items-center text-center space-y-6 relative overflow-hidden group">
+    <div className="lg:col-span-1 glass-card p-5 sm:p-8 border-white/5 flex flex-col items-center text-center space-y-6 relative overflow-hidden group">
       <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl" />
       
       <div className="relative">
@@ -62,7 +62,7 @@ export function PortalProfileAvatarCard({
                 : "border-white/10"
         )}>
           <AvatarImage src={photo || ""} className="rounded-full object-cover" />
-          <AvatarFallback className="bg-primary/10 text-primary text-5xl font-serif">
+          <AvatarFallback className="bg-primary/10 text-primary text-3xl sm:text-5xl font-serif">
             {fullName?.substring(0, 2).toUpperCase() || "JA"}
           </AvatarFallback>
         </Avatar>

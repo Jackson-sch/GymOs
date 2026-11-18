@@ -134,20 +134,20 @@ export default function CheckInPage({ initialStats }: { initialStats?: any }) {
           <p className="text-white/60 text-xs tracking-wider uppercase mt-1">Verificación de Identidad Digital</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <Card className="bg-white/5 border-white/10 backdrop-blur-xl shadow-xl">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Card className="bg-white/5 border-white/10 backdrop-blur-xl shadow-xl py-0 gap-0">
             <CardContent className="p-4 text-center space-y-1">
               <div className="text-3xl font-mono font-bold text-primary">{stats.checkedIn}</div>
               <div className="text-[10px] text-white/60 uppercase tracking-widest font-bold">Asistencias Hoy</div>
             </CardContent>
           </Card>
-          <Card className="bg-white/5 border-white/10 backdrop-blur-xl shadow-xl">
+          <Card className="bg-white/5 border-white/10 backdrop-blur-xl shadow-xl py-0 gap-0">
             <CardContent className="p-4 text-center space-y-1">
               <div className="text-3xl font-mono font-bold">{stats.totalActive}</div>
               <div className="text-[10px] text-white/60 uppercase tracking-widest font-bold">Socios Activos</div>
             </CardContent>
           </Card>
-          <Card className="bg-white/5 border-white/10 backdrop-blur-xl shadow-xl">
+          <Card className="bg-white/5 border-white/10 backdrop-blur-xl shadow-xl py-0 gap-0">
             <CardContent className="p-4 text-center space-y-1">
               <div className="text-3xl font-mono font-bold text-emerald-400">{stats.occupancyRate}%</div>
               <div className="text-[10px] text-white/60 uppercase tracking-widest font-bold">Aforo Actual</div>
@@ -160,7 +160,7 @@ export default function CheckInPage({ initialStats }: { initialStats?: any }) {
             <CardContent className="p-6 text-center">
               {result.success ? (
                 <>
-                  <div className={`text-4xl mb-3 ${result.type === "checkin" ? "text-emerald-500 animate-bounce" : "text-amber-500"}`}>
+                  <div className={`text-2xl sm:text-4xl mb-3 ${result.type === "checkin" ? "text-emerald-500 animate-bounce" : "text-amber-500"}`}>
                     {result.type === "checkin" ? <LogIn className="w-12 h-12 mx-auto" /> : <LogOut className="w-12 h-12 mx-auto" />}
                   </div>
                   <h3 className="text-2xl font-serif mb-1 text-foreground">{result.message}</h3>
@@ -187,7 +187,7 @@ export default function CheckInPage({ initialStats }: { initialStats?: any }) {
                 </>
               ) : (
                 <div className="space-y-2">
-                  <div className="text-rose-500 text-4xl mb-2 font-bold animate-in shake">✕</div>
+                  <div className="text-rose-500 text-2xl sm:text-4xl mb-2 font-bold animate-in shake">✕</div>
                   <h3 className="text-xl font-serif text-rose-500">Acceso Denegado</h3>
                   <p className="text-white/80 text-sm">{result.error}</p>
                   {result.member && (

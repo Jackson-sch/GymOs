@@ -17,34 +17,46 @@ interface SettingsTabsProps {
   setCurrentPage: (page: number) => void;
 }
 
-export function SettingsTabs({ tabs, activeTab, setActiveTab, setCurrentPage }: SettingsTabsProps) {
+export function SettingsTabs({
+  tabs,
+  activeTab,
+  setActiveTab,
+  setCurrentPage,
+}: SettingsTabsProps) {
   return (
-    <div className="lg:col-span-3 space-y-2">
-      {tabs.map((tab) => (
-        <button type="button"
-          key={tab.id}
-          onClick={() => {
-            setActiveTab(tab.id);
-            if (tab.id !== activeTab) setCurrentPage(1);
-          }}
-          className={cn(
-            "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-300 text-sm font-medium",
-            activeTab === tab.id
-              ? "bg-white/5 border border-white/10 text-foreground"
-              : "text-muted-foreground hover:text-foreground hover:bg-white/5",
-          )}
-        >
-          <tab.icon
-            className={cn(
-              "size-4",
-              activeTab === tab.id
-                ? "text-primary"
-                : "text-muted-foreground",
-            )}
-          />
-          {tab.label}
-        </button>
-      ))}
-    </div>
+    <aside className="xl:col-span-3">
+      <nav
+        aria-label="Secciones de configuración"
+        className="glass-card border-border p-2 rounded-2xl flex xl:flex-col gap-1 overflow-x-auto no-scrollbar xl:sticky xl:top-6"
+      >
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              type="button"
+              key={tab.id}
+              onClick={() => {
+                setActiveTab(tab.id);
+                if (tab.id !== activeTab) setCurrentPage(1);
+              }}
+              className={cn(
+                "shrink-0 xl:w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors duration-200 text-xs sm:text-sm font-medium text-left",
+                isActive
+                  ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20 font-semibold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
+              )}
+            >
+              <tab.icon
+                className={cn(
+                  "size-4 shrink-0",
+                  isActive ? "text-primary-foreground" : "text-muted-foreground",
+                )}
+              />
+              <span className="truncate">{tab.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+    </aside>
   );
 }

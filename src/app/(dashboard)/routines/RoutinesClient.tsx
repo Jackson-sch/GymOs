@@ -267,7 +267,22 @@ export function RoutinesClient({
   );
 
   if (activePlan) {
-    return <PlanDetail plan={activePlan} onBack={() => setPlanName(null)} />;
+    return (
+      <PlanDetail
+        plan={activePlan}
+        exercises={exercises}
+        members={members}
+        trainers={trainers}
+        onRoutineAssigned={(newRoutine) =>
+          setRoutines((prev) => [newRoutine, ...prev])
+        }
+        onRoutinesUpdated={(updatedRoutines) => {
+          const updatedMap = new Map(updatedRoutines.map((r: any) => [r.id, r]));
+          setRoutines((prev) => prev.map((r) => updatedMap.get(r.id) ?? r));
+        }}
+        onBack={() => setPlanName(null)}
+      />
+    );
   }
 
   const totalAssignedMembers = new Set(routines.map((r) => r.memberId)).size;
@@ -275,53 +290,61 @@ export function RoutinesClient({
   return (
     <div className="space-y-8 animate-fade-in-fast w-full pb-8">
       {/* Studio Header & Stats */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 glass-card p-6 sm:p-8 rounded-3xl border-white/10">
-        <div className="space-y-1">
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 glass-card p-5 sm:p-8 rounded-3xl border-border/70 dark:border-white/10">
+        <div className="space-y-1.5 min-w-0">
           <div className="flex items-center gap-2 text-primary">
             <Flame className="size-4" />
             <span className="text-[10px] uppercase tracking-[0.3em] font-bold">
               Workout & Training Hub
             </span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-serif tracking-tight">
+          <h1 className="text-3xl sm:text-5xl font-serif font-bold leading-tight text-foreground">
             Rutinas & Catálogo Deportivo
           </h1>
-          <p className="text-xs text-muted-foreground font-sans max-w-lg">
+          <p className="text-sm text-muted-foreground font-sans max-w-xl">
             Diseño de planes personalizados, prescripción de cargas e instrucción audiovisual para socios.
           </p>
         </div>
 
         {/* Studio KPI Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full lg:w-auto">
-          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-27.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full xl:w-auto shrink-0">
+          <button
+            type="button"
+            onClick={() => setActiveTab("rutinas")}
+            className="glass-card px-4 py-3 rounded-2xl border-border/80 text-center hover:border-primary/40 transition-colors cursor-pointer"
+          >
             <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
               Planes
             </p>
-            <p className="text-2xl font-serif font-bold text-primary">
+            <p className="text-2xl font-serif font-bold text-primary tabular-nums">
               {groupedRoutines.length}
             </p>
-          </div>
-          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-27.5">
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("ejercicios")}
+            className="glass-card px-4 py-3 rounded-2xl border-border/80 text-center hover:border-primary/40 transition-colors cursor-pointer"
+          >
             <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
               Ejercicios
             </p>
-            <p className="text-2xl font-serif font-bold text-foreground">
+            <p className="text-2xl font-serif font-bold text-foreground tabular-nums">
               {exercises.length}
             </p>
-          </div>
-          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-27.5">
+          </button>
+          <div className="glass-card px-4 py-3 rounded-2xl border-border/80 text-center">
             <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
               Socios
             </p>
-            <p className="text-2xl font-serif font-bold text-emerald-400">
+            <p className="text-2xl font-serif font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
               {totalAssignedMembers}
             </p>
           </div>
-          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-center min-w-27.5">
+          <div className="glass-card px-4 py-3 rounded-2xl border-border/80 text-center">
             <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
               Entrenadores
             </p>
-            <p className="text-2xl font-serif font-bold text-amber-400">
+            <p className="text-2xl font-serif font-bold text-amber-600 dark:text-amber-400 tabular-nums">
               {trainers.length}
             </p>
           </div>
@@ -332,22 +355,22 @@ export function RoutinesClient({
       <Tabs
         value={activeTab ?? "rutinas"}
         onValueChange={setActiveTab}
-        className="space-y-8"
+        className="space-y-6"
       >
-        <TabsList className="bg-white/5 border border-white/10 p-1.5 rounded-2xl grid grid-cols-2 max-w-md">
+        <TabsList className="bg-muted/70 border border-border/80 p-1.5 rounded-2xl grid grid-cols-2 max-w-md w-full">
           <TabsTrigger
             value="rutinas"
-            className="rounded-xl text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors uppercase tracking-wider"
+            className="rounded-xl py-2 px-4 text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors uppercase tracking-wider"
           >
             <ClipboardList className="size-4" />
-            Planes de Entrenamiento
+            <span>Planes ({groupedRoutines.length})</span>
           </TabsTrigger>
           <TabsTrigger
             value="ejercicios"
-            className="rounded-xl text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors uppercase tracking-wider"
+            className="rounded-xl py-2 px-4 text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors uppercase tracking-wider"
           >
             <Dumbbell className="size-4" />
-            Catálogo de Ejercicios
+            <span>Ejercicios ({exercises.length})</span>
           </TabsTrigger>
         </TabsList>
 
@@ -356,15 +379,15 @@ export function RoutinesClient({
         {/* ========================================== */}
         <TabsContent
           value="rutinas"
-          className="space-y-8 outline-hidden animate-fade-in-fast"
+          className="space-y-6 outline-hidden animate-fade-in-fast"
         >
           {/* Search & Actions Bar */}
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass-card p-4 rounded-3xl border-white/10">
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass-card p-4 rounded-2xl border-border">
             <div className="relative flex-1 max-w-md w-full">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar plan por nombre, socio o entrenador..."
-                className="pl-12 h-11 rounded-2xl bg-white/5 border-white/10 text-xs focus-visible:ring-primary/40"
+                className="pl-10 h-10 rounded-xl bg-muted/40 border-border text-xs focus-visible:ring-primary/40"
                 value={routineSearchTerm ?? ""}
                 onChange={(e) => setRoutineSearchTerm(e.target.value)}
               />
@@ -382,7 +405,7 @@ export function RoutinesClient({
           </div>
 
           {/* Routine Plans Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
             {paginatedGroups.map((group, idx) => (
               <PlanCard
                 key={group.name || group.id}
@@ -426,13 +449,13 @@ export function RoutinesClient({
           className="space-y-8 outline-hidden animate-fade-in-fast"
         >
           {/* Search, Muscle Group Pills & Controls */}
-          <div className="space-y-4 glass-card p-5 rounded-3xl border-white/10">
+          <div className="space-y-4 glass-card p-4 rounded-2xl border-border">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="relative flex-1 max-w-md w-full">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar ejercicio por nombre o grupo muscular..."
-                  className="pl-12 h-11 rounded-2xl bg-white/5 border-white/10 text-xs focus-visible:ring-primary/40"
+                  className="pl-10 h-10 rounded-xl bg-muted/40 border-border text-xs focus-visible:ring-primary/40"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -440,7 +463,7 @@ export function RoutinesClient({
 
               <div className="flex items-center gap-3 w-full md:w-auto justify-end">
                 {/* View Mode Toggle */}
-                <div className="flex items-center p-1 rounded-xl bg-white/5 border border-white/10">
+                <div className="flex items-center p-1 rounded-xl bg-muted/60 border border-border">
                   <button
                     type="button"
                     onClick={() => setViewMode("grid")}
@@ -474,13 +497,13 @@ export function RoutinesClient({
                   variant="outline"
                   onClick={handleSeedCatalog}
                   disabled={isSeeding}
-                  className="rounded-2xl gap-2 h-11 px-4 font-bold text-xs uppercase tracking-wider border-white/10 bg-white/5 hover:bg-white/10 text-foreground"
+                  className="rounded-xl gap-2 h-10 px-4 font-bold text-xs uppercase tracking-wider border-border bg-muted/40 hover:bg-muted text-foreground"
                   title="Importar catálogo open-source gratuito (+800 ejercicios)"
                 >
                   {isSeeding ? (
                     <Loader2 className="size-4 animate-spin text-primary" />
                   ) : (
-                    <Sparkles className="size-4 text-amber-400" />
+                    <Sparkles className="size-4 text-amber-500" />
                   )}
                   {isSeeding ? "Sincronizando..." : "Poblar Catálogo (+800)"}
                 </Button>

@@ -16,7 +16,7 @@ export default function GlobalError({
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-zinc-950 p-6 text-zinc-100">
-      <div className="relative mx-auto flex max-w-md flex-col items-center rounded-2xl border border-white/10 bg-zinc-900/50 p-8 text-center backdrop-blur-xl shadow-2xl">
+      <div className="relative mx-auto flex max-w-md flex-col items-center rounded-2xl border border-white/10 bg-zinc-900/50 p-5 sm:p-8 text-center backdrop-blur-xl shadow-2xl">
         <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10 text-red-400 border border-red-500/20 shadow-lg shadow-red-500/10">
           <AlertTriangle className="h-8 w-8 animate-pulse" />
         </div>

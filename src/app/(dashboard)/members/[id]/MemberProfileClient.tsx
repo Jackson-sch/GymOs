@@ -19,7 +19,8 @@ import {
 } from "lucide-react";
 import { enablePortalAccess, disablePortalAccess } from "@/lib/actions/members-actions";
 import { assignMemberPin } from "@/lib/actions/checkin-actions";
-import { isAfter, isBefore, startOfMonth, endOfMonth } from "date-fns";
+import { isAfter, isBefore, startOfMonth, endOfMonth, differenceInCalendarDays, format } from "date-fns";
+import { es } from "date-fns/locale";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MemberProgressTab } from "./MemberProgressTab";
@@ -277,143 +278,248 @@ export function MemberProfileClient({ member }: { member: any }) {
     }).length;
   }, [mounted, member.attendances]);
 
+  const membershipCycle = useMemo(() => {
+    if (!mounted || !currentMembership?.endDate) {
+      return { daysRemaining: null as number | null, progress: 0, isExpired: false };
+    }
+    const now = new Date();
+    const end = new Date(currentMembership.endDate);
+    const start = currentMembership.startDate ? new Date(currentMembership.startDate) : now;
+    const totalDays = Math.max(1, differenceInCalendarDays(end, start));
+    const elapsedDays = Math.max(0, differenceInCalendarDays(now, start));
+    const daysRemaining = differenceInCalendarDays(end, now);
+    const progress = Math.min(100, Math.max(0, Math.round((elapsedDays / totalDays) * 100)));
+    return { daysRemaining, progress, isExpired: daysRemaining < 0 };
+  }, [mounted, currentMembership]);
+
   const displayPosition = dragReposition.isRepositioning ? dragReposition.position : (formData.photoPosition ?? 50);
 
   if (!mounted) return null;
 
   return (
-    <div className="w-full space-y-8 animate-fade-in-fast">
-        {/* Header Card */}
-        <div className="relative mb-8">
-          <Card className="bg-secondary/40 backdrop-blur-2xl border-border/10 shadow-2xl overflow-visible">
-            <CardContent className="p-0">
-              <div className="flex flex-col md:flex-row gap-8 p-8 items-center md:items-start">
-                <MemberPhotoSection 
-                  member={member}
-                  photo={formData.photo}
-                  photoPosition={formData.photoPosition}
-                  photoControlsVisible={photoControlsVisible}
-                  isUploading={isUploading}
-                  tier={isVip ? "vip" : isStandard ? "standard" : isBasic ? "basic" : "none"}
-                  displayPosition={displayPosition}
-                  dragReposition={dragReposition}
-                  fileInputRef={fileInputRef}
-                  onPhotoControlsToggle={(v) => dispatch({ type: "SET_PHOTO_CONTROLS", payload: v })}
-                  onUpload={uploadPhoto}
-                  onDelete={deletePhoto}
-                />
-
-                <div className="flex-1 w-full flex flex-col gap-6">
-                    <MemberIdentitySection 
-                      isEditing={isEditing} 
-                      member={member} 
-                      formData={formData} 
-                      setFormData={setFormData} 
-                    />
-                </div>
-
-                <div className="flex flex-row md:flex-col gap-2 shrink-0 self-center md:self-start">
-                  {isEditing ? (
-                    <>
-                      <Button onClick={handleSave} disabled={isSaving} className="bg-primary text-primary-foreground shadow-xl shadow-primary/20 h-12 px-8 rounded-xl font-bold group">
-                        {isSaving ? <Activity className="size-4 mr-2 animate-spin" /> : <Save className="size-4 mr-2 transition-transform group-hover:scale-110" />}
-                        {isSaving ? "Guardando" : "Guardar"}
-                      </Button>
-                      <Button variant="ghost" onClick={() => dispatch({ type: "SET_EDITING", payload: false })} disabled={isSaving} className="h-12 hover:bg-destructive/10 hover:text-destructive rounded-xl transition-colors">
-                        <X className="size-4 mr-2" /> Cancelar
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      {member.status !== 'ACTIVE' && (
-                        <Button 
-                          onClick={() => {
-                            const updates = { status: "ACTIVE" };
-                            setFormData(prev => ({ ...prev, ...updates }));
-                            quickSave(updates).then(() => window.location.reload());
-                          }} 
-                          className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white border border-emerald-500/20 shadow-lg shadow-emerald-500/5 h-12 px-8 rounded-xl font-bold transition-colors duration-300"
-                        >
-                          <ShieldCheck className="size-4 mr-2" /> Reactivar Socio
-                        </Button>
-                      )}
-                      
-                      <MemberPinDialog
-                        member={member}
-                        open={pinDialogOpen}
-                        onOpenChange={setPinDialogOpen}
-                        newPin={newPin}
-                        onPinChange={setNewPin}
-                        onAssignPin={handleAssignPin}
-                        isAssigningPin={isAssigningPin}
-                      />
-
-                      <Button onClick={() => dispatch({ type: "SET_EDITING", payload: true })} className="bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20 shadow-lg shadow-primary/5 h-12 px-8 rounded-xl font-bold transition-colors duration-300">
-                        <Edit2 className="size-4 mr-2" /> Editar Perfil
-                      </Button>
-                      
-                      {member.userId ? (
-                        <Button
-                          variant="outline"
-                          onClick={() => setIsPortalRevokeOpen(true)}
-                          disabled={isPortalRevokeLoading}
-                          className="group/btn relative overflow-hidden bg-emerald-500/10 border-emerald-500/20 hover:bg-destructive/10 hover:border-destructive/20 text-emerald-500 hover:text-destructive h-12 px-6 rounded-xl font-bold transition-colors duration-300 animate-slide-right-fast"
-                        >
-                          <span className="flex items-center gap-2 group-hover/btn:opacity-0 transition-colors duration-200">
-                            <ShieldCheck className="size-4 text-emerald-500" />
-                            <span>Acceso Habilitado</span>
-                          </span>
-                          <span className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover/btn:opacity-100 transition-colors duration-200 text-destructive">
-                            <X className="size-4 text-destructive" />
-                            <span>Revocar Acceso</span>
-                          </span>
-                        </Button>
-                      ) : (
-                        <Button 
-                          onClick={handleEnablePortal} 
-                          disabled={isLinking}
-                          className="bg-accent/10 text-accent hover:bg-accent hover:text-accent-foreground border border-accent/20 shadow-lg shadow-accent/5 h-12 px-8 rounded-xl font-bold transition-colors duration-300 animate-slide-right-fast"
-                        >
-                          {isLinking ? <Activity className="size-4 mr-2 animate-spin" /> : <Sparkles className="size-4 mr-2" />}
-                          Habilitar Portal
-                        </Button>
-                      )}
-
-                      <Button variant="ghost" asChild className="h-12 opacity-60 hover:opacity-100 rounded-xl transition-opacity">
-                        <Link href="/members"><ArrowLeft className="size-4 mr-2" /> Volver</Link>
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+    <div className="w-full space-y-6 animate-fade-in-fast pb-12">
+      {/* Breadcrumb + Horizontal Action Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+          <Link
+            href="/members"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card/80 border border-border hover:border-primary/40 hover:text-foreground transition-colors font-medium shrink-0"
+          >
+            <ArrowLeft className="size-3.5" />
+            <span>Miembros</span>
+          </Link>
+          <span className="opacity-40">/</span>
+          <span className="truncate font-semibold text-foreground">{member.fullName}</span>
         </div>
 
-        {/* Custom Tab Switcher */}
-        <MemberProfileTabNav
-          activeTab={activeTab}
-          onTabChange={(tab) => dispatch({ type: "SET_TAB", payload: tab })}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          {isEditing ? (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => dispatch({ type: "SET_EDITING", payload: false })}
+                disabled={isSaving}
+                className="h-10 rounded-xl border-border hover:bg-destructive/10 hover:text-destructive"
+              >
+                <X className="size-4 mr-1.5" /> Cancelar
+              </Button>
+              <Button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="bg-primary text-primary-foreground shadow-md shadow-primary/20 h-10 px-5 rounded-xl font-bold"
+              >
+                {isSaving ? <Activity className="size-4 mr-1.5 animate-spin" /> : <Save className="size-4 mr-1.5" />}
+                {isSaving ? "Guardando..." : "Guardar Cambios"}
+              </Button>
+            </>
+          ) : (
+            <>
+              {member.status !== "ACTIVE" && (
+                <Button
+                  onClick={() => {
+                    const updates = { status: "ACTIVE" };
+                    setFormData((prev) => ({ ...prev, ...updates }));
+                    quickSave(updates).then(() => window.location.reload());
+                  }}
+                  className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white border border-emerald-500/25 h-10 px-4 rounded-xl font-bold text-xs"
+                >
+                  <ShieldCheck className="size-4 mr-1.5" /> Reactivar
+                </Button>
+              )}
 
-        {activeTab === "GENERAL" && (
-          <>
-            <MemberStats 
-              attendancesThisMonth={attendancesThisMonth} 
-              currentMembership={currentMembership} 
-              lastWeight={member.bodyMetrics?.[0]?.weight} 
-            />
+              <MemberPinDialog
+                member={member}
+                open={pinDialogOpen}
+                onOpenChange={setPinDialogOpen}
+                newPin={newPin}
+                onPinChange={setNewPin}
+                onAssignPin={handleAssignPin}
+                isAssigningPin={isAssigningPin}
+              />
 
-            <div className="grid lg:grid-cols-12 gap-8 mb-16">
-              {/* Recent Activity */}
-              <div className="lg:col-span-7">
-                <MemberActivityHistory attendances={member.attendances || []} />
+              {member.userId ? (
+                <Button
+                  variant="outline"
+                  onClick={() => setIsPortalRevokeOpen(true)}
+                  disabled={isPortalRevokeLoading}
+                  className="group/btn relative overflow-hidden bg-emerald-500/10 border-emerald-500/25 hover:bg-destructive/10 hover:border-destructive/30 text-emerald-600 dark:text-emerald-400 hover:text-destructive h-10 px-4 rounded-xl font-bold text-xs transition-colors"
+                >
+                  <span className="flex items-center gap-1.5 group-hover/btn:opacity-0 transition-opacity">
+                    <ShieldCheck className="size-3.5" />
+                    <span>Acceso Habilitado</span>
+                  </span>
+                  <span className="absolute inset-0 flex items-center justify-center gap-1.5 opacity-0 group-hover/btn:opacity-100 transition-opacity text-destructive">
+                    <X className="size-3.5" />
+                    <span>Revocar Acceso</span>
+                  </span>
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={handleEnablePortal}
+                  disabled={isLinking}
+                  className="bg-accent/10 text-accent hover:bg-accent hover:text-accent-foreground border-accent/25 h-10 px-4 rounded-xl font-bold text-xs"
+                >
+                  {isLinking ? <Activity className="size-3.5 mr-1.5 animate-spin" /> : <Sparkles className="size-3.5 mr-1.5" />}
+                  Habilitar Portal
+                </Button>
+              )}
+
+              <Button
+                onClick={() => dispatch({ type: "SET_EDITING", payload: true })}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 h-10 px-5 rounded-xl font-bold text-xs"
+              >
+                <Edit2 className="size-3.5 mr-1.5" /> Editar Perfil
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Hero Split Card + Integrated Tabs */}
+      <Card className="glass-card border-border shadow-xl overflow-hidden rounded-3xl">
+        <CardContent className="p-0">
+          <div className="flex flex-col lg:flex-row gap-6 p-6 md:p-8 items-center lg:items-stretch justify-between">
+            {/* Left: Photo + Identity */}
+            <div className="flex flex-col md:flex-row gap-6 items-center md:items-start flex-1 min-w-0 w-full">
+              <MemberPhotoSection
+                member={member}
+                photo={formData.photo}
+                photoPosition={formData.photoPosition}
+                photoControlsVisible={photoControlsVisible}
+                isUploading={isUploading}
+                tier={isVip ? "vip" : isStandard ? "standard" : isBasic ? "basic" : "none"}
+                displayPosition={displayPosition}
+                dragReposition={dragReposition}
+                fileInputRef={fileInputRef}
+                onPhotoControlsToggle={(v) => dispatch({ type: "SET_PHOTO_CONTROLS", payload: v })}
+                onUpload={uploadPhoto}
+                onDelete={deletePhoto}
+              />
+
+              <div className="flex-1 min-w-0 w-full flex flex-col justify-center">
+                <MemberIdentitySection
+                  isEditing={isEditing}
+                  member={member}
+                  formData={formData}
+                  setFormData={setFormData}
+                />
               </div>
-
-              <MemberPlanDetails member={member} currentMembership={currentMembership} />
             </div>
-          </>
-        )}
+
+            {/* Right: Integrated Membership Pass Card */}
+            {!isEditing && (
+              <div className="w-full lg:w-80 shrink-0 rounded-2xl bg-muted/50 border border-border p-5 flex flex-col justify-between gap-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                      Pase de Membresía
+                    </p>
+                    <p className="text-lg font-serif font-semibold text-foreground truncate mt-0.5">
+                      {hasPlan ? planName : "Sin Plan Activo"}
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border shrink-0",
+                      !hasPlan
+                        ? "bg-muted text-muted-foreground border-border"
+                        : membershipCycle.isExpired
+                          ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25"
+                          : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25",
+                    )}
+                  >
+                    {!hasPlan ? "Sin Plan" : membershipCycle.isExpired ? "Vencido" : "Vigente"}
+                  </span>
+                </div>
+
+                {hasPlan && currentMembership?.endDate ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">
+                        Vence {format(new Date(currentMembership.endDate), "dd MMM yyyy", { locale: es })}
+                      </span>
+                      <span className="font-mono font-bold text-foreground">
+                        {membershipCycle.daysRemaining !== null && membershipCycle.daysRemaining >= 0
+                          ? `${membershipCycle.daysRemaining}d rest.`
+                          : `Hace ${Math.abs(membershipCycle.daysRemaining ?? 0)}d`}
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-border overflow-hidden">
+                      <div
+                        className={cn(
+                          "h-full rounded-full transition-all duration-500",
+                          membershipCycle.isExpired ? "bg-rose-500" : "bg-primary",
+                        )}
+                        style={{ width: `${membershipCycle.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Asigna un plan o registra un pago para habilitar el pase.
+                  </p>
+                )}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => dispatch({ type: "SET_TAB", payload: "PAYMENTS" })}
+                  className="w-full h-9 rounded-xl border-border bg-card/80 hover:border-primary/40 text-xs font-bold uppercase tracking-wider"
+                >
+                  <Receipt className="size-3.5 mr-1.5 text-primary" />
+                  Ver Pagos y Renovación
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Integrated Tab Switcher */}
+          <MemberProfileTabNav
+            activeTab={activeTab}
+            onTabChange={(tab) => dispatch({ type: "SET_TAB", payload: tab })}
+          />
+        </CardContent>
+      </Card>
+
+      {activeTab === "GENERAL" && (
+        <div className="space-y-6">
+          <MemberStats
+            attendancesThisMonth={attendancesThisMonth}
+            currentMembership={currentMembership}
+            lastWeight={member.bodyMetrics?.[0]?.weight}
+          />
+
+          <div className="grid lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8">
+              <MemberActivityHistory attendances={member.attendances || []} />
+            </div>
+
+            <MemberPlanDetails member={member} currentMembership={currentMembership} />
+          </div>
+        </div>
+      )}
 
         {activeTab === "PROGRESS" && <MemberProgressTab member={member} />}
         {activeTab === "ROUTINE" && <MemberRoutineTab member={member} />}

@@ -163,7 +163,7 @@ export function ClassDetailsDialog({ classId, onClose }: ClassDetailsDialogProps
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-white/5 rounded-lg">
                     <Calendar className="size-4 text-muted-foreground" />
@@ -291,7 +291,7 @@ export function ClassDetailsDialog({ classId, onClose }: ClassDetailsDialogProps
             </div>
           </div>
         ) : (
-          <div className="p-12 text-center text-rose-500">
+          <div className="-6 sm:-12 text-center text-rose-500">
             Error al cargar la clase
           </div>
         )}

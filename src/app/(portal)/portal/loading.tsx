@@ -3,8 +3,8 @@ import { Loader2, Dumbbell } from "lucide-react";
 
 export default function PortalLoading() {
   return (
-    <div className="w-full min-h-[70vh] flex flex-col items-center justify-center p-8">
-      <div className="glass-card p-12 rounded-3xl flex flex-col items-center text-center space-y-6 max-w-md w-full border border-white/10 shadow-2xl relative overflow-hidden">
+    <div className="w-full min-h-[70vh] flex flex-col items-center justify-center p-5 sm:p-8">
+      <div className="glass-card p-6 sm:p-12 rounded-3xl flex flex-col items-center text-center space-y-6 max-w-md w-full border border-white/10 shadow-2xl relative overflow-hidden">
         <div className="absolute inset-0 bg-primary/5 animate-pulse pointer-events-none" />
         
         <div className="bg-primary/20 p-5 rounded-3xl backdrop-blur-md border border-white/10 animate-bounce">

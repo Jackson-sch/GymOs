@@ -25,7 +25,7 @@ export default async function TrainerMembersPage() {
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="space-y-1">
-        <h1 className="text-4xl font-serif">Mis Alumnos</h1>
+        <h1 className="text-2xl sm:text-4xl font-serif">Mis Alumnos</h1>
         <p className="text-muted-foreground">Gestiona las rutinas y el progreso de tus alumnos asignados.</p>
       </div>
 

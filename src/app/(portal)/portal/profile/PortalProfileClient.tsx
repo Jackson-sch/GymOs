@@ -171,14 +171,14 @@ export default function PortalProfileClient({ member: initialMember, user: initi
     <div className="space-y-8 animate-fade-in-fast">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-4xl md:text-5xl font-serif leading-tight">Mi Perfil</h1>
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-serif leading-tight">Mi Perfil</h1>
           <p className="text-muted-foreground font-sans">Gestiona tu información personal, de contacto y cuenta.</p>
         </div>
 
         {!isEditing && (
           <Button
             onClick={() => setIsEditing(true)}
-            className="self-start sm:self-center h-11 bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary-foreground font-sans rounded-xl font-medium tracking-wide flex items-center gap-2 transition-colors px-5"
+            className="self-start sm:self-center h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-sans rounded-xl font-semibold tracking-wide flex items-center gap-2 transition-colors px-5 shadow-md shadow-primary/20"
           >
             <Edit2 className="w-4 h-4" />
             Editar Perfil
@@ -202,7 +202,7 @@ export default function PortalProfileClient({ member: initialMember, user: initi
 
         {/* Right Side: Form details */}
         <div className="lg:col-span-2">
-          <form onSubmit={handleSave} className="glass-card p-8 border-white/5 space-y-8">
+          <form onSubmit={handleSave} className="glass-card p-6 sm:p-8 border-border/70 dark:border-white/10 space-y-8">
             {/* Personal Information */}
             <PersonalInfoFormSection
               isEditing={isEditing}
@@ -231,13 +231,13 @@ export default function PortalProfileClient({ member: initialMember, user: initi
 
             {/* Action Buttons for Editing */}
             {isEditing && (
-              <div className="flex items-center justify-end gap-3 pt-6 border-t border-white/5 animate-in slide-in-from-bottom-2">
+              <div className="flex items-center justify-end gap-3 pt-6 border-t border-border/60 dark:border-white/10 animate-in slide-in-from-bottom-2">
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={handleCancel}
                   disabled={loading}
-                  className="h-11 rounded-xl text-muted-foreground hover:text-white hover:bg-white/5 font-sans px-5"
+                  className="h-11 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted font-sans px-5"
                 >
                   <X className="w-4 h-4 mr-2" />
                   Cancelar

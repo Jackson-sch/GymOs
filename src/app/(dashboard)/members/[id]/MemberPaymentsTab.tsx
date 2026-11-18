@@ -31,7 +31,7 @@ export function MemberPaymentsTab({ member }: { member: any }) {
 
   if (payments.length === 0) {
     return (
-      <Card className="glass-card border-white/10 p-12 text-center">
+      <Card className="glass-card border-white/10 p-6 sm:p-12 text-center">
         <Receipt className="size-12 text-muted-foreground mx-auto mb-4 opacity-40" />
         <h3 className="text-xl font-serif font-bold text-foreground">Sin Historial de Pagos</h3>
         <p className="text-xs text-muted-foreground mt-2 max-w-sm mx-auto">
@@ -57,7 +57,8 @@ export function MemberPaymentsTab({ member }: { member: any }) {
           </Badge>
         </div>
 
-        <Table>
+        <div className="overflow-x-auto">
+          <Table>
           <TableHeader className="bg-white/5">
             <TableRow className="border-white/5 hover:bg-transparent">
               <TableHead className="text-muted-foreground font-bold text-xs py-4">Fecha</TableHead>
@@ -94,6 +95,7 @@ export function MemberPaymentsTab({ member }: { member: any }) {
             ))}
           </TableBody>
         </Table>
+        </div>
       </div>
     </div>
   );

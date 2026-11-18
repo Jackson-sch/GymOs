@@ -48,11 +48,12 @@ export function RadialDonutChart({ data = defaultData }: { data?: DataItem[] }) 
     .cornerRadius(isMobile ? 12 : 16);
 
   const arcs = pieGenerator(data);
+  const total = data.reduce((acc, curr) => acc + curr.value, 0);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 p-2 w-full h-full my-auto min-h-[260px]">
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 w-full max-w-full mx-auto my-auto">
-        <div className="relative w-44 sm:w-48 max-w-[200px] aspect-square flex items-center justify-center shrink-0">
+    <div className="@container flex flex-col items-center justify-center gap-4 p-2 w-full h-full my-auto min-h-[240px]">
+      <div className="flex flex-col @[360px]:flex-row items-center justify-center gap-5 @[360px]:gap-7 w-full max-w-full mx-auto my-auto">
+        <div className="relative w-36 sm:w-44 max-w-[180px] aspect-square flex items-center justify-center shrink-0">
           {/* Enhanced Radial Glow - Fades out naturally */}
           <div 
             className="absolute inset-0 rounded-full scale-125 opacity-40 blur-[100px]" 
@@ -93,7 +94,7 @@ export function RadialDonutChart({ data = defaultData }: { data?: DataItem[] }) 
                   />
                 </TooltipTrigger>
                 <TooltipContent className="bg-secondary/90 backdrop-blur-md border-white/10 text-foreground font-medium">
-                  {data[i].label}: {data[i].value}%
+                  {data[i].label}: {data[i].value} ({total > 0 ? Math.round((data[i].value / total) * 100) : 0}%)
                 </TooltipContent>
               </Tooltip>
             ))}
@@ -105,9 +106,9 @@ export function RadialDonutChart({ data = defaultData }: { data?: DataItem[] }) 
             <text
               textAnchor="middle"
               alignmentBaseline="middle"
-              className="fill-foreground text-5xl font-serif tracking-tighter"
+              className="fill-foreground text-3xl sm:text-5xl font-serif tracking-tighter"
             >
-              {data.reduce((acc, curr) => acc + curr.value, 0)}
+              {total}
             </text>
             <text
               y={32}
@@ -121,27 +122,33 @@ export function RadialDonutChart({ data = defaultData }: { data?: DataItem[] }) 
         </svg>
         </div>
         
-        <div className="grid grid-cols-1 gap-5 lg:gap-6">
-          {data.map((item, i) => (
-            <div key={i} className="flex flex-col gap-1.5 group">
-              <div className="flex items-center gap-4">
-              <div 
-                className="w-1.5 h-6 rounded-full transition-colors duration-500 group-hover:h-8" 
-                style={{ backgroundColor: item.color }} 
-              />
-              <div>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
-                  {item.label}
-                </p>
-                <p className="text-lg font-sans font-light">
-                  {item.value}%
-                </p>
+        <div className="grid grid-cols-3 @[360px]:grid-cols-1 gap-3 @[360px]:gap-4 w-full @[360px]:w-auto">
+          {data.map((item, i) => {
+            const pct = total > 0 ? Math.round((item.value / total) * 100) : 0;
+            return (
+              <div key={item.label || i} className="flex flex-col gap-1 group min-w-0">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className="w-1.5 h-6 rounded-full transition-colors duration-500 group-hover:h-7 shrink-0"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <div className="min-w-0">
+                    <p className="text-[9px] @[360px]:text-[10px] uppercase tracking-wider text-muted-foreground font-bold truncate">
+                      {item.label}
+                    </p>
+                    <p className="text-sm @[360px]:text-lg font-sans font-semibold tabular-nums text-foreground">
+                      {item.value}{" "}
+                      <span className="text-[10px] text-muted-foreground font-normal">
+                        ({pct}%)
+                      </span>
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            );
+          })}
+        </div>
       </div>
-    </div>
     </div>
   );
 }

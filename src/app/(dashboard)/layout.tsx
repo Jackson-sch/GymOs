@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { DashboardContent } from "./DashboardContent";
 import { getConfigMap } from "@/lib/config";
+import { checkActiveAccess } from "@/lib/security";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,14 @@ export default async function DashboardLayout({
     headers: await headers(),
   });
 
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  const access = await checkActiveAccess(session);
+  if (!access.ok) {
+    redirect("/suspended");
+  }
 
   // Fetch branding config
   const branding = await getConfigMap(["GYM_NAME", "GYM_LOGO"]);

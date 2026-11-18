@@ -101,10 +101,10 @@ export function ClassForm({ initialData, trainers, onSuccess }: ClassFormProps) 
         <div className="space-y-2">
           <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Entrenador</Label>
           <Select onValueChange={(v) => setValue("trainerId", v)} defaultValue={initialData?.trainerId}>
-            <SelectTrigger className="bg-white/5 border-white/10 h-10 w-full">
+            <SelectTrigger className="bg-muted/40 border-border text-foreground h-10 w-full">
               <SelectValue placeholder="Seleccionar..." />
             </SelectTrigger>
-            <SelectContent className="glass-card bg-black/90 text-white">
+            <SelectContent className="bg-popover border-border text-popover-foreground backdrop-blur-xl">
               {trainers.map((t) => (
                 <SelectItem key={t.id} value={t.id}>{t.fullName}</SelectItem>
               ))}

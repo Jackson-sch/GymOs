@@ -26,14 +26,8 @@ import {
   settlePayrollAction, 
   getTrainerPayrollHistory 
 } from "@/lib/actions/payroll-actions";
-import dynamic from "next/dynamic";
-import { FileDown } from "lucide-react";
-import { PayrollReceiptPDF } from "./components/PayrollReceiptPDF";
-
-const PDFDownloadLink = dynamic(
-  () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
-  { ssr: false }
-);
+import { FileDown, Loader2 } from "lucide-react";
+import { PayrollReceiptPDF } from "./components/_PayrollReceiptPDFDocument";
 import { DateRangePicker } from "@/components/shared/DateRangePicker";
 
 export function TrainerPayrollTab({ trainer }: { trainer: any }) {
@@ -43,7 +37,34 @@ export function TrainerPayrollTab({ trainer }: { trainer: any }) {
   const [history, setHistory] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSettling, setIsSettling] = useState(false);
-  const [isMounted] = useState(() => typeof window !== "undefined");
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    if (!payrollData || isGeneratingPdf) return;
+    setIsGeneratingPdf(true);
+    try {
+      const { pdf } = await import("@react-pdf/renderer");
+      const blob = await pdf(
+        <PayrollReceiptPDF
+          trainer={trainer}
+          payrollData={payrollData}
+          periodStart={new Date(startDate)}
+          periodEnd={new Date(endDate)}
+        />,
+      ).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `RECIBO-${trainer.fullName.replace(/\s+/g, "_")}-${format(new Date(), "yyyyMMdd")}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error al generar PDF de nómina:", err);
+      toast.error("No se pudo generar el recibo de nómina");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
 
   const fetchPayrollData = React.useCallback(async () => {
     setIsLoading(true);
@@ -106,77 +127,67 @@ export function TrainerPayrollTab({ trainer }: { trainer: any }) {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 border-border/10 shadow-xl bg-secondary/20 backdrop-blur-sm overflow-hidden relative">
-          <div className="absolute top-0 left-0 w-full h-1 bg-primary/20" />
+        <Card className="lg:col-span-2 glass-card border-border shadow-xl backdrop-blur-sm overflow-hidden relative rounded-3xl">
+          <div className="absolute top-0 left-0 w-full h-1 bg-primary/30" />
           <CardHeader>
-            <CardTitle className="text-sm font-bold uppercase tracking-widest opacity-60 flex items-center gap-2">
+            <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-primary" /> Cálculo del Periodo
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-8">
+          <CardContent className="space-y-6">
             {isLoading ? (
               <div className="h-[200px] flex items-center justify-center animate-pulse text-muted-foreground text-xs uppercase tracking-widest">
                 Calculando montos...
               </div>
             ) : payrollData ? (
               <>
-                <div className="grid grid-cols-3 gap-6">
-                  <div className="p-4 rounded-2xl bg-background/30 border border-white/5 space-y-1">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-4 rounded-2xl bg-muted/50 border border-border space-y-1">
                     <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Clases Dictadas</div>
-                    <div className="text-2xl font-light">{payrollData.classesCount}</div>
-                    <div className="text-[10px] text-primary/60 font-bold uppercase">× ${payrollData.perClassRate} c/u</div>
+                    <div className="text-2xl font-light text-foreground">{payrollData.classesCount}</div>
+                    <div className="text-[10px] text-primary font-bold uppercase">× S/ {payrollData.perClassRate} c/u</div>
                   </div>
-                  <div className="p-4 rounded-2xl bg-background/30 border border-white/5 space-y-1">
+                  <div className="p-4 rounded-2xl bg-muted/50 border border-border space-y-1">
                     <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Pago x Clases</div>
-                    <div className="text-2xl font-light">S/. {payrollData.perClassTotal.toLocaleString()}</div>
+                    <div className="text-2xl font-light text-foreground">S/. {payrollData.perClassTotal.toLocaleString()}</div>
                   </div>
-                  <div className="p-4 rounded-2xl bg-background/30 border border-white/5 space-y-1">
+                  <div className="p-4 rounded-2xl bg-muted/50 border border-border space-y-1">
                     <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Ventas/Comis.</div>
-                    <div className="text-2xl font-light">S/. {payrollData.commissionsTotal.toLocaleString()}</div>
-                    <div className="text-[10px] text-accent/60 font-bold uppercase">{payrollData.salesCount} ventas ({payrollData.commissionPct}%)</div>
+                    <div className="text-2xl font-light text-foreground">S/. {payrollData.commissionsTotal.toLocaleString()}</div>
+                    <div className="text-[10px] text-primary font-bold uppercase">{payrollData.salesCount} ventas ({payrollData.commissionPct}%)</div>
                   </div>
-                  <div className="p-4 rounded-2xl bg-background/30 border border-white/5 space-y-1">
+                  <div className="p-4 rounded-2xl bg-muted/50 border border-border space-y-1">
                     <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Salario Base</div>
-                    <div className="text-2xl font-light">S/. {payrollData.baseAmount.toLocaleString()}</div>
+                    <div className="text-2xl font-light text-foreground">S/. {payrollData.baseAmount.toLocaleString()}</div>
                   </div>
                 </div>
 
                 <div className="p-6 rounded-3xl bg-primary/5 border border-primary/20 flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="space-y-1 text-center md:text-left">
                     <div className="text-xs font-bold text-primary uppercase tracking-[0.2em]">Total a Liquidar</div>
-                    <div className="text-4xl font-light text-foreground">S/. {payrollData.totalAmount.toLocaleString()}</div>
+                    <div className="text-2xl sm:text-4xl font-light text-foreground">S/. {payrollData.totalAmount.toLocaleString()}</div>
                   </div>
-                  <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-                    {isMounted && payrollData && (
-                      <PDFDownloadLink
-                        document={
-                          <PayrollReceiptPDF 
-                            trainer={trainer} 
-                            payrollData={payrollData} 
-                            periodStart={new Date(startDate)} 
-                            periodEnd={new Date(endDate)} 
-                          />
-                        }
-                        fileName={`RECIBO-${trainer.fullName.replace(/\s+/g, '_')}-${format(new Date(), 'yyyyMMdd')}.pdf`}
-                      >
-                        {({ loading }) => (
-                          <Button 
-                            variant="outline"
-                            className="h-14 px-6 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground font-bold transition-colors w-full md:w-auto"
-                            disabled={loading}
-                          >
-                            <FileDown className="w-5 h-5 mr-2" />
-                            {loading ? "Generando..." : "Descargar PDF"}
-                          </Button>
-                        )}
-                      </PDFDownloadLink>
-                    )}
+                  <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleDownloadPdf}
+                      disabled={isGeneratingPdf}
+                      className="h-12 px-6 rounded-2xl border-border bg-card/80 hover:bg-muted text-foreground font-bold transition-colors w-full md:w-auto"
+                    >
+                      {isGeneratingPdf ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <FileDown className="w-4 h-4 mr-2 text-primary" />
+                      )}
+                      {isGeneratingPdf ? "Generando..." : "Descargar PDF"}
+                    </Button>
                     <Button 
                       onClick={handleSettle}
                       disabled={isSettling || payrollData.totalAmount <= 0}
-                      className="h-14 px-10 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform w-full md:w-auto"
+                      className="h-12 p-5 sm:p-8 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors w-full md:w-auto"
                     >
-                      {isSettling ? <Zap className="w-5 h-5 animate-spin mr-2" /> : <CheckCircle2 className="w-5 h-5 mr-2" />}
+                      {isSettling ? <Zap className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
                       {isSettling ? "Procesando..." : "Registrar Pago"}
                     </Button>
                   </div>

@@ -41,20 +41,20 @@ export function BranchSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="h-10 px-3.5 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 text-foreground font-bold text-xs gap-2 transition-colors hover:scale-102"
+          className="h-9 sm:h-10 px-2.5 sm:px-3.5 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 text-foreground font-bold text-[11px] sm:text-xs gap-1.5 sm:gap-2 transition-colors hover:scale-102 max-w-[130px] sm:max-w-[200px] md:max-w-none min-w-0"
         >
           {selectedBranchId === "ALL" ? (
-            <div className="flex items-center gap-2 text-primary">
-              <Globe className="size-4" />
-              <span>Todas las Sedes (Consolidado)</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 text-primary min-w-0">
+              <Globe className="size-3.5 sm:size-4 shrink-0" />
+              <span className="truncate">Todas las Sedes (Consolidado)</span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-foreground">
-              <MapPin className="size-4 text-primary" />
-              <span>{activeBranch?.name || "Sede Seleccionada"}</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 text-foreground min-w-0">
+              <MapPin className="size-3.5 sm:size-4 text-primary shrink-0" />
+              <span className="truncate">{activeBranch?.name || "Sede Seleccionada"}</span>
             </div>
           )}
-          <ChevronDown className="size-3.5 text-muted-foreground ml-1" />
+          <ChevronDown className="size-3.5 text-muted-foreground ml-0.5 sm:ml-1 shrink-0" />
         </Button>
       </DropdownMenuTrigger>
 

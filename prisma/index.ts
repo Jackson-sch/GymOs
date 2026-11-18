@@ -11,12 +11,16 @@ const connectionString =
 
 // Strip sslmode parameters from connection string to allow pg driver ssl configuration
 const cleanConnectionString = connectionString.split("?")[0];
+const isLocalDb =
+  connectionString.includes("localhost") ||
+  connectionString.includes("127.0.0.1");
+const useSsl =
+  connectionString.includes("sslmode=require") ||
+  (!isLocalDb && !connectionString.includes("sslmode=disable"));
 
 const pool = new pg.Pool({
   connectionString: cleanConnectionString,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
 });
 const adapter = new PrismaPg(pool, { schema: "public" });
 

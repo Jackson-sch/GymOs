@@ -106,7 +106,7 @@ export function KioskClient() {
         />
       </form>
 
-      <div className="max-w-2xl w-full p-8 flex flex-col items-center justify-center animate-zoom-in">
+      <div className="max-w-2xl w-full p-4 sm:p-8 flex flex-col items-center justify-center animate-zoom-in">
         
         {status === "IDLE" && (
           <div className="text-center space-y-12 w-full max-w-sm">
@@ -134,7 +134,7 @@ export function KioskClient() {
                 )}
               </div>
               <div className="space-y-2">
-                <h1 className="text-5xl font-serif tracking-tight">Bienvenido</h1>
+                <h1 className="text-3xl sm:text-5xl font-serif tracking-tight">Bienvenido</h1>
                 <p className="text-muted-foreground uppercase tracking-[0.3em] text-[10px] font-bold">
                   Escanea tu código QR o ingresa tu DNI
                 </p>
@@ -142,7 +142,7 @@ export function KioskClient() {
             </div>
 
             {/* Visual display of entered code */}
-            <div className="h-16 flex items-center justify-center text-4xl font-mono tracking-[0.3em] font-bold text-primary border-b-2 border-primary/30 mx-8">
+            <div className="h-16 flex items-center justify-center text-2xl sm:text-4xl font-mono tracking-[0.3em] font-bold text-primary border-b-2 border-primary/30 mx-4 sm:mx-8">
               {code || <span className="opacity-30">------</span>}
             </div>
 
@@ -200,7 +200,7 @@ export function KioskClient() {
                 )}
               </div>
               <div className="space-y-2">
-                <h1 className="text-5xl font-serif text-emerald-50 drop-shadow-md">
+                <h1 className="text-3xl sm:text-5xl font-serif text-emerald-50 drop-shadow-md">
                   ¡Hola, {memberInfo.fullName.split(' ')[0]}!
                 </h1>
                 <p className="text-emerald-400/80 font-bold uppercase tracking-widest">
@@ -231,11 +231,11 @@ export function KioskClient() {
               )}
               <div className="space-y-2">
                 {memberInfo ? (
-                  <h1 className="text-4xl font-serif text-destructive-foreground drop-shadow-md">
+                  <h1 className="text-2xl sm:text-4xl font-serif text-destructive-foreground drop-shadow-md">
                     {memberInfo.fullName}
                   </h1>
                 ) : (
-                  <h1 className="text-4xl font-serif text-destructive drop-shadow-md">
+                  <h1 className="text-2xl sm:text-4xl font-serif text-destructive drop-shadow-md">
                     No Encontrado
                   </h1>
                 )}

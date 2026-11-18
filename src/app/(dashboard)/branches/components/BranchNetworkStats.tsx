@@ -22,9 +22,9 @@ export function BranchNetworkStats({
   totalRevenue,
 }: BranchNetworkStatsProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <Card className="glass-card border-white/15 rounded-3xl overflow-hidden relative group backdrop-blur-md bg-zinc-950/85 shadow-xl">
-        <CardContent className="p-6 space-y-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <Card className="glass-card border-white/15 rounded-3xl overflow-hidden relative group backdrop-blur-md bg-zinc-950/85 shadow-xl py-0 gap-0">
+        <CardContent className="p-5 space-y-2">
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-2xl bg-primary/10 border border-primary/20 text-primary">
               <MapPin className="size-5" />
@@ -40,8 +40,8 @@ export function BranchNetworkStats({
         </CardContent>
       </Card>
 
-      <Card className="glass-card border-white/15 rounded-3xl overflow-hidden relative group backdrop-blur-md bg-zinc-950/85 shadow-xl">
-        <CardContent className="p-6 space-y-2">
+      <Card className="glass-card border-white/15 rounded-3xl overflow-hidden relative group backdrop-blur-md bg-zinc-950/85 shadow-xl py-0 gap-0">
+        <CardContent className="p-5 space-y-2">
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400">
               <Users className="size-5" />
@@ -55,8 +55,8 @@ export function BranchNetworkStats({
         </CardContent>
       </Card>
 
-      <Card className="glass-card border-white/15 rounded-3xl overflow-hidden relative group backdrop-blur-md bg-zinc-950/85 shadow-xl">
-        <CardContent className="p-6 space-y-2">
+      <Card className="glass-card border-white/15 rounded-3xl overflow-hidden relative group backdrop-blur-md bg-zinc-950/85 shadow-xl py-0 gap-0">
+        <CardContent className="p-5 space-y-2">
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
               <UserCheck className="size-5" />
@@ -70,8 +70,8 @@ export function BranchNetworkStats({
         </CardContent>
       </Card>
 
-      <Card className="glass-card border-white/15 rounded-3xl overflow-hidden relative group backdrop-blur-md bg-zinc-950/85 shadow-xl">
-        <CardContent className="p-6 space-y-2">
+      <Card className="glass-card border-white/15 rounded-3xl overflow-hidden relative group backdrop-blur-md bg-zinc-950/85 shadow-xl py-0 gap-0">
+        <CardContent className="p-5 space-y-2">
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
               <TrendingUp className="size-5" />

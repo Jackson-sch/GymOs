@@ -18,7 +18,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Plus, Trash2, UserPlus, Dumbbell, UserCheck } from "lucide-react";
+import { Plus, UserPlus, Dumbbell, UserCheck, Loader2, ClipboardList } from "lucide-react";
 import { assignRoutineAction } from "@/lib/actions/routine-management-actions";
 import { toast } from "sonner";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -111,134 +111,215 @@ export function RoutineAssignmentDialog({ members, trainers, exercises, onSucces
           Asignar Nueva Rutina
         </Button>
       </DialogTrigger>
-      <DialogContent className="glass-card border-white/10 sm:max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <DialogHeader>
-          <DialogTitle className="text-3xl font-serif">Asignar Plan de Entrenamiento</DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground">
-            Configura y asigna una nueva rutina personalizada a un socio del gimnasio.
-          </DialogDescription>
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden bg-background/95 dark:bg-zinc-950/95 backdrop-blur-2xl border border-border/80 dark:border-white/10 rounded-3xl shadow-2xl">
+        <DialogHeader className="px-6 sm:px-8 pt-6 pb-5 border-b border-border/60 shrink-0">
+          <div className="flex items-start gap-4 pr-8">
+            <div className="size-11 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+              <ClipboardList className="size-5" />
+            </div>
+            <div className="space-y-1 text-left">
+              <DialogTitle className="text-2xl sm:text-3xl font-serif tracking-tight">
+                Asignar Plan de Entrenamiento
+              </DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm text-muted-foreground">
+                Configura los detalles generales y prescribe los ejercicios semanales para el socio.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 py-6">
-            {/* General Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Nombre del Plan</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ej: Ganancia de Masa" className="h-12 rounded-2xl bg-white/5 border-white/10" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Descripción</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Objetivos y recomendaciones..." className="h-12 rounded-2xl bg-white/5 border-white/10" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0">
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-6 sm:px-8 py-6 space-y-7">
+              {/* General Info */}
+              <div className="rounded-2xl border border-border/70 bg-muted/20 dark:bg-white/[0.02] p-5 space-y-5">
+                <div className="flex items-center justify-between border-b border-border/50 pb-3">
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                    Detalles del Plan & Asignación
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-0.5">
+                          Nombre del Plan
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Ej: Ganancia de Masa"
+                            className="h-11 rounded-xl bg-background border-border/80 focus-visible:ring-primary/30"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-[11px]" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="memberId"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-0.5">
+                          Socio
+                        </FormLabel>
+                        <FormControl>
+                          <MemberCombobox
+                            members={members}
+                            value={field.value}
+                            onChange={field.onChange}
+                            triggerClassName="h-11 rounded-xl bg-background border-border/80 hover:bg-muted/40"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-[11px]" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-0.5">
+                          Descripción
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Objetivos y recomendaciones..."
+                            className="h-11 rounded-xl bg-background border-border/80 focus-visible:ring-primary/30"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-[11px]" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="trainerId"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-0.5">
+                          Entrenador
+                        </FormLabel>
+                        <FormControl>
+                          <Combobox
+                            items={trainers.map(t => ({ label: t.fullName, value: t.id }))}
+                            value={field.value}
+                            onSelect={field.onChange}
+                            placeholder="Seleccionar entrenador"
+                            searchPlaceholder="Buscar entrenador..."
+                            triggerClassName="h-11 rounded-xl bg-background border-border/80 hover:bg-muted/40"
+                            icon={UserCheck}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-[11px]" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
+              {/* Exercises List */}
               <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="memberId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Socio</FormLabel>
-                      <FormControl>
-                        <MemberCombobox 
-                          members={members} 
-                          value={field.value} 
-                          onChange={field.onChange} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <h3 className="text-xl font-serif tracking-tight">Ejercicios</h3>
+                    <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-primary/10 text-primary border border-primary/20 tabular-nums">
+                      {fields.length}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => append({ exerciseId: "", day: "Lunes", sets: 3, reps: "12", notes: "" })}
+                    variant="outline"
+                    className="rounded-xl border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50 h-9 px-3.5 text-xs font-semibold gap-1.5 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Añadir Ejercicio
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  {fields.map((field, idx) => (
+                    <RoutineExerciseRow
+                      key={field.id}
+                      form={form}
+                      index={idx}
+                      exercises={exercises}
+                      onRemove={remove}
+                    />
+                  ))}
+
+                  {fields.length === 0 && (
+                    <div className="text-center py-10 px-4 rounded-2xl border-2 border-dashed border-border/80 bg-muted/15 space-y-3">
+                      <div className="size-11 rounded-2xl bg-muted/60 border border-border/60 flex items-center justify-center mx-auto text-muted-foreground">
+                        <Dumbbell className="size-5" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-foreground">
+                          No hay ejercicios añadidos a esta rutina
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Agrega al menos un ejercicio con sus series, repeticiones y día asignado.
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => append({ exerciseId: "", day: "Lunes", sets: 3, reps: "12", notes: "" })}
+                        className="rounded-xl border-primary/30 text-primary hover:bg-primary/10 gap-1.5"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Añadir primer ejercicio
+                      </Button>
+                    </div>
                   )}
-                />
-                <FormField
-                  control={form.control}
-                  name="trainerId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Entrenador</FormLabel>
-                      <FormControl>
-                        <Combobox 
-                          items={trainers.map(t => ({ label: t.fullName, value: t.id }))}
-                          value={field.value}
-                          onSelect={field.onChange}
-                          placeholder="Seleccionar entrenador"
-                          searchPlaceholder="Buscar entrenador..."
-                          triggerClassName="h-12 rounded-2xl"
-                          icon={UserCheck}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+
+                  {form.formState.errors.exercises && (
+                    <p className="text-xs font-medium text-destructive text-center pt-1">
+                      {form.formState.errors.exercises.message}
+                    </p>
                   )}
-                />
+                </div>
               </div>
             </div>
 
-            {/* Exercises List */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-serif">Ejercicios</h3>
-                <Button 
-                  type="button" 
-                  onClick={() => append({ exerciseId: "", day: "Lunes", sets: 3, reps: "12", notes: "" })} 
-                  variant="outline" 
-                  className="rounded-xl border-white/10 gap-2"
+            {/* Sticky Footer */}
+            <div className="px-6 sm:px-8 py-4 border-t border-border/60 bg-muted/20 dark:bg-white/[0.02] shrink-0 flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
+              <p className="text-xs text-muted-foreground">
+                {fields.length === 0
+                  ? "Añade al menos 1 ejercicio para continuar"
+                  : `${fields.length} ${fields.length === 1 ? "ejercicio configurado" : "ejercicios configurados"}`}
+              </p>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setOpen(false)}
+                  disabled={loading}
+                  className="h-11 px-5 rounded-xl text-xs font-semibold flex-1 sm:flex-initial"
                 >
-                  <Plus className="w-4 h-4" />
-                  Añadir Ejercicio
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="h-11 px-6 rounded-xl text-xs font-bold uppercase tracking-[0.15em] shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-transform flex-1 sm:flex-initial gap-2"
+                >
+                  {loading && <Loader2 className="size-4 animate-spin" />}
+                  {loading ? "Guardando..." : "Asignar Rutina al Socio"}
                 </Button>
               </div>
-
-              <div className="space-y-3">
-                {fields.map((field, idx) => (
-                  <RoutineExerciseRow
-                    key={field.id}
-                    form={form}
-                    index={idx}
-                    exercises={exercises}
-                    onRemove={remove}
-                  />
-                ))}
-              {fields.length === 0 && (
-                <div className="text-center py-12 rounded-2xl border-2 border-dashed border-white/5 text-muted-foreground italic">
-                  No hay ejercicios añadidos a esta rutina
-                </div>
-              )}
-              {form.formState.errors.exercises && (
-                <p className="text-sm font-medium text-destructive text-center">
-                  {form.formState.errors.exercises.message}
-                </p>
-              )}
             </div>
-          </div>
-
-            <Button 
-              type="submit" 
-              disabled={loading} 
-              className="w-full h-14 rounded-2xl text-base font-bold uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-transform"
-            >
-              {loading ? "Guardando..." : "Asignar Rutina al Socio"}
-            </Button>
           </form>
         </Form>
       </DialogContent>

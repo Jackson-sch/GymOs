@@ -10,20 +10,20 @@ const getOccupancyLevel = (pct: number) => {
   if (pct >= 85) {
     return {
       label: "Aforo Concurrido",
-      color: "text-rose-400 bg-rose-500/10 border-rose-500/30",
+      color: "text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/30",
       barColor: "bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.6)]",
     };
   }
   if (pct >= 50) {
     return {
       label: "Aforo Moderado",
-      color: "text-amber-400 bg-amber-500/10 border-amber-500/30",
+      color: "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/30",
       barColor: "bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.6)]",
     };
   }
   return {
     label: "Aforo Óptimo",
-    color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
+    color: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
     barColor: "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.6)]",
   };
 };
@@ -60,7 +60,7 @@ export function LiveStatusMonitor({
 
           <div>
             <div className="flex items-baseline gap-3">
-              <span className="text-6xl font-serif font-bold text-foreground tracking-tight">{occupancy}</span>
+              <span className="text-2xl sm:text-4xl sm:text-6xl font-serif font-bold text-foreground tracking-tight">{occupancy}</span>
               <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
                 / {maxCapacity} Máx.
               </span>
@@ -72,7 +72,7 @@ export function LiveStatusMonitor({
 
           {/* Environmental Meter Bar */}
           <div className="space-y-1.5 pt-2">
-            <div className="w-full h-2.5 bg-black/60 rounded-full overflow-hidden border border-white/10 p-0.5">
+            <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden border border-border p-0.5">
               <div
                 className={cn("h-full rounded-full transition-colors duration-1000 ease-out", level.barColor)}
                 style={{ width: `${occupancyPct}%` }}
@@ -89,9 +89,9 @@ export function LiveStatusMonitor({
 
       {/* Quick Access Stats */}
       <div className="grid grid-cols-2 gap-4">
-        <Card className="glass-card border-white/10 rounded-2xl p-4 bg-zinc-950/80 backdrop-blur-md">
+        <Card className="glass-card border-border rounded-2xl p-4 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+            <div className="size-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
               <Users className="size-5" />
             </div>
             <div>
@@ -101,14 +101,14 @@ export function LiveStatusMonitor({
           </div>
         </Card>
 
-        <Card className="glass-card border-white/10 rounded-2xl p-4 bg-zinc-950/80 backdrop-blur-md">
+        <Card className="glass-card border-border rounded-2xl p-4 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400 shrink-0">
+            <div className="size-10 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-600 dark:text-pink-400 shrink-0">
               <Cake className="size-5" />
             </div>
             <div>
               <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Cumpleaños</p>
-              <p className="text-2xl font-serif font-bold text-pink-400">{stats.birthdaysToday || 0}</p>
+              <p className="text-2xl font-serif font-bold text-pink-600 dark:text-pink-400">{stats.birthdaysToday || 0}</p>
             </div>
           </div>
         </Card>

@@ -18,10 +18,17 @@ export async function POST(req: NextRequest) {
     const rawBody = await req.text();
     const signature = req.headers.get("x-culqi-signature");
     const secret = process.env.CULQI_WEBHOOK_SECRET;
-    
+
+    if (process.env.NODE_ENV === "production" && (!secret || !signature)) {
+      return NextResponse.json({ error: "Missing webhook signature" }, { status: 401 });
+    }
+
     if (secret && signature) {
       const hmac = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
-      if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(hmac))) {
+      if (
+        signature.length !== hmac.length ||
+        !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(hmac))
+      ) {
         return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
       }
     }

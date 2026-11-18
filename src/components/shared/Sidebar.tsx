@@ -29,30 +29,69 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const menuItems = [
-  // Super Admin Exclusive Navigation
-  { label: "Torre SaaS Global", icon: Shield, href: "/super-admin", roles: ["SUPER_ADMIN"] },
-  { label: "Canales & Claves API", icon: Settings, href: "/settings?tab=api", roles: ["SUPER_ADMIN"] },
-  { label: "Auditoría Global", icon: Shield, href: "/audit-log", roles: ["SUPER_ADMIN"] },
+interface MenuItem {
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  href: string;
+  roles: string[];
+}
 
-  // Gym Admin & Staff Navigation
-  { label: "Dashboard", icon: LayoutDashboard, href: "/", roles: ["ADMIN", "RECEPTIONIST"] },
-  { label: "Dashboard", icon: LayoutDashboard, href: "/portal/trainer", roles: ["TRAINER"] },
-  { label: "Mis Alumnos", icon: Users, href: "/portal/trainer/members", roles: ["TRAINER"] },
-  { label: "Miembros", icon: Users, href: "/members", roles: ["ADMIN", "RECEPTIONIST"] },
-  { label: "Sedes & Sucursales", icon: MapPin, href: "/branches", roles: ["ADMIN"] },
-  { label: "Membresías", icon: CreditCard, href: "/memberships", roles: ["ADMIN", "RECEPTIONIST"] },
-  { label: "Asistencia", icon: UserCheck, href: "/attendance", roles: ["ADMIN", "TRAINER", "RECEPTIONIST"] },
-  { label: "Clases", icon: Calendar, href: "/classes", roles: ["ADMIN", "TRAINER", "RECEPTIONIST"] },
-  { label: "Entrenadores", icon: Sparkles, href: "/trainers", roles: ["ADMIN"] },
-  { label: "Ingresos", icon: FileText, href: "/payments", roles: ["ADMIN", "RECEPTIONIST"] },
-  { label: "Egresos", icon: TrendingDown, href: "/expenses", roles: ["ADMIN"] },
-  { label: "Inventario", icon: Package, href: "/inventory", roles: ["ADMIN", "RECEPTIONIST"] },
-  { label: "Rutinas", icon: Dumbbell, href: "/routines", roles: ["ADMIN", "TRAINER"] },
-  { label: "Reportes", icon: FileText, href: "/reports", roles: ["ADMIN"] },
-  { label: "Kiosco", icon: ScanLine, href: "/kiosk", roles: ["ADMIN", "RECEPTIONIST"] },
-  { label: "Configuración", icon: Settings, href: "/settings", roles: ["ADMIN"] },
-  { label: "Auditoría", icon: Shield, href: "/audit-log", roles: ["ADMIN"] },
+interface MenuGroup {
+  title: string;
+  items: MenuItem[];
+}
+
+const menuGroups: MenuGroup[] = [
+  {
+    title: "Torre SaaS",
+    items: [
+      { label: "Torre SaaS Global", icon: Shield, href: "/super-admin", roles: ["SUPER_ADMIN"] },
+      { label: "Canales & Claves API", icon: Settings, href: "/settings?tab=api", roles: ["SUPER_ADMIN"] },
+      { label: "Auditoría Global", icon: Shield, href: "/audit-log", roles: ["SUPER_ADMIN"] },
+    ],
+  },
+  {
+    title: "Principal",
+    items: [
+      { label: "Dashboard", icon: LayoutDashboard, href: "/", roles: ["ADMIN", "RECEPTIONIST"] },
+      { label: "Dashboard", icon: LayoutDashboard, href: "/portal/trainer", roles: ["TRAINER"] },
+    ],
+  },
+  {
+    title: "Operación Diaria",
+    items: [
+      { label: "Miembros", icon: Users, href: "/members", roles: ["ADMIN", "RECEPTIONIST"] },
+      { label: "Mis Alumnos", icon: Users, href: "/portal/trainer/members", roles: ["TRAINER"] },
+      { label: "Asistencia", icon: UserCheck, href: "/attendance", roles: ["ADMIN", "TRAINER", "RECEPTIONIST"] },
+      { label: "Kiosco", icon: ScanLine, href: "/kiosk", roles: ["ADMIN", "RECEPTIONIST"] },
+      { label: "Clases", icon: Calendar, href: "/classes", roles: ["ADMIN", "TRAINER", "RECEPTIONIST"] },
+      { label: "Rutinas", icon: Dumbbell, href: "/routines", roles: ["ADMIN", "TRAINER"] },
+    ],
+  },
+  {
+    title: "Comercial & Finanzas",
+    items: [
+      { label: "Membresías", icon: CreditCard, href: "/memberships", roles: ["ADMIN", "RECEPTIONIST"] },
+      { label: "Ingresos", icon: FileText, href: "/payments", roles: ["ADMIN", "RECEPTIONIST"] },
+      { label: "Egresos", icon: TrendingDown, href: "/expenses", roles: ["ADMIN"] },
+      { label: "Reportes", icon: FileText, href: "/reports", roles: ["ADMIN"] },
+    ],
+  },
+  {
+    title: "Infraestructura",
+    items: [
+      { label: "Entrenadores", icon: Sparkles, href: "/trainers", roles: ["ADMIN"] },
+      { label: "Inventario", icon: Package, href: "/inventory", roles: ["ADMIN", "RECEPTIONIST"] },
+      { label: "Sedes & Sucursales", icon: MapPin, href: "/branches", roles: ["ADMIN"] },
+    ],
+  },
+  {
+    title: "Sistema",
+    items: [
+      { label: "Configuración", icon: Settings, href: "/settings", roles: ["ADMIN"] },
+      { label: "Auditoría", icon: Shield, href: "/audit-log", roles: ["ADMIN"] },
+    ],
+  },
 ];
 
 import {
@@ -145,50 +184,76 @@ export function Sidebar({
         </>
       )}
 
-      <nav className="p-3 space-y-1.5 h-[calc(100%-160px)] overflow-y-auto custom-scrollbar">
+      <nav className="p-3 space-y-3 h-[calc(100%-160px)] overflow-y-auto custom-scrollbar">
         <TooltipProvider>
-          {menuItems.flatMap((item) => {
-            if (!item.roles.includes(getUserRole(session))) return [];
-            const isActive = pathname === item.href;
-            const content = (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "group relative flex items-center rounded-xl transition-[padding,background-color,color,box-shadow,justify-content] duration-500 overflow-hidden",
-                  isSidebarOpen ? "gap-3 px-3 py-3" : "justify-center p-3 gap-0",
-                  isActive 
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+          {menuGroups.map((group, groupIndex) => {
+            const role = getUserRole(session);
+            const visibleItems = group.items.filter((item) => item.roles.includes(role));
+            if (visibleItems.length === 0) return null;
+
+            return (
+              <div key={group.title} className="space-y-1">
+                {(isMobile || isSidebarOpen) ? (
+                  <p className="px-3 pt-1 pb-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/60">
+                    {group.title}
+                  </p>
+                ) : (
+                  groupIndex > 0 && <div className="mx-2 my-1.5 border-t border-border/60" />
                 )}
-              >
-                {isActive && (
-                  <div className="absolute left-0 w-1 h-6 bg-white rounded-r-full" />
-                )}
-                <item.icon className={cn("size-5 shrink-0 transition-transform duration-300", !isActive && "group-hover:scale-110")} />
-                <span className={cn(
-                  "font-sans text-sm font-medium tracking-wide transition-[opacity,width,transform] duration-500", 
-                  !isMobile && !isSidebarOpen && "opacity-0 w-0 translate-x-[-10px]"
-                )}>
-                  {item.label}
-                </span>
-              </Link>
+
+                {visibleItems.map((item) => {
+                  const basePath = item.href.split("?")[0];
+                  const isActive =
+                    basePath === "/"
+                      ? pathname === "/"
+                      : pathname === basePath || pathname.startsWith(`${basePath}/`);
+
+                  const content = (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        "group relative flex items-center rounded-xl transition-[padding,background-color,color,box-shadow,justify-content] duration-300 overflow-hidden",
+                        (isMobile || isSidebarOpen) ? "gap-3 px-3 py-2" : "justify-center p-2.5 gap-0",
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/60 dark:hover:bg-white/5",
+                      )}
+                    >
+                      {isActive && (
+                        <div className="absolute left-0 w-1 h-5 bg-primary-foreground rounded-r-full" />
+                      )}
+                      <item.icon className={cn("size-[18px] shrink-0 transition-transform duration-300", !isActive && "group-hover:scale-110")} />
+                      <span
+                        className={cn(
+                          "font-sans text-[13px] font-medium tracking-wide transition-[opacity,width,transform] duration-300 truncate",
+                          !isMobile && !isSidebarOpen && "opacity-0 w-0 translate-x-[-10px]",
+                        )}
+                      >
+                        {item.label}
+                      </span>
+                    </Link>
+                  );
+
+                  if (!isMobile && !isSidebarOpen) {
+                    return (
+                      <Tooltip key={item.href} delayDuration={0}>
+                        <TooltipTrigger asChild>{content}</TooltipTrigger>
+                        <TooltipContent
+                          align="center"
+                          side="right"
+                          className="bg-popover/95 backdrop-blur-md border-border text-foreground font-medium"
+                        >
+                          {item.label}
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  }
+
+                  return content;
+                })}
+              </div>
             );
-
-            if (!isMobile && !isSidebarOpen) {
-              return [
-                <Tooltip key={item.href} delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    {content}
-                  </TooltipTrigger>
-                  <TooltipContent align="center" side="right" className="bg-secondary/90 backdrop-blur-md border-white/10 text-foreground font-medium" >
-                    {item.label}
-                  </TooltipContent>
-                </Tooltip>
-              ];
-            }
-
-            return [content];
           })}
         </TooltipProvider>
       </nav>
@@ -197,7 +262,7 @@ export function Sidebar({
         <div className="absolute bottom-4 left-0 right-0 space-y-4 px-3">
           {/* User Profile Section */}
           <div className={cn(
-            "p-2 rounded-2xl bg-white/5 border border-white/5 transition",
+            "p-2 rounded-2xl bg-muted/50 dark:bg-white/5 border border-border/60 dark:border-white/5 transition",
             !isSidebarOpen ? "mx-auto w-12 flex justify-center" : "flex items-center gap-3"
           )}>
             {isPending ? (

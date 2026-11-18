@@ -62,19 +62,19 @@ export function SecurityTab({
             Protección de cuenta, contraseñas y control de sesiones activas
           </p>
         </div>
-        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30">
-          <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">
+        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 shrink-0">
+          <span className="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+          <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">
             Seguridad Criptográfica Activa
           </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 2xl:grid-cols-12 gap-8">
         {/* Left Column: Password Change Form */}
-        <div className="lg:col-span-7 space-y-6">
+        <div className="2xl:col-span-7 space-y-6">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center shadow-lg shadow-primary/10">
+            <div className="size-10 shrink-0 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center shadow-lg shadow-primary/10">
               <Lock className="size-5 text-primary" />
             </div>
             <div>
@@ -212,14 +212,14 @@ export function SecurityTab({
         </div>
 
         {/* Right Column: Sessions & 2FA */}
-        <div className="lg:col-span-5 space-y-6">
+        <div className="2xl:col-span-5 space-y-6">
           {/* Active Session Box */}
-          <div className="p-6 rounded-3xl bg-white/2 border border-white/5 space-y-5">
+          <div className="p-5 sm:p-6 rounded-3xl bg-white/2 border border-white/5 space-y-5">
             <div className="flex items-center gap-3 border-b border-white/5 pb-3">
-              <div className="size-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+              <div className="size-9 shrink-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
                 <Monitor className="size-4 text-primary" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <h3 className="font-serif text-base font-bold text-foreground">
                   Sesión Actual Activa
                 </h3>
@@ -229,15 +229,15 @@ export function SecurityTab({
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="size-3 rounded-full bg-emerald-500 animate-ping" />
-                <div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="size-2.5 shrink-0 rounded-full bg-emerald-500 animate-pulse" />
+                <div className="min-w-0">
                   <p className="text-xs font-semibold text-foreground">Navegador Web (Windows)</p>
                   <p className="text-[10px] text-muted-foreground font-mono">Conectado recientemente</p>
                 </div>
               </div>
-              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[9px] font-bold">
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[9px] font-bold shrink-0">
                 EN LÍNEA
               </Badge>
             </div>
@@ -246,20 +246,20 @@ export function SecurityTab({
               type="button"
               variant="outline"
               onClick={() => toast.info("Todas las demás sesiones inactivas han sido revocadas.")}
-              className="w-full h-9 bg-white/5 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/30 text-[10px] font-bold uppercase tracking-wider rounded-xl transition-colors"
+              className="w-full h-auto min-h-9 py-2 px-3 whitespace-normal text-center leading-tight bg-white/5 hover:bg-rose-500/20 hover:text-rose-500 dark:hover:text-rose-300 hover:border-rose-500/30 text-[10px] font-bold uppercase tracking-wider rounded-xl transition-colors"
             >
               Cerrar Todas las Demás Sesiones
             </Button>
           </div>
 
           {/* 2FA Card */}
-          <div className="p-6 rounded-3xl bg-white/2 border border-white/5 space-y-4">
-            <div className="flex items-center justify-between border-b border-white/5 pb-3">
-              <div className="flex items-center gap-3">
-                <div className="size-9 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+          <div className="p-5 sm:p-6 rounded-3xl bg-white/2 border border-white/5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="size-9 shrink-0 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
                   <Smartphone className="size-4 text-primary" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
                     Doble Factor (2FA)
                   </h4>
@@ -279,9 +279,9 @@ export function SecurityTab({
                       : "Solicitud de activación 2FA enviada. Verifique su app de autenticación.",
                   );
                 }}
-                className={`text-[10px] font-bold uppercase tracking-wider h-8 rounded-lg ${
+                className={`w-full sm:w-auto shrink-0 text-[10px] font-bold uppercase tracking-wider h-8 rounded-lg ${
                   twoFactorEnabled
-                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                    ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
                     : "bg-white/5 hover:bg-primary/20 text-muted-foreground hover:text-primary"
                 }`}
               >

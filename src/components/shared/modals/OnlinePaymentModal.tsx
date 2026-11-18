@@ -154,7 +154,7 @@ export function OnlinePaymentModal({ member, currentMembership, plans }: OnlineP
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="glass-card max-w-lg bg-black/95 text-white border-white/10 p-8 space-y-6 animate-zoom-in-95">
+      <DialogContent className="glass-card max-w-lg bg-black/95 text-white border-white/10 p-5 sm:p-8 space-y-6 animate-zoom-in-95">
         <DialogHeader className="space-y-2">
           <div className="flex items-center gap-2 text-pink-400 mb-1">
             <CreditCard className="size-4" />
@@ -277,7 +277,7 @@ export function OnlinePaymentModal({ member, currentMembership, plans }: OnlineP
           <Button
             onClick={handlePayment}
             disabled={loading || !selectedPlan}
-            className="h-12 px-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest text-xs gap-2 shadow-xl shadow-primary/20"
+            className="h-12 p-5 sm:p-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest text-xs gap-2 shadow-xl shadow-primary/20"
           >
             {loading ? <Loader2 className="size-4 animate-spin" /> : <Lock className="size-4" />}
             Proceder al Pago

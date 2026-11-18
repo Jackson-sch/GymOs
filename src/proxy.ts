@@ -39,7 +39,8 @@ export async function proxy(request: NextRequest) {
                         pathname.startsWith("/api/webhooks") ||
                         pathname.startsWith("/api/cron") ||
                         pathname.startsWith("/api/health") ||
-                        pathname.startsWith("/api/checkin");
+                        pathname.startsWith("/api/checkin") ||
+                        (process.env.NODE_ENV === "development" && pathname.startsWith("/api/dev"));
 
     if (!session && !isPublicApi) {
       return applySecurityHeaders(NextResponse.json({ success: false, error: "UNAUTHORIZED: API protegida" }, { status: 401 }));

@@ -222,7 +222,7 @@ export function BranchesClient({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
           {filteredBranches.map((branch) => {
             const revenueSharePct =
               networkMetrics.totalRevenue > 0

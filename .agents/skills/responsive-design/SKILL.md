@@ -30,6 +30,22 @@ Use this skill to verify and implement a fully responsive user interface that ad
 - [ ] **Responsive Margins**: Adjust D3 margins for mobile to prevent labels from being cut off.
 - [ ] **Touch Interaction**: Ensure tooltips work with tap events and don't block other content.
 
+## Automated Audit Script
+
+Run the automated scanner before and after fixing any module to verify zero high/medium responsiveness regressions:
+
+```bash
+node .agents/skills/responsive-design/scripts/audit-responsive.mjs
+```
+
+It inspects every `.tsx`/`.jsx` file under `src/app` and `src/components` grouped by module for:
+- `non-stacking-grid`: Multi-column grids (`grid-cols-3+`) without mobile column stacking (`grid-cols-1 sm:...`).
+- `large-fixed-width`: Fixed widths `>= 320px` without `max-w-full` or responsive breakpoint prefixes.
+- `unscaled-heading`: Oversized headings (`text-4xl+`) without a smaller mobile base size.
+- `modal-overflow`: Wide `DialogContent` without `max-h-[90vh]` and scroll/overflow handling.
+- `table-no-scroll`: `<Table>` elements missing an `overflow-x-auto` parent wrapper.
+- `large-mobile-padding`: Large padding (`p-8+` / `px-8+`) without a smaller mobile base (`p-4 sm:p-8`).
+
 ## Verification Workflow
 
 ### Step 1: Emulate Devices

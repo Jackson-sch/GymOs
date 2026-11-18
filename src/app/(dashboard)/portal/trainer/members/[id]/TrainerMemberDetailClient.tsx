@@ -32,7 +32,7 @@ export function TrainerMemberDetailClient({ member }: { member: any }) {
         <div className="glass-card p-6 border-white/5 text-center space-y-4">
           <Avatar className="size-32 mx-auto border-4 border-white/10 shadow-2xl">
             <AvatarImage src={member.photo || ""} />
-            <AvatarFallback className="text-4xl bg-primary/20 text-primary uppercase font-serif">
+            <AvatarFallback className="text-2xl sm:text-4xl bg-primary/20 text-primary uppercase font-serif">
               {member.fullName.substring(0, 2)}
             </AvatarFallback>
           </Avatar>
@@ -138,7 +138,7 @@ export function TrainerMemberDetailClient({ member }: { member: any }) {
                 </div>
               </div>
             ) : (
-              <div className="glass-card p-12 border-dashed border-white/10 text-center space-y-4">
+              <div className="glass-card p-6 sm:p-12 border-dashed border-white/10 text-center space-y-4">
                 <Dumbbell className="size-10 text-muted-foreground mx-auto opacity-20" />
                 <div className="space-y-1">
                   <p className="text-lg font-serif">Sin Rutina Activa</p>
@@ -169,7 +169,7 @@ export function TrainerMemberDetailClient({ member }: { member: any }) {
              </div>
              
              {member.bodyMetrics.length === 0 && (
-               <div className="glass-card p-12 border-dashed border-white/10 text-center space-y-4">
+               <div className="glass-card p-6 sm:p-12 border-dashed border-white/10 text-center space-y-4">
                   <Ruler className="size-10 text-muted-foreground mx-auto opacity-20" />
                   <p className="text-sm text-muted-foreground">No hay registros antropométricos todavía</p>
                </div>

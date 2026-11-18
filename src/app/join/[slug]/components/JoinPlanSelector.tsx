@@ -95,7 +95,7 @@ export function JoinPlanSelector({
                 <h3 className="text-xl font-serif font-bold text-foreground">{plan.name}</h3>
 
                 <div>
-                  <span className="text-4xl font-serif font-bold text-foreground">
+                  <span className="text-2xl sm:text-4xl font-serif font-bold text-foreground">
                     S/ {Number(plan.price).toFixed(2)}
                   </span>
                   <span className="text-xs text-muted-foreground"> / {plan.durationDays} días</span>

@@ -25,7 +25,7 @@ export function AuditTab({
   setCurrentPage,
 }: AuditTabProps) {
   return (
-    <section className="glass-card p-10 border-white/5 space-y-8 animate-slide-right">
+    <section className="glass-card p-5 sm:p-10 border-white/5 space-y-8 animate-slide-right">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-serif mb-1">Registro de Auditoría</h2>
@@ -45,7 +45,7 @@ export function AuditTab({
         </Button>
       </div>
 
-      <div className="border border-white/5 rounded-2xl overflow-hidden">
+      <div className="border border-white/5 rounded-2xl overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead className="bg-white/2 border-b border-white/5">
             <tr>

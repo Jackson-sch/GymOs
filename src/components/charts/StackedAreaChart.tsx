@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { scaleLinear, scalePoint, stack, area, curveBasis, max } from "d3";
+import { scaleLinear, scalePoint, area, line, curveMonotoneX, max } from "d3";
 import {
   Tooltip,
   TooltipContent,
@@ -54,7 +54,7 @@ export function StackedAreaChart({
     top: 20, 
     right: 20, 
     bottom: isMobile ? 30 : 40, 
-    left: isMobile ? 30 : 40 
+    left: isMobile ? 42 : 52 
   };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
@@ -65,19 +65,19 @@ export function StackedAreaChart({
 
   const yScale = scaleLinear()
     .domain([0, max(data, (d) => d.value) || 10])
+    .nice()
     .range([innerHeight, 0]);
 
   const areaGenerator = area<{ name: string, value: number }>()
     .x((d) => xScale(d.name)!)
     .y0(innerHeight)
     .y1((d) => yScale(d.value))
-    .curve(curveBasis);
+    .curve(curveMonotoneX);
 
-  const lineGenerator = area<{ name: string, value: number }>()
+  const lineGenerator = line<{ name: string, value: number }>()
     .x((d) => xScale(d.name)!)
-    .y0((d) => yScale(d.value))
-    .y1((d) => yScale(d.value))
-    .curve(curveBasis);
+    .y((d) => yScale(d.value))
+    .curve(curveMonotoneX);
 
   return (
     <div className="w-full aspect-video md:aspect-2/1 min-h-[250px] md:min-h-[300px] relative">

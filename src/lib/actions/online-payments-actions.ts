@@ -42,8 +42,10 @@ export async function createMercadoPagoPreferenceAction(data: { planId: string; 
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://gymos.club";
+    const isPublicHttps = appUrl.startsWith("https://");
+    const isSandbox = mpToken.startsWith("TEST-");
 
-    const response = await fetch("https://api.mercadopago.com/v1/preferences", {
+    const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -69,9 +71,11 @@ export async function createMercadoPagoPreferenceAction(data: { planId: string; 
           failure: `${appUrl}/portal?payment=failure`,
           pending: `${appUrl}/portal?payment=pending`
         },
-        auto_return: "approved",
-        external_reference: JSON.stringify({ memberId: member.id, planId: plan.id }),
-        notification_url: `${appUrl}/api/webhooks/mercadopago`
+        ...(isPublicHttps ? {
+          auto_return: "approved",
+          notification_url: `${appUrl}/api/webhooks/mercadopago`
+        } : {}),
+        external_reference: JSON.stringify({ memberId: member.id, planId: plan.id })
       })
     });
 
@@ -86,7 +90,7 @@ export async function createMercadoPagoPreferenceAction(data: { planId: string; 
     return {
       success: true,
       preferenceId: mpData.id,
-      initPoint: mpData.init_point
+      initPoint: isSandbox ? (mpData.sandbox_init_point || mpData.init_point) : mpData.init_point
     };
   } catch (error: any) {
     console.error("[createMercadoPagoPreferenceAction] Error:", error);

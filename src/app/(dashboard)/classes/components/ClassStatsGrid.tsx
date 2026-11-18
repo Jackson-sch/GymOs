@@ -15,9 +15,9 @@ interface ClassStats {
 
 export function ClassStatsGrid({ stats }: { stats: ClassStats }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <Card className="glass-card border-white/10 overflow-hidden relative group backdrop-blur-md">
-        <CardContent className="p-6 space-y-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <Card className="glass-card border-white/10 overflow-hidden relative group backdrop-blur-md py-0 gap-0">
+        <CardContent className="p-5 space-y-2">
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
               <CalendarIcon className="size-5" />
@@ -37,8 +37,8 @@ export function ClassStatsGrid({ stats }: { stats: ClassStats }) {
         </CardContent>
       </Card>
 
-      <Card className="glass-card border-white/10 overflow-hidden relative group backdrop-blur-md">
-        <CardContent className="p-6 space-y-2">
+      <Card className="glass-card border-white/10 overflow-hidden relative group backdrop-blur-md py-0 gap-0">
+        <CardContent className="p-5 space-y-2">
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               <Users className="size-5" />
@@ -58,8 +58,8 @@ export function ClassStatsGrid({ stats }: { stats: ClassStats }) {
         </CardContent>
       </Card>
 
-      <Card className="glass-card border-white/10 overflow-hidden relative group backdrop-blur-md">
-        <CardContent className="p-6 space-y-2">
+      <Card className="glass-card border-white/10 overflow-hidden relative group backdrop-blur-md py-0 gap-0">
+        <CardContent className="p-5 space-y-2">
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
               <UserCheck className="size-5" />
@@ -79,8 +79,8 @@ export function ClassStatsGrid({ stats }: { stats: ClassStats }) {
         </CardContent>
       </Card>
 
-      <Card className="glass-card border-white/10 overflow-hidden relative group backdrop-blur-md">
-        <CardContent className="p-6 space-y-2">
+      <Card className="glass-card border-white/10 overflow-hidden relative group backdrop-blur-md py-0 gap-0">
+        <CardContent className="p-5 space-y-2">
           <div className="flex items-center justify-between">
             <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
               <Clock className="size-5" />

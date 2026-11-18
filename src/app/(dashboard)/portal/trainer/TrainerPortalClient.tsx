@@ -38,7 +38,7 @@ export function TrainerPortalClient({ data }: { data: any }) {
             <Sparkles className="size-4" />
             <span className="text-[10px] uppercase tracking-[0.3em] font-semibold">Panel de Control</span>
           </div>
-          <h1 className="text-5xl font-serif leading-tight">Hola, {trainer.fullName.split(' ')[0]}</h1>
+          <h1 className="text-3xl sm:text-5xl font-serif leading-tight">Hola, {trainer.fullName.split(' ')[0]}</h1>
           <p className="text-muted-foreground font-sans max-w-md">
             Gestiona tus clases y realiza el seguimiento de tus alumnos asignados.
           </p>
@@ -109,7 +109,7 @@ export function TrainerPortalClient({ data }: { data: any }) {
                 </div>
               ))
             ) : (
-              <div className="glass-card p-10 border-dashed border-white/10 text-center space-y-3">
+              <div className="glass-card p-5 sm:p-10 border-dashed border-white/10 text-center space-y-3">
                 <Calendar className="size-8 text-muted-foreground mx-auto opacity-20" />
                 <p className="text-sm text-muted-foreground">No tienes clases próximas asignadas</p>
               </div>

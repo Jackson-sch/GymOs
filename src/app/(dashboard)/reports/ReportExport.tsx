@@ -1,14 +1,10 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { FileChartColumn } from "lucide-react";
-import { ReportPDF } from "./ReportPDF";
-
-const PDFDownloadLink = dynamic(
-  () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
-  { ssr: false }
-);
+import { FileChartColumn, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { ReportPDF } from "./_ReportPDFDocument";
 
 interface ReportExportProps {
   kpis: any;
@@ -33,11 +29,16 @@ export default function ReportExport({
   startDate,
   endDate,
   generatedDate,
-  fileNameDate
+  fileNameDate,
 }: ReportExportProps) {
-  return (
-    <PDFDownloadLink
-      document={
+  const [generating, setGenerating] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    if (generating) return;
+    setGenerating(true);
+    try {
+      const { pdf } = await import("@react-pdf/renderer");
+      const blob = await pdf(
         <ReportPDF
           kpis={kpis}
           revenueByMonth={revenueByMonth}
@@ -48,20 +49,37 @@ export default function ReportExport({
           startDate={startDate}
           endDate={endDate}
           generatedDate={generatedDate}
-        />
-      }
-      fileName={`reporte-gymos-${fileNameDate}.pdf`}
+        />,
+      ).toBlob();
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `reporte-gymos-${fileNameDate || "actual"}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error al generar el PDF del reporte:", err);
+      toast.error("No se pudo generar el PDF del reporte");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      disabled={generating}
+      onClick={handleDownloadPdf}
+      className="glass-card bg-primary/10 hover:bg-primary/20 border-primary/20 text-primary rounded-xl h-11 px-6 font-bold text-[10px] uppercase tracking-widest transition-colors"
     >
-      {({ loading }) => (
-        <Button 
-          variant="outline" 
-          disabled={loading}
-          className="glass-card bg-primary/10 hover:bg-primary/20 border-primary/20 text-primary rounded-xl h-11 px-6 font-bold text-[10px] uppercase tracking-widest transition-colors"
-        >
-          <FileChartColumn className="mr-2 size-3" />
-          {loading ? "Generando…" : "PDF"}
-        </Button>
+      {generating ? (
+        <Loader2 className="mr-2 size-3.5 animate-spin" />
+      ) : (
+        <FileChartColumn className="mr-2 size-3.5" />
       )}
-    </PDFDownloadLink>
+      {generating ? "Generando…" : "PDF"}
+    </Button>
   );
 }

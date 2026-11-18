@@ -175,7 +175,7 @@ export function TrainersClient({ data }: { data: any[] }) {
                 <Plus className="size-4 mr-2" /> Nuevo Entrenador
               </Button>
             </DialogTrigger>
-            <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl max-w-lg rounded-3xl">
+            <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto custom-scrollbar rounded-3xl">
               <DialogHeader>
                 <DialogTitle className="text-3xl font-serif text-foreground">Staff Técnico</DialogTitle>
                 <DialogDescription className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -222,8 +222,8 @@ export function TrainersClient({ data }: { data: any[] }) {
               className={cn(
                 "px-4 py-1.5 rounded-2xl text-[10px] font-bold uppercase tracking-wider border transition-colors shrink-0",
                 selectedSpecialty === spec
-                  ? "bg-white text-black border-white shadow-sm"
-                  : "bg-white/5 text-muted-foreground border-white/10 hover:bg-white/10 hover:text-foreground",
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-muted/60 dark:bg-white/5 text-muted-foreground border-border/70 dark:border-white/10 hover:bg-muted dark:hover:bg-white/10 hover:text-foreground",
               )}
             >
               {spec}
@@ -234,16 +234,16 @@ export function TrainersClient({ data }: { data: any[] }) {
 
       {/* GRID VIEW */}
       {viewMode === "grid" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {paginatedData.map((trainer) => (
             <Card
               key={trainer.id}
-              className="glass-card border-white/10 rounded-3xl overflow-hidden hover:border-primary/30 transition-colors duration-300 group backdrop-blur-md"
+              className="glass-card border-border/70 dark:border-white/10 rounded-3xl overflow-hidden hover:border-primary/30 transition-colors duration-300 group backdrop-blur-md py-0 gap-0"
             >
-              <CardContent className="p-6 space-y-5">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="size-14 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-lg overflow-hidden relative shrink-0">
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="size-12 sm:size-14 rounded-2xl bg-primary/15 border border-primary/25 flex items-center justify-center text-primary font-bold text-base sm:text-lg overflow-hidden relative shrink-0">
                       {trainer.photo ? (
                         <Image
                           src={trainer.photo}
@@ -256,22 +256,23 @@ export function TrainersClient({ data }: { data: any[] }) {
                         trainer.fullName.substring(0, 2).toUpperCase()
                       )}
                     </div>
-                    <div>
-                      <h3 className="font-serif font-bold text-xl text-foreground group-hover:text-primary transition-colors">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-serif font-bold text-lg sm:text-xl text-foreground group-hover:text-primary transition-colors truncate">
                         {trainer.fullName}
                       </h3>
-                      <p className="text-xs text-muted-foreground font-sans flex items-center gap-1.5 mt-0.5">
-                        <Mail className="size-3 text-primary/60" /> {trainer.email || "Sin email"}
+                      <p className="text-xs text-muted-foreground font-sans flex items-center gap-1.5 mt-0.5 min-w-0">
+                        <Mail className="size-3 text-primary/60 shrink-0" />
+                        <span className="truncate">{trainer.email || "Sin email"}</span>
                       </p>
                     </div>
                   </div>
                   <Badge
                     variant="outline"
                     className={cn(
-                      "text-[9px] font-bold uppercase px-2.5 py-1",
+                      "text-[9px] font-bold uppercase px-2.5 py-0.5 shrink-0",
                       trainer.isActive
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                        : "bg-zinc-500/10 text-zinc-400 border-zinc-500/30",
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                        : "bg-zinc-500/10 text-zinc-500 dark:text-zinc-400 border-zinc-500/30",
                     )}
                   >
                     {trainer.isActive ? "Activo" : "Inactivo"}
@@ -329,7 +330,7 @@ export function TrainersClient({ data }: { data: any[] }) {
 
       {/* LIST VIEW (Data Table without duplicate search input) */}
       {viewMode === "list" && (
-        <div className="glass-card border-white/10 rounded-3xl overflow-hidden backdrop-blur-md">
+        <div className="glass-card border-border/70 dark:border-white/10 rounded-3xl overflow-x-auto backdrop-blur-md">
           <DataTable columns={columns} data={filteredData} showSearchInput={false} />
         </div>
       )}
@@ -349,7 +350,7 @@ export function TrainersClient({ data }: { data: any[] }) {
       {/* Edit Modal */}
       {editingTrainer && (
         <Dialog open={!!editingTrainer} onOpenChange={(open) => !open && setEditingTrainer(null)}>
-          <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl max-w-lg rounded-3xl">
+          <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto custom-scrollbar rounded-3xl">
             <DialogHeader>
               <DialogTitle className="text-3xl font-serif text-foreground">Editar Perfil</DialogTitle>
               <DialogDescription className="text-xs uppercase tracking-widest text-muted-foreground">

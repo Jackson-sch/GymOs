@@ -351,7 +351,7 @@ export function SuperAdminClient({
     <div className="space-y-10 animate-fade-in">
       {/* Header Banner */}
       <div className="glass-card p-8 md:p-10 border-white/5 space-y-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+        <div className="absolute top-0 right-0 p-5 sm:p-8 opacity-10 pointer-events-none">
           <ShieldCheck className="size-64 text-primary" />
         </div>
 
@@ -640,7 +640,7 @@ export function SuperAdminClient({
         </div>
 
         {activeTab === "directory" ? (
-          <section className="glass-card p-8 border-white/5 space-y-6">
+          <section className="glass-card p-5 sm:p-8 border-white/5 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
               <div>
                 <h2 className="text-2xl font-serif">Gimnasios Clientes Registrados</h2>
@@ -661,7 +661,7 @@ export function SuperAdminClient({
             </div>
 
             {filteredOrgs.length === 0 ? (
-              <div className="p-12 text-center text-muted-foreground space-y-3">
+              <div className="-6 sm:-12 text-center text-muted-foreground space-y-3">
                 <Building2 className="size-12 mx-auto text-muted-foreground/40" />
                 <p className="text-sm font-medium">No se encontraron gimnasios registrados.</p>
               </div>
@@ -798,7 +798,7 @@ export function SuperAdminClient({
           </section>
         ) : (
           /* SaaS Plan Tiers Showcase */
-          <section className="glass-card p-8 border-white/5 space-y-8 animate-enter-fast">
+          <section className="glass-card p-5 sm:p-8 border-white/5 space-y-8 animate-enter-fast">
             <div>
               <h2 className="text-2xl font-serif">Planes SaaS & Paquetes de Suscripción</h2>
               <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium">
@@ -812,7 +812,7 @@ export function SuperAdminClient({
                 return (
                   <div
                     key={plan.tier}
-                    className={`p-8 rounded-3xl bg-linear-to-b ${plan.color} border space-y-6 flex flex-col justify-between relative shadow-xl backdrop-blur-md hover:scale-105 transition-colors transition-transform`}
+                    className={`-5 sm:-8 rounded-3xl bg-linear-to-b ${plan.color} border space-y-6 flex flex-col justify-between relative shadow-xl backdrop-blur-md hover:scale-105 transition-colors transition-transform`}
                   >
                     {plan.isPopular && (
                       <div className="absolute -top-3.5 right-6 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest shadow-lg">
@@ -838,7 +838,7 @@ export function SuperAdminClient({
                       </div>
 
                       <div className="pt-2">
-                        <span className="text-4xl font-serif font-bold text-foreground">
+                        <span className="text-2xl sm:text-4xl font-serif font-bold text-foreground">
                           ${plan.price}
                         </span>
                         <span className="text-xs text-muted-foreground font-sans">

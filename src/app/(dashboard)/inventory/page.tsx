@@ -24,8 +24,8 @@ export default async function InventoryPage() {
               Gestión de Activos & Infraestructura
             </span>
           </div>
-          <h1 className="text-6xl font-serif leading-tight">Inventario</h1>
-          <p className="text-muted-foreground font-sans max-w-md">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold leading-tight text-foreground">Inventario</h1>
+          <p className="text-muted-foreground font-sans text-sm">
             Supervisando la integridad técnica de la maquinaria que impulsa el <span className="text-foreground font-medium">rendimiento élite</span> de GymOS.
           </p>
         </div>
@@ -33,7 +33,7 @@ export default async function InventoryPage() {
 
       {/* Critical Alerts Section */}
       {alerts.length > 0 && (
-        <div className="glass-card p-8 border-rose-500/20 bg-rose-500/5 relative overflow-hidden group">
+        <div className="glass-card p-5 sm:p-8 border-rose-500/20 bg-rose-500/5 relative overflow-hidden group">
           <div className="absolute top-0 right-0 size-64 -mr-24 -mt-24 bg-rose-500/5 blur-3xl rounded-full transition-colors group-hover:bg-rose-500/10" />
           
           <div className="flex items-center gap-3 mb-6 relative z-10">
@@ -66,27 +66,29 @@ export default async function InventoryPage() {
       )}
 
       {/* Stats Quick View */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Equipos", value: kpis.total, icon: Dumbbell, color: "text-primary", bg: "bg-primary/5" },
-          { label: "Operativos", value: kpis.operational, icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-500/5" },
-          { label: "Mantenimiento", value: kpis.maintenance, icon: Clock, color: "text-amber-500", bg: "bg-amber-500/5" },
-          { label: "Fuera de Servicio", value: kpis.outOfService, icon: AlertTriangle, color: "text-rose-500", bg: "bg-rose-500/5" },
+          { label: "Total Equipos", value: kpis.total, icon: Dumbbell, color: "text-primary", bg: "bg-primary/10 border-primary/20" },
+          { label: "Operativos", value: kpis.operational, icon: CheckCircle2, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
+          { label: "Mantenimiento", value: kpis.maintenance, icon: Clock, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
+          { label: "Fuera de Servicio", value: kpis.outOfService, icon: AlertTriangle, color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-500/10 border-rose-500/20" },
         ].map((stat) => (
           <div
             key={stat.label}
-            className="glass-card p-8 border-white/5 flex items-center gap-5 interactive-hover group"
+            className="glass-card p-4 sm:p-5 rounded-2xl border-border/70 dark:border-white/10 flex items-center gap-3.5 interactive-hover group"
           >
             <div
-              className={`p-4 rounded-2xl border border-white/10 transition-transform duration-500 group-hover:scale-110 ${stat.bg} ${stat.color}`}
+              className={`size-10 rounded-xl border flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 ${stat.bg} ${stat.color}`}
             >
-              <stat.icon className="size-6" />
+              <stat.icon className="size-4.5" />
             </div>
-            <div className="space-y-0.5">
-              <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground font-bold">
+            <div className="space-y-1 min-w-0 flex-1">
+              <p className="text-2xl sm:text-3xl font-serif font-bold tabular-nums tracking-tight text-foreground leading-none">
+                {stat.value}
+              </p>
+              <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground font-bold truncate">
                 {stat.label}
               </p>
-              <p className="text-3xl font-serif tracking-tight">{stat.value}</p>
             </div>
           </div>
         ))}

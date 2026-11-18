@@ -36,6 +36,7 @@ export async function getPlanMembersAction(planId: string) {
         planId,
         status: "ACTIVE",
       },
+      distinct: ["memberId"],
       include: {
         member: true,
       },
@@ -44,7 +45,11 @@ export async function getPlanMembersAction(planId: string) {
       },
     });
 
-    return { success: true, data: serialize(memberships.map(m => m.member)) };
+    const uniqueMembers = memberships
+      .map((m) => m.member)
+      .filter((member): member is NonNullable<typeof member> => Boolean(member));
+
+    return { success: true, data: serialize(uniqueMembers) };
   } catch (error) {
     console.error("Error fetching plan members:", error);
     return { success: false, error: "Error al cargar los socios del plan" };

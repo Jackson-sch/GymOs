@@ -51,7 +51,15 @@ export async function GET(
     const paymentData = {
       invoiceNumber: payment.invoiceNumber || payment.id.slice(-8).toUpperCase(),
       memberName: payment.member.fullName,
+      memberDni: payment.member.dni || undefined,
+      memberEmail: payment.member.email || undefined,
+      memberPhone: payment.member.phone || undefined,
       planName: payment.membership?.plan?.name || "Pago General",
+      durationDays: payment.membership?.plan?.durationDays || undefined,
+      membershipStart: payment.membership?.startDate || undefined,
+      membershipEnd: payment.membership?.endDate || undefined,
+      reference: payment.reference || undefined,
+      status: payment.status || "COMPLETED",
       amount: Number(payment.amount),
       method: payment.method,
       paidAt: payment.paidAt || payment.createdAt,
@@ -66,12 +74,13 @@ export async function GET(
       const filename = isTicket
         ? `ticket-${payment.invoiceNumber || payment.id}.pdf`
         : `recibo-${payment.invoiceNumber || payment.id}.pdf`;
+      const isDownload = request.nextUrl.searchParams.get("download") === "1";
 
-      // 5. Return as PDF
+      // 5. Return as PDF (inline preview in browser tab, or attachment if ?download=1)
       return new NextResponse(new Uint8Array(pdfBuffer), {
         headers: {
           "Content-Type": "application/pdf",
-          "Content-Disposition": `attachment; filename=${filename}`,
+          "Content-Disposition": `${isDownload ? "attachment" : "inline"}; filename="${filename}"`,
         },
       });
     } catch (pdfError) {

@@ -22,7 +22,8 @@ export function ActivityHeatmap({ data }: { data?: number[][] }) {
   return (
     <div className="w-full space-y-6">
       {/* Heatmap Grid Container */}
-      <div className="relative">
+      <div className="relative overflow-x-auto pb-2 custom-scrollbar">
+        <div className="min-w-[440px] sm:min-w-0">
         {/* Days Header */}
         <div className="grid grid-cols-[3rem_1fr] mb-4">
           <div /> {/* Spacer for hour labels */}
@@ -67,6 +68,7 @@ export function ActivityHeatmap({ data }: { data?: number[][] }) {
               </div>
             </div>
           ))}
+        </div>
         </div>
       </div>
 

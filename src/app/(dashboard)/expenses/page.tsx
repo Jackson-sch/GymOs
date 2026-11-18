@@ -21,8 +21,8 @@ export default async function ExpensesPage() {
             <TrendingDown className="size-4" />
             <span className="text-[10px] uppercase tracking-[0.3em] font-bold">Gestión de Tesorería</span>
           </div>
-          <h1 className="text-6xl font-serif leading-tight">Egresos & Gastos</h1>
-          <p className="text-muted-foreground font-sans max-w-md">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold leading-tight text-foreground">Egresos & Gastos</h1>
+          <p className="text-muted-foreground font-sans text-sm">
             Controlando la <span className="text-foreground font-medium">caja chica</span> y gastos operativos del gimnasio.
           </p>
         </div>

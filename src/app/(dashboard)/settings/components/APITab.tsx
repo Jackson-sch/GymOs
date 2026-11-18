@@ -201,10 +201,16 @@ const CHANNELS: ChannelConfig[] = [
     docUrl: "https://www.mercadopago.com/developers",
     fields: [
       {
+        key: "MP_PUBLIC_KEY",
+        label: "Public Key (Test / Producción)",
+        isSecret: false,
+        placeholder: "TEST-... o APP_USR-...",
+      },
+      {
         key: "MP_ACCESS_TOKEN",
-        label: "Production Access Token",
+        label: "Access Token (Test / Producción)",
         isSecret: true,
-        placeholder: "APP_USR-...",
+        placeholder: "TEST-... o APP_USR-...",
       },
     ],
     guideSteps: [
@@ -622,7 +628,7 @@ export function APITab({
         onValueChange={setActiveSubTab}
         className="w-full space-y-6"
       >
-        <TabsList className="bg-white/5 border border-white/10 p-1 rounded-2xl grid grid-cols-3 max-w-xl">
+        <TabsList className="bg-white/5 border border-white/10 p-1 rounded-2xl grid grid-cols-1 sm:grid-cols-3 h-auto max-w-xl w-full">
           <TabsTrigger
             value="connectors"
             className="rounded-xl text-xs font-semibold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
@@ -659,7 +665,7 @@ export function APITab({
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-5">
               {CHANNELS.filter((c) => c.category === "COMMUNICATION").map(
                 (channel) => (
                   <ChannelCardItem
@@ -688,7 +694,7 @@ export function APITab({
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-5">
               {CHANNELS.filter((c) => c.category === "PAYMENTS").map(
                 (channel) => (
                   <ChannelCardItem
@@ -717,7 +723,7 @@ export function APITab({
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-5">
               {CHANNELS.filter(
                 (c) => c.category === "ACCESS_IOT" || c.category === "CLOUDINARY",
               ).map((channel) => (
@@ -760,7 +766,7 @@ export function APITab({
           </div>
 
           {/* Webhooks Table */}
-          <div className="rounded-2xl border border-white/10 bg-white/2 overflow-hidden">
+          <div className="rounded-2xl border border-white/10 bg-white/2 overflow-x-auto">
             <Table>
               <TableHeader className="bg-white/5">
                 <TableRow className="border-white/10 hover:bg-transparent">
@@ -905,7 +911,7 @@ export function APITab({
           )}
 
           {/* API Keys Table */}
-          <div className="rounded-2xl border border-white/10 bg-white/2 overflow-hidden">
+          <div className="rounded-2xl border border-white/10 bg-white/2 overflow-x-auto">
             <Table>
               <TableHeader className="bg-white/5">
                 <TableRow className="border-white/10 hover:bg-transparent">
@@ -1091,12 +1097,12 @@ export function APITab({
               </div>
 
               {/* Footer Actions */}
-              <SheetFooter className="border-t border-white/10 pt-4 flex flex-row items-center justify-end gap-3">
+              <SheetFooter className="border-t border-white/10 pt-4 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3">
                 <Button
                   type="button"
                   onClick={() => testSingleChannel(selectedChannel)}
                   variant="outline"
-                  className="flex-1 sm:flex-none bg-white/5 hover:bg-primary/20 hover:text-primary hover:border-primary/50 text-[11px] font-bold uppercase tracking-wider h-10 px-4 rounded-xl gap-1.5"
+                  className="w-full sm:w-auto bg-white/5 hover:bg-primary/20 hover:text-primary hover:border-primary/50 text-[11px] font-bold uppercase tracking-wider h-10 px-4 rounded-xl gap-1.5"
                 >
                   <Zap className="size-3.5 text-primary" /> Probar Conexión
                 </Button>
@@ -1108,7 +1114,7 @@ export function APITab({
                       "Cambios guardados en borrador. Recuerde presionar 'Guardar Cambios' arriba para aplicar.",
                     );
                   }}
-                  className="flex-1 sm:flex-none bg-primary text-primary-foreground hover:bg-primary/90 text-[11px] font-bold uppercase tracking-wider h-10 px-4 rounded-xl"
+                  className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 text-[11px] font-bold uppercase tracking-wider h-10 px-4 rounded-xl"
                 >
                   Aceptar y Cerrar
                 </Button>
@@ -1400,22 +1406,22 @@ function ChannelCardItem({
   ).length;
 
   const statusBadgeClasses = {
-    emerald: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-    amber: "bg-amber-500/10 text-amber-400 border-amber-500/30",
-    rose: "bg-rose-500/10 text-rose-400 border-rose-500/30",
-    slate: "bg-white/5 text-muted-foreground border-white/10",
+    emerald: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
+    amber: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30",
+    rose: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30",
+    slate: "bg-muted/50 dark:bg-white/5 text-muted-foreground border-border/60 dark:border-white/10",
   }[statusInfo.variant];
 
   return (
-    <div className="p-6 rounded-3xl bg-white/2 border border-white/5 space-y-4 hover:border-white/20 transition-colors flex flex-col justify-between shadow-xl backdrop-blur-md relative group">
+    <div className="p-5 sm:p-6 rounded-3xl bg-white/2 border border-white/5 space-y-4 hover:border-white/20 transition-colors flex flex-col justify-between shadow-xl backdrop-blur-md relative group min-w-0">
       <div className="space-y-3">
         {/* Card Header */}
         <div className="flex items-start justify-between gap-3 border-b border-white/5 pb-3">
-          <div className="flex items-center gap-3">
-            <div className="size-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-primary/40 transition-colors">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="size-10 shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-primary/40 transition-colors">
               <Icon className="size-5 text-primary" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-bold uppercase tracking-wider text-foreground leading-tight">
                 {channel.name}
               </p>
@@ -1427,46 +1433,46 @@ function ChannelCardItem({
         </div>
 
         {/* Dynamic Status Badge */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <Badge
             variant="outline"
-            className={`text-[10px] font-bold gap-1.5 py-0.5 px-2.5 ${statusBadgeClasses}`}
+            className={`text-[10px] font-bold gap-1.5 py-0.5 px-2.5 max-w-full whitespace-normal text-left leading-tight ${statusBadgeClasses}`}
           >
-            <StatusIcon className="size-3" />
-            {statusInfo.label}
+            <StatusIcon className="size-3 shrink-0" />
+            <span>{statusInfo.label}</span>
           </Badge>
         </div>
 
         {/* Description */}
-        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 font-sans pt-1">
+        <p className="text-xs text-muted-foreground leading-relaxed font-sans pt-1">
           {channel.description}
         </p>
       </div>
 
       {/* Card Actions */}
-      <div className="pt-4 border-t border-white/5 grid grid-cols-2 gap-2 mt-2">
+      <div className="pt-4 border-t border-white/5 grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-2">
         <Button
           onClick={onTest}
           disabled={isTesting}
           type="button"
           variant="outline"
-          className="bg-white/5 hover:bg-primary/20 hover:text-primary hover:border-primary/40 text-[10px] font-bold uppercase tracking-wider h-10 rounded-xl transition-colors shadow-md gap-1.5"
+          className="w-full min-w-0 px-3 bg-white/5 hover:bg-primary/20 hover:text-primary hover:border-primary/40 text-[10px] font-bold uppercase tracking-wider h-10 rounded-xl transition-colors shadow-md gap-1.5"
         >
           {isTesting ? (
-            <Loader2 className="size-3.5 animate-spin text-primary" />
+            <Loader2 className="size-3.5 shrink-0 animate-spin text-primary" />
           ) : (
-            <Zap className="size-3.5 text-primary" />
+            <Zap className="size-3.5 shrink-0 text-primary" />
           )}
-          Probar
+          <span className="truncate">Probar</span>
         </Button>
 
         <Button
           onClick={onConfigure}
           type="button"
-          className="bg-white/5 hover:bg-white/10 text-foreground text-[10px] font-bold uppercase tracking-wider h-10 rounded-xl transition-colors gap-1.5 border border-white/10"
+          className="w-full min-w-0 px-3 bg-white/5 hover:bg-white/10 text-foreground text-[10px] font-bold uppercase tracking-wider h-10 rounded-xl transition-colors gap-1.5 border border-white/10"
         >
-          <Sliders className="size-3.5 text-muted-foreground" />
-          Configurar
+          <Sliders className="size-3.5 shrink-0 text-muted-foreground" />
+          <span className="truncate">Configurar</span>
         </Button>
       </div>
     </div>

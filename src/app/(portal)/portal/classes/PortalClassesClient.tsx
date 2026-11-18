@@ -34,6 +34,14 @@ interface ClassItem {
 
 export function PortalClassesClient({ classes, memberId }: { classes: ClassItem[]; memberId: string }) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"ALL" | "BOOKED" | "AVAILABLE">("ALL");
+
+  const bookedCount = classes.filter((c) => c.isBookedByMe).length;
+  const filteredClasses = classes.filter((c) => {
+    if (filter === "BOOKED") return !!c.isBookedByMe;
+    if (filter === "AVAILABLE") return c.capacity - (c.bookedCount || 0) > 0;
+    return true;
+  });
 
   const handleBook = async (classId: string) => {
     setLoadingId(classId);
@@ -62,63 +70,97 @@ export function PortalClassesClient({ classes, memberId }: { classes: ClassItem[
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in pb-16">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-semibold uppercase tracking-widest mb-2">
+    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in pb-16">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/60 dark:border-white/10 pb-6">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-bold uppercase tracking-widest mb-1">
             <Sparkles className="size-3.5" />
             Reserva de Clases Grupales
           </div>
-          <h1 className="text-3xl font-serif font-bold">Horario de Clases en Vivo</h1>
-          <p className="text-xs text-muted-foreground">
+          <h1 className="text-3xl sm:text-4xl font-serif font-bold text-foreground">Horario de Clases en Vivo</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Asegura tu cupo en tus disciplinas favoritas en tiempo real.
           </p>
         </div>
+
+        {classes.length > 0 && (
+          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/50 dark:bg-white/5 border border-border/70 dark:border-white/10 self-start md:self-auto">
+            {[
+              { id: "ALL", label: `Todas (${classes.length})` },
+              { id: "BOOKED", label: `Mis Reservas (${bookedCount})` },
+              { id: "AVAILABLE", label: "Con Cupo" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setFilter(tab.id as "ALL" | "BOOKED" | "AVAILABLE")}
+                className={`px-3.5 py-1.5 rounded-xl text-[11px] font-bold transition-colors ${
+                  filter === tab.id
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {!classes || classes.length === 0 ? (
-        <div className="max-w-md mx-auto text-center py-16 space-y-6 glass-card p-8 border-white/10">
-          <div className="size-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-muted-foreground">
+        <div className="max-w-md mx-auto text-center py-16 space-y-4 glass-card p-5 sm:p-8 border-border/70 dark:border-white/10">
+          <div className="size-16 rounded-2xl bg-muted/60 border border-border/70 flex items-center justify-center mx-auto text-muted-foreground">
             <Calendar className="size-8" />
           </div>
-          <h2 className="text-xl font-serif font-bold">No hay clases programadas hoy</h2>
+          <h2 className="text-xl font-serif font-bold text-foreground">No hay clases programadas hoy</h2>
           <p className="text-xs text-muted-foreground">
             Revisa más tarde o consulta los horarios con la recepción de tu gimnasio.
           </p>
         </div>
+      ) : filteredClasses.length === 0 ? (
+        <div className="max-w-md mx-auto text-center py-14 space-y-3 glass-card p-5 sm:p-8 border-border/70 dark:border-white/10">
+          <Calendar className="size-8 mx-auto text-muted-foreground/60" />
+          <h2 className="text-lg font-serif font-bold text-foreground">Sin clases en esta categoría</h2>
+          <p className="text-xs text-muted-foreground">
+            Prueba seleccionando otro filtro para ver más horarios disponibles.
+          </p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {classes.map((cls) => {
+          {filteredClasses.map((cls) => {
             const isBooked = cls.isBookedByMe;
             const availableSlots = cls.capacity - (cls.bookedCount || 0);
             const isFull = availableSlots <= 0;
+            const occupancyPct = cls.capacity > 0 ? Math.min(100, Math.round(((cls.bookedCount || 0) / cls.capacity) * 100)) : 0;
             const isLoading = loadingId === cls.id || loadingId === cls.myBookingId;
 
             return (
               <div
                 key={cls.id}
-                className={`glass-card p-6 border-white/10 space-y-5 transition-colors shadow-xl flex flex-col justify-between ${
-                  isBooked ? "bg-primary/10 border-primary/40" : "hover:border-white/20"
+                className={`glass-card p-6 space-y-5 transition-colors shadow-xl flex flex-col justify-between ${
+                  isBooked
+                    ? "bg-primary/5 border-primary/40"
+                    : "border-border/70 dark:border-white/10 hover:border-primary/30"
                 }`}
               >
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <Badge
                       variant="outline"
                       className={`text-[10px] uppercase font-bold ${
                         isBooked
-                          ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                          ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                           : isFull
-                          ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                          : "bg-primary/10 text-primary border-primary/20"
+                          ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
+                          : "bg-primary/10 text-primary border-primary/25"
                       }`}
                     >
                       {isBooked ? "✓ Reservado" : isFull ? "Agotado" : `${availableSlots} Cupos Libres`}
                     </Badge>
 
                     {cls.branchName && (
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1 font-semibold">
-                        <MapPin className="size-3 text-primary" /> {cls.branchName}
+                      <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-semibold">
+                        <MapPin className="size-3.5 text-primary" /> {cls.branchName}
                       </span>
                     )}
                   </div>
@@ -132,37 +174,50 @@ export function PortalClassesClient({ classes, memberId }: { classes: ClassItem[
                     )}
                   </div>
 
-                  <div className="space-y-2 pt-2 border-t border-white/10 text-xs text-muted-foreground">
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 font-semibold text-foreground">
-                        <Clock className="size-3.5 text-primary" />
-                        {typeof cls.schedule === "string" || cls.schedule instanceof Date
-                          ? format(new Date(cls.schedule), "EEEE d 'de' MMMM, HH:mm 'hrs'", { locale: es })
-                          : "Por definir"}
-                      </span>
+                  <div className="space-y-2.5 pt-3 border-t border-border/60 dark:border-white/10 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1.5 font-semibold text-foreground capitalize">
+                      <Clock className="size-3.5 text-primary shrink-0" />
+                      {typeof cls.schedule === "string" || cls.schedule instanceof Date
+                        ? format(new Date(cls.schedule), "EEEE d 'de' MMMM, HH:mm 'hrs'", { locale: es })
+                        : "Por definir"}
                     </div>
 
                     {cls.trainerName && (
                       <div className="flex items-center gap-1.5">
-                        <User className="size-3.5 text-muted-foreground" />
+                        <User className="size-3.5 text-muted-foreground shrink-0" />
                         <span>Instructor: <strong className="text-foreground">{cls.trainerName}</strong></span>
                       </div>
                     )}
 
-                    <div className="flex items-center gap-1.5">
-                      <Users className="size-3.5 text-muted-foreground" />
-                      <span>Aforo: {cls.bookedCount} / {cls.capacity} asistencias registradas</span>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <Users className="size-3.5 text-muted-foreground" />
+                          Aforo registrado
+                        </span>
+                        <span className="font-mono font-semibold text-foreground tabular-nums">
+                          {cls.bookedCount} / {cls.capacity}
+                        </span>
+                      </div>
+                      <div className="h-1.5 w-full rounded-full bg-muted dark:bg-white/10 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-[width] duration-500 ${
+                            isFull ? "bg-rose-500" : "bg-primary"
+                          }`}
+                          style={{ width: `${occupancyPct}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-1">
                   {isBooked ? (
                     <Button
                       onClick={() => cls.myBookingId && handleCancel(cls.myBookingId)}
                       disabled={isLoading}
                       variant="outline"
-                      className="w-full h-11 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border-rose-500/30 text-xs font-bold gap-2"
+                      className="w-full h-11 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 border-rose-500/30 text-xs font-bold gap-2"
                     >
                       {isLoading ? (
                         <Loader2 className="size-4 animate-spin" />
@@ -182,7 +237,7 @@ export function PortalClassesClient({ classes, memberId }: { classes: ClassItem[
                       ) : (
                         <CheckCircle2 className="size-4" />
                       )}
-                      {isFull ? "Sin Cupos Disponibles" : "Reservar Mi Cupo Instantáneo"}
+                      {isFull ? "Sin Cupos Disponibles" : "Reservar Mi Cupo"}
                     </Button>
                   )}
                 </div>

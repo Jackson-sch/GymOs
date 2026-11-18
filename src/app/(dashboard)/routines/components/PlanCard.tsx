@@ -15,15 +15,15 @@ interface PlanCardProps {
 const getPlanCategory = (name: string) => {
   const n = name.toLowerCase();
   if (n.includes("fuerza") || n.includes("power") || n.includes("5x5")) {
-    return { label: "Fuerza & Potencia", color: "bg-rose-500/10 text-rose-400 border-rose-500/30" };
+    return { label: "Fuerza & Potencia", color: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30" };
   }
   if (n.includes("hipertrofia") || n.includes("volumen") || n.includes("muscle")) {
     return { label: "Hipertrofia", color: "bg-primary/10 text-primary border-primary/30" };
   }
   if (n.includes("cardio") || n.includes("hiit") || n.includes("definicion")) {
-    return { label: "Definición & HIIT", color: "bg-amber-500/10 text-amber-400 border-amber-500/30" };
+    return { label: "Definición & HIIT", color: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30" };
   }
-  return { label: "Acondicionamiento", color: "bg-blue-500/10 text-blue-400 border-blue-500/30" };
+  return { label: "Acondicionamiento", color: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30" };
 };
 
 export function PlanCard({ group, onSelect, onSimulate }: PlanCardProps) {
@@ -32,7 +32,7 @@ export function PlanCard({ group, onSelect, onSimulate }: PlanCardProps) {
   const category = getPlanCategory(group.name);
 
   return (
-    <div className="glass-card p-6 border-white/10 hover:border-primary/40 transition-colors transition-transform duration-300 group hover:-translate-y-1 bg-white/2 rounded-3xl shadow-xl flex flex-col justify-between backdrop-blur-md relative overflow-hidden">
+    <div className="glass-card p-6 border-border/70 dark:border-white/10 hover:border-primary/40 transition-colors transition-transform duration-300 group hover:-translate-y-1 bg-card/90 dark:bg-white/[0.02] rounded-3xl shadow-xl flex flex-col justify-between backdrop-blur-md relative overflow-hidden">
       {/* Background Subtle Accent */}
       <div className="absolute top-0 right-0 size-32 -mr-10 -mt-10 bg-primary/5 blur-2xl rounded-full group-hover:bg-primary/15 transition-colors" />
 
@@ -58,7 +58,7 @@ export function PlanCard({ group, onSelect, onSimulate }: PlanCardProps) {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-2 gap-3 py-3 border-y border-white/5">
+        <div className="grid grid-cols-2 gap-3 py-3 border-y border-border">
           <div className="flex items-center gap-2">
             <Users className="size-4 text-primary" />
             <div>
@@ -66,7 +66,7 @@ export function PlanCard({ group, onSelect, onSimulate }: PlanCardProps) {
               <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">Socios</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 border-l border-white/10 pl-3">
+          <div className="flex items-center gap-2 border-l border-border pl-3">
             <Dumbbell className="size-4 text-primary" />
             <div>
               <p className="text-xs font-bold text-foreground">{group.exerciseCount}</p>
@@ -98,11 +98,11 @@ export function PlanCard({ group, onSelect, onSimulate }: PlanCardProps) {
       </div>
 
       {/* Card Action Buttons */}
-      <div className="grid grid-cols-2 gap-2 pt-4 border-t border-white/5 mt-4 relative z-10">
+      <div className="grid grid-cols-2 gap-2.5 pt-4 border-t border-border/60 dark:border-white/10 mt-4 relative z-10">
         <Button
           onClick={() => onSelect(group.name)}
           variant="outline"
-          className="h-10 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-[10px] uppercase font-bold tracking-wider gap-1 text-foreground"
+          className="h-10 rounded-xl border-border/80 dark:border-white/10 bg-background/80 dark:bg-white/5 hover:bg-muted dark:hover:bg-white/10 text-[10px] uppercase font-bold tracking-wider gap-1 text-foreground"
         >
           Gestionar <ChevronRight className="size-3.5" />
         </Button>

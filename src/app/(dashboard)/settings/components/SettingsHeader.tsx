@@ -19,8 +19,8 @@ export function SettingsHeader({ loading, onSave }: SettingsHeaderProps) {
             Núcleo del Sistema
           </span>
         </div>
-        <h1 className="text-6xl font-serif leading-tight">Configuración</h1>
-        <p className="text-muted-foreground font-sans max-w-md">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold leading-tight text-foreground">Configuración</h1>
+        <p className="text-sm text-muted-foreground font-sans">
           Personalizando el motor de{" "}
           <span className="text-foreground font-medium">GymOS</span> para
           adaptarse a tu marca y necesidades.
@@ -30,7 +30,7 @@ export function SettingsHeader({ loading, onSave }: SettingsHeaderProps) {
       <Button
         onClick={onSave}
         disabled={loading}
-        className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-8 h-12 font-sans font-semibold tracking-wide shadow-lg shadow-primary/20 interactive-hover gap-2"
+        className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl p-5 sm:p-8 h-12 font-sans font-semibold tracking-wide shadow-lg shadow-primary/20 interactive-hover gap-2"
       >
         {loading ? (
           <Loader2 className="size-5 animate-spin" />

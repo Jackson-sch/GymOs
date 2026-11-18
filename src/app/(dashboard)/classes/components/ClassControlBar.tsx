@@ -62,10 +62,10 @@ export function ClassControlBar({
   const { isCreateClassOpen, isCreateTrainerOpen } = state;
 
   return (
-    <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 glass-card p-4 rounded-3xl border-white/10">
-      <div className="flex flex-col md:flex-row gap-4 items-center flex-1">
+    <div className="flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-4 glass-card p-4 rounded-3xl border-white/10">
+      <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center flex-1 min-w-0">
         {/* Search Input */}
-        <div className="relative flex-1 w-full group">
+        <div className="relative flex-1 min-w-0 w-full group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input
             placeholder="Buscar clase por nombre, instructor o sala..."
@@ -95,7 +95,7 @@ export function ClassControlBar({
       </div>
 
       {/* Dialog Actions */}
-      <div className="flex items-center gap-3 justify-end shrink-0">
+      <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 justify-stretch sm:justify-end w-full xl:w-auto">
         <Dialog
           open={isCreateTrainerOpen}
           onOpenChange={(val) => dispatch({ type: "SET_CREATE_TRAINER_OPEN", payload: val })}
@@ -103,12 +103,12 @@ export function ClassControlBar({
           <DialogTrigger asChild>
             <Button
               variant="outline"
-              className="h-11 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 font-bold text-xs uppercase tracking-wider transition-colors"
+              className="flex-1 sm:flex-none h-11 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 font-bold text-xs uppercase tracking-wider transition-colors"
             >
-              <Plus className="size-3.5 mr-2 text-primary" /> Nuevo Entrenador
+              <Plus className="size-3.5 mr-2 text-primary shrink-0" /> Nuevo Entrenador
             </Button>
           </DialogTrigger>
-          <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl max-w-lg rounded-3xl">
+          <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto custom-scrollbar rounded-3xl">
             <DialogHeader>
               <DialogTitle className="text-3xl font-serif text-foreground">Staff Técnico</DialogTitle>
               <DialogDescription className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -126,11 +126,11 @@ export function ClassControlBar({
           onOpenChange={(val) => dispatch({ type: "SET_CREATE_CLASS_OPEN", payload: val })}
         >
           <DialogTrigger asChild>
-            <Button className="h-11 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-transform">
-              <Plus className="size-4 mr-2" /> Programar Clase
+            <Button className="flex-1 sm:flex-none h-11 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-transform">
+              <Plus className="size-4 mr-2 shrink-0" /> Programar Clase
             </Button>
           </DialogTrigger>
-          <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl max-w-2xl rounded-3xl">
+          <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar rounded-3xl">
             <DialogHeader>
               <DialogTitle className="text-3xl font-serif text-foreground">Nueva Sesión Grupal</DialogTitle>
               <DialogDescription className="text-xs uppercase tracking-widest text-muted-foreground">

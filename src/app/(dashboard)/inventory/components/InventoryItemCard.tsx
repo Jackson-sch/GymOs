@@ -33,8 +33,8 @@ export function InventoryItemCard({
   onDelete,
 }: InventoryItemCardProps) {
   return (
-    <Card className="glass-card border-white/10 overflow-hidden hover:border-primary/30 transition-colors duration-300 group relative p-0 backdrop-blur-md">
-      <div className="h-56 relative overflow-hidden bg-black/40">
+    <Card className="glass-card border-border/70 dark:border-white/10 overflow-hidden hover:border-primary/30 transition-colors duration-300 group relative p-0 gap-0 backdrop-blur-md">
+      <div className="h-56 relative overflow-hidden bg-muted/40 dark:bg-black/40">
         {item.photo ? (
           <Image
             src={item.photo}
@@ -120,7 +120,7 @@ export function InventoryItemCard({
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3 bg-black/30 p-3 rounded-2xl border border-white/5 text-xs">
+        <div className="grid grid-cols-2 gap-3 bg-muted/60 dark:bg-black/30 p-3 rounded-2xl border border-border dark:border-white/5 text-xs">
           <div>
             <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
               Último Mant.

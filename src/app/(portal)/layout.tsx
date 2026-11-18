@@ -2,9 +2,9 @@ import React from "react";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { PortalSidebar } from "@/components/shared/PortalSidebar";
-import { NotificationCenter } from "@/components/shared/NotificationCenter";
+import { PortalShell } from "@/components/shared/PortalShell";
 import { getConfigMap } from "@/lib/config";
+import { checkActiveAccess } from "@/lib/security";
 
 export const dynamic = "force-dynamic";
 
@@ -21,19 +21,12 @@ export default async function PortalLayout({
     redirect("/login");
   }
 
+  const access = await checkActiveAccess(session);
+  if (!access.ok) {
+    redirect("/suspended");
+  }
+
   const branding = await getConfigMap(["GYM_NAME", "GYM_LOGO"]);
 
-  return (
-    <div className="flex min-h-screen bg-background premium-gradient overflow-x-hidden">
-      <PortalSidebar branding={branding} />
-      <main className="flex-1 md:ml-72 transition-colors duration-500">
-        <header className="flex h-20 items-center justify-end px-8 gap-4">
-          <NotificationCenter />
-        </header>
-        <div className="w-full max-w-[100vw] px-4 sm:px-8 lg:px-12 py-4 mx-auto">
-          {children}
-        </div>
-      </main>
-    </div>
-  );
+  return <PortalShell branding={branding}>{children}</PortalShell>;
 }

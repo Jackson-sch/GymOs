@@ -13,7 +13,7 @@ export function TrainerRoutinesTab({ trainer }: { trainer: any }) {
 
   if (routines.length === 0) {
     return (
-      <Card className="glass-card border-white/10 p-12 text-center rounded-3xl">
+      <Card className="glass-card border-white/10 p-6 sm:p-12 text-center rounded-3xl">
         <Dumbbell className="size-12 text-muted-foreground mx-auto mb-4 opacity-40" />
         <h3 className="text-xl font-serif font-bold text-foreground">Sin Rutinas Asignadas</h3>
         <p className="text-xs text-muted-foreground mt-2 max-w-sm mx-auto">

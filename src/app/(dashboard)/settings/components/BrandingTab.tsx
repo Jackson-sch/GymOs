@@ -28,17 +28,17 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
   const currentColor = formState["PRIMARY_COLOR"] || "#10b981";
 
   return (
-    <section className="glass-card p-6 sm:p-8 md:p-10 border-white/10 space-y-8 animate-slide-right">
+    <section className="glass-card p-6 sm:p-8 border-border space-y-8 animate-slide-right">
       <div>
-        <h2 className="text-2xl font-serif mb-1">Identidad Visual & Marca (White-Label)</h2>
+        <h2 className="text-2xl font-serif mb-1 text-foreground">Identidad Visual & Marca (White-Label)</h2>
         <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium">
           Personalización de la apariencia corporativa para el Dashboard, Portal de Socios y comprobantes
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 2xl:grid-cols-12 gap-6 xl:gap-8">
         {/* Form Column */}
-        <div className="lg:col-span-7 space-y-6">
+        <div className="2xl:col-span-7 space-y-6">
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-wider text-foreground">
               Eslogan Editorial del Gimnasio
@@ -47,7 +47,7 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
               value={formState["GYM_SLOGAN"] || ""}
               onChange={(e) => handleChange("GYM_SLOGAN", e.target.value)}
               placeholder="Ej: La excelencia es un hábito diario"
-              className="bg-white/5 border-white/10 h-11 rounded-xl text-xs"
+              className="bg-muted/40 border-border text-foreground h-11 rounded-xl text-xs"
             />
           </div>
 
@@ -61,7 +61,7 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
             </div>
 
             {/* Tailwind Presets */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
               {COLOR_PRESETS.map((preset) => {
                 const isSelected = currentColor.toLowerCase() === preset.hex.toLowerCase();
                 return (
@@ -71,12 +71,12 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
                     onClick={() => handleChange("PRIMARY_COLOR", preset.hex)}
                     className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-colors ${
                       isSelected
-                        ? "bg-white/10 border-primary shadow-md"
-                        : "bg-white/2 border-white/5 hover:border-white/20"
+                        ? "bg-primary/10 border-primary shadow-sm"
+                        : "bg-muted/40 border-border hover:border-primary/40"
                     }`}
                   >
                     <span
-                      className="size-5 rounded-lg border border-white/20 shrink-0 flex items-center justify-center"
+                      className="size-5 rounded-lg border border-black/10 dark:border-white/20 shrink-0 flex items-center justify-center"
                       style={{ backgroundColor: preset.hex }}
                     >
                       {isSelected && <Check className="size-3 text-black font-bold" />}
@@ -91,8 +91,8 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
             </div>
 
             {/* Custom Color Input */}
-            <div className="flex items-center gap-3 pt-2">
-              <div className="relative size-11 rounded-xl border border-white/10 overflow-hidden shrink-0">
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <div className="relative size-11 rounded-xl border border-border overflow-hidden shrink-0">
                 <input
                   type="color"
                   aria-label="Color selector"
@@ -109,7 +109,7 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
                 value={formState["PRIMARY_COLOR"] || "#10b981"}
                 onChange={(e) => handleChange("PRIMARY_COLOR", e.target.value)}
                 placeholder="#10b981"
-                className="bg-white/5 border-white/10 h-11 rounded-xl font-mono text-xs max-w-[150px]"
+                className="bg-muted/40 border-border text-foreground h-11 rounded-xl font-mono text-xs max-w-[150px]"
               />
               <p className="text-[10px] text-muted-foreground leading-tight">
                 Seleccione un valor Hexadecimal o elija entre los tonos predeterminados recomendados.
@@ -127,6 +127,7 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
                 value={formState["GYM_LOGO"] || ""}
                 onChange={(url) => handleChange("GYM_LOGO", url)}
                 onRemove={() => handleChange("GYM_LOGO", "")}
+                fit="contain"
                 className="w-full max-w-[200px]"
               />
             </div>
@@ -138,16 +139,17 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
                 value={formState["GYM_FAVICON"] || ""}
                 onChange={(url) => handleChange("GYM_FAVICON", url)}
                 onRemove={() => handleChange("GYM_FAVICON", "")}
-                className="w-full max-w-[100px]"
+                fit="contain"
+                className="w-full max-w-[120px]"
               />
             </div>
           </div>
         </div>
 
         {/* Live UI Preview Column */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="p-6 rounded-3xl bg-white/2 border border-white/10 space-y-5">
-            <div className="flex items-center gap-2 border-b border-white/5 pb-3 text-primary">
+        <div className="2xl:col-span-5 space-y-4">
+          <div className="p-6 rounded-3xl bg-muted/40 border border-border space-y-5">
+            <div className="flex items-center gap-2 border-b border-border pb-3 text-primary">
               <Eye className="size-4" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                 Vista Previa en Vivo (Live Theme)
@@ -159,13 +161,13 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
             </p>
 
             {/* Mock Client Portal Card */}
-            <div className="p-5 rounded-2xl bg-black/40 border border-white/10 space-y-4 shadow-2xl relative overflow-hidden">
+            <div className="p-5 rounded-2xl bg-card dark:bg-zinc-950/90 border border-border space-y-4 shadow-lg relative overflow-hidden">
               <div
                 className="absolute -top-12 -right-12 size-32 rounded-full blur-2xl opacity-20 pointer-events-none"
                 style={{ backgroundColor: currentColor }}
               />
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
                   {formState["GYM_LOGO"] ? (
                     <Image
                       src={formState["GYM_LOGO"]}
@@ -173,28 +175,28 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
                       width={100}
                       height={28}
                       unoptimized
-                      className="h-7 w-auto object-contain"
+                      className="h-7 w-auto object-contain shrink-0"
                     />
                   ) : (
                     <div
-                      className="size-7 rounded-lg flex items-center justify-center font-bold text-black text-xs"
+                      className="size-7 rounded-lg flex items-center justify-center font-bold text-black text-xs shrink-0"
                       style={{ backgroundColor: currentColor }}
                     >
                       G
                     </div>
                   )}
-                  <span className="font-serif font-bold text-sm text-white">
+                  <span className="font-serif font-bold text-sm text-foreground truncate">
                     {formState["GYM_NAME"] || "GymOS Platform"}
                   </span>
                 </div>
                 <Badge
                   variant="outline"
                   style={{
-                    backgroundColor: `${currentColor}15`,
-                    borderColor: `${currentColor}40`,
+                    backgroundColor: `${currentColor}18`,
+                    borderColor: `${currentColor}45`,
                     color: currentColor,
                   }}
-                  className="text-[9px] font-bold"
+                  className="text-[9px] font-bold shrink-0"
                 >
                   ● ACTIVO
                 </Badge>
@@ -204,7 +206,7 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
                 <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">
                   Membresía VIP Anual
                 </p>
-                <p className="text-xs italic text-slate-300">
+                <p className="text-xs italic text-muted-foreground">
                   "{formState["GYM_SLOGAN"] || "La excelencia es un hábito diario"}"
                 </p>
               </div>
@@ -213,16 +215,16 @@ export function BrandingTab({ formState, handleChange }: BrandingTabProps) {
                 <Button
                   type="button"
                   style={{ backgroundColor: currentColor, color: "#000" }}
-                  className="w-full h-9 rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg transition-transform hover:scale-[1.01]"
+                  className="w-full h-auto min-h-9 py-2 px-3 whitespace-normal leading-tight rounded-xl font-bold text-[11px] uppercase tracking-wider shadow-md transition-transform hover:scale-[1.01]"
                 >
                   Acceder al Portal de Socio
                 </Button>
               </div>
             </div>
 
-            <div className="text-[11px] text-muted-foreground space-y-1.5 pt-2 border-t border-white/5">
+            <div className="text-[11px] text-muted-foreground space-y-1.5 pt-2 border-t border-border">
               <p className="font-semibold text-foreground">¿Dónde se utiliza esta configuración?</p>
-              <ul className="list-disc pl-4 space-y-1 text-slate-400">
+              <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
                 <li>Acentos y botones primarios del <strong>Portal web de socios</strong>.</li>
                 <li>Logos y cabeceras de <strong>Facturas y Recibos PDF</strong>.</li>
                 <li>Notificaciones y correos transaccionales (Resend/Email).</li>

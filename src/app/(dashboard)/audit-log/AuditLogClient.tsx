@@ -80,7 +80,7 @@ export function AuditLogClient({ data }: { data: any[] }) {
         <SheetContent className="glass-card border-l border-white/20 bg-zinc-950/75! backdrop-blur-3xl! shadow-[-20px_0_50px_rgba(0,0,0,0.8)] w-[90vw]! sm:w-[85vw]! md:w-[75vw]! lg:w-[65vw]! xl:w-[55vw]! max-w-none! flex flex-col p-0 overflow-hidden z-50">
           {selectedLog && (
             <>
-              <SheetHeader className="p-8 border-b border-white/5 shrink-0">
+              <SheetHeader className="-5 sm:-8 border-b border-white/5 shrink-0">
                 <div className="flex justify-between items-start mr-8">
                   <div className="space-y-1 text-left">
                     <div className="flex items-center gap-2 text-primary mb-2">
@@ -89,7 +89,7 @@ export function AuditLogClient({ data }: { data: any[] }) {
                         Detalle de Auditoría
                       </span>
                     </div>
-                    <SheetTitle className="text-4xl font-serif text-foreground">
+                    <SheetTitle className="text-2xl sm:text-4xl font-serif text-foreground">
                       {selectedLog.action} en {selectedLog.entity}
                     </SheetTitle>
                     <SheetDescription className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
@@ -102,7 +102,7 @@ export function AuditLogClient({ data }: { data: any[] }) {
                 </div>
               </SheetHeader>
 
-              <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+              <div className="flex-1 p-5 sm:p-8 overflow-y-auto custom-scrollbar">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                   {/* Metadata Column */}
                   <div className="space-y-8 lg:col-span-1">

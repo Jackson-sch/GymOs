@@ -28,19 +28,17 @@ export default async function PaymentsPage() {
   const defaultReceiptFormat = configMap["RECEIPT_FORMAT"] || "A4";
 
   return (
-    <div className="space-y-12 animate-fade-in">
+    <div className="space-y-8 animate-fade-in pb-10">
       {/* Header Editorial */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-primary">
-            <Wallet className="w-4 h-4" />
-            <span className="text-[10px] uppercase tracking-[0.3em] font-bold">Gestión de Tesorería</span>
-          </div>
-          <h1 className="text-6xl font-serif leading-tight">Pagos & Facturas</h1>
-          <p className="text-muted-foreground font-sans max-w-md">
-            Controlando la <span className="text-foreground font-medium">salud financiera</span> de GymOS con transparencia y rigor.
-          </p>
+      <div className="space-y-1">
+        <div className="flex items-center gap-2 text-primary">
+          <Wallet className="w-4 h-4" />
+          <span className="text-[10px] uppercase tracking-[0.3em] font-bold">Gestión de Tesorería</span>
         </div>
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold leading-tight text-foreground">Pagos & Facturas</h1>
+        <p className="text-sm text-muted-foreground font-sans">
+          Controlando la <span className="text-foreground font-medium">salud financiera</span> de GymOS con transparencia, trazabilidad y emisión inmediata de comprobantes.
+        </p>
       </div>
 
       {/* Main Client Component */}

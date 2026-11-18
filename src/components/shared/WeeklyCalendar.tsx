@@ -69,7 +69,8 @@ export function WeeklyCalendar({ selectedDate, onDateSelect }: WeeklyCalendarPro
       </div>
 
       {/* 7-Day Grid with High-Contrast Soft Borders */}
-      <div className="grid grid-cols-7 gap-2.5 md:gap-4">
+      <div className="overflow-x-auto pb-1 custom-scrollbar">
+      <div className="grid grid-cols-7 gap-2.5 md:gap-4 min-w-135 sm:min-w-0">
         {days.map((day) => {
           const isSelected = isSameDay(day, selectedDate);
           const isToday = isSameDay(day, today);
@@ -107,6 +108,7 @@ export function WeeklyCalendar({ selectedDate, onDateSelect }: WeeklyCalendarPro
             </button>
           );
         })}
+      </div>
       </div>
     </div>
   );

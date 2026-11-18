@@ -62,11 +62,18 @@ export default function RootLayout({
       )}
       suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('gymos-theme');if(t==='light'){document.documentElement.classList.remove('dark');}else{document.documentElement.classList.add('dark');}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <TooltipProvider>
           <NuqsAdapter>{children}</NuqsAdapter>
         </TooltipProvider>
-        <Toaster position="top-right" theme="dark" richColors />
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

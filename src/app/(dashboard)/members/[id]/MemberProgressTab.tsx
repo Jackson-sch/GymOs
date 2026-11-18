@@ -242,7 +242,7 @@ export function MemberProgressTab({ member }: { member: any }) {
                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
                     Últimas fotos de progreso ({mounted && format(new Date(latestWithPhotos.measuredAt || latestWithPhotos.createdAt || 0), "dd MMM yyyy", { locale: es })})
                   </p>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {latestWithPhotos.photoFrontUrl && (
                       <div className="relative aspect-square rounded-xl overflow-hidden border border-white/10 group bg-black/40">
                         <Image src={latestWithPhotos.photoFrontUrl} alt="Frontal" fill sizes="(max-width: 768px) 33vw, 20vw" className="object-cover transition-transform duration-300 group-hover:scale-110" />

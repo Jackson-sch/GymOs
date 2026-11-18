@@ -241,7 +241,7 @@ export function ProfileInfo({
           <button type="button"
             onClick={onSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-transform disabled:opacity-50"
+            className="flex items-center gap-2 p-5 sm:p-8 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-transform disabled:opacity-50"
           >
             {isSaving ? (
               <>
@@ -265,7 +265,7 @@ export function ProfileInfo({
     <div className="flex-1 w-full space-y-6 text-center md:text-left">
       {/* Name + Status */}
       <div className="space-y-2">
-        <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-foreground">
+        <h1 className="text-2xl sm:text-4xl md:text-5xl font-serif font-bold tracking-tight text-foreground">
           {trainer.fullName}
         </h1>
         <div className="flex items-center justify-center md:justify-start gap-3 pt-1">

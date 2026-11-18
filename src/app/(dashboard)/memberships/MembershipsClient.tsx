@@ -80,6 +80,7 @@ export function MembershipsClient({ data }: { data: any[] }) {
 
   const handleViewMembers = async (plan: any) => {
     setMembersPlan(plan);
+    setPlanMembers([]);
     setLoadingMembers(true);
     const result = await getPlanMembersAction(plan.id);
     if (result.success) {
@@ -119,67 +120,68 @@ export function MembershipsClient({ data }: { data: any[] }) {
 
   return (
     <div className="space-y-8 w-full">
-      {/* Control Bar: Search + Category Pills + Create Button */}
-      <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 glass-card p-4 rounded-3xl border-white/10">
-        <div className="flex flex-col md:flex-row gap-4 items-center flex-1">
+      {/* Control Bar: Search + Create Button + Category Pills */}
+      <div className="flex flex-col gap-3 glass-card p-4 rounded-3xl border-border/70 dark:border-white/10">
+        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
           {/* SINGLE UNIFIED SEARCH INPUT */}
-          <div className="relative flex-1 w-full group">
+          <div className="relative flex-1 sm:max-w-md group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input
               placeholder="Buscar plan por nombre o beneficios..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-11 h-11 bg-white/5 border-white/10 rounded-2xl text-xs focus-visible:ring-primary/30 transition-colors"
+              className="pl-11 h-11 bg-muted/40 dark:bg-white/5 border-border/80 dark:border-white/10 rounded-2xl text-xs focus-visible:ring-primary/30 transition-colors"
             />
           </div>
 
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-1.5 bg-black/40 p-1 rounded-2xl border border-white/10 overflow-x-auto custom-scrollbar w-full md:w-auto">
-            {[
-              { id: "ALL", label: "Todos los Planes" },
-              { id: "CLASSES", label: "Con Clases Grupales" },
-              { id: "GYM_ONLY", label: "Solo Musculación" },
-              { id: "LONG_TERM", label: "Larga Duración (90+ Días)" },
-            ].map((c) => (
-              <button type="button"
-                key={c.id}
-                onClick={() => setCategoryFilter(c.id)}
-                className={cn(
-                  "px-3.5 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap",
-                  categoryFilter === c.id
-                    ? "bg-primary text-primary-foreground shadow-md"
-                    : "text-muted-foreground hover:text-foreground hover:bg-white/5",
-                )}
-              >
-                {c.label}
-              </button>
-            ))}
+          {/* Action Button */}
+          <div className="flex items-center justify-end shrink-0">
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full sm:w-auto h-11 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors">
+                  <Plus className="size-4 mr-2" /> Crear Nuevo Plan
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar rounded-3xl">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl sm:text-3xl font-serif text-foreground">Definir Plan Maestro</DialogTitle>
+                  <DialogDescription className="text-xs uppercase tracking-widest text-muted-foreground">
+                    Crea una nueva oferta comercial diferenciada para los socios de GymOS.
+                  </DialogDescription>
+                </DialogHeader>
+                <PlanForm onSuccess={() => setIsCreateOpen(false)} />
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
-        {/* Action Button */}
-        <div className="flex items-center justify-end shrink-0">
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button className="h-11 rounded-2xl bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-transform">
-                <Plus className="size-4 mr-2" /> Crear Nuevo Plan
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl max-w-2xl rounded-3xl">
-              <DialogHeader>
-                <DialogTitle className="text-3xl font-serif text-foreground">Definir Plan Maestro</DialogTitle>
-                <DialogDescription className="text-xs uppercase tracking-widest text-muted-foreground">
-                  Crea una nueva oferta comercial diferenciada para los socios de GymOS.
-                </DialogDescription>
-              </DialogHeader>
-              <PlanForm onSuccess={() => setIsCreateOpen(false)} />
-            </DialogContent>
-          </Dialog>
+        {/* Category Filter Pills */}
+        <div className="flex flex-wrap items-center gap-1.5 bg-muted/50 dark:bg-black/40 p-1.5 rounded-2xl border border-border/70 dark:border-white/10 w-full sm:w-fit">
+          {[
+            { id: "ALL", label: "Todos los Planes" },
+            { id: "CLASSES", label: "Con Clases Grupales" },
+            { id: "GYM_ONLY", label: "Solo Musculación" },
+            { id: "LONG_TERM", label: "Larga Duración (90+ Días)" },
+          ].map((c) => (
+            <button
+              type="button"
+              key={c.id}
+              onClick={() => setCategoryFilter(c.id)}
+              className={cn(
+                "px-3.5 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap",
+                categoryFilter === c.id
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/80 dark:hover:bg-white/5",
+              )}
+            >
+              {c.label}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Plans Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
         {filteredPlans.length > 0 ? (
           filteredPlans.map((plan: any) => (
             <MembershipPlanCard
@@ -205,7 +207,7 @@ export function MembershipsClient({ data }: { data: any[] }) {
       {/* Edit Plan Dialog */}
       {editingPlan && (
         <Dialog open={!!editingPlan} onOpenChange={() => setEditingPlan(null)}>
-          <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl max-w-2xl rounded-3xl">
+          <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar rounded-3xl">
             <DialogHeader>
               <DialogTitle className="text-3xl font-serif text-foreground">Editar Plan Maestro</DialogTitle>
               <DialogDescription className="text-xs uppercase tracking-widest text-muted-foreground">

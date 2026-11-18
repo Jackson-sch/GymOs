@@ -1,11 +1,55 @@
 import { headers } from "next/headers";
 import { auth } from "./auth";
+import { prisma } from "./prisma";
 
 export type SessionUser = typeof auth.$Infer.Session["user"];
 
 import { getUserRole } from "./utils";
 
 export { getUserRole };
+
+/**
+ * Checks whether the authenticated user and their organization are active.
+ * SUPER_ADMIN accounts bypass organization suspension checks.
+ */
+export async function checkActiveAccess(session: { user?: any } | null) {
+  if (!session?.user?.id) {
+    return { ok: false as const, reason: "UNAUTHENTICATED" as const };
+  }
+
+  const role = getUserRole(session);
+  if (role === "SUPER_ADMIN") {
+    return { ok: true as const };
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      isActive: true,
+      organizationId: true,
+      organization: {
+        select: {
+          isActive: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  if (!dbUser || !dbUser.isActive) {
+    return { ok: false as const, reason: "USER_SUSPENDED" as const };
+  }
+
+  if (dbUser.organizationId && dbUser.organization && !dbUser.organization.isActive) {
+    return {
+      ok: false as const,
+      reason: "ORG_SUSPENDED" as const,
+      orgName: dbUser.organization.name,
+    };
+  }
+
+  return { ok: true as const };
+}
 
 /**
  * Verifies if there is an active session and optionally checks for specific roles.
@@ -29,7 +73,24 @@ export async function verifySession(roles?: string[]) {
     throw new Error(`FORBIDDEN: No tienes permisos suficientes (${roles.join(", ")} requeridos)`);
   }
 
+  const access = await checkActiveAccess(session);
+  if (!access.ok) {
+    if (access.reason === "ORG_SUSPENDED") {
+      throw new Error("SUSPENDED: La cuenta de tu gimnasio se encuentra suspendida.");
+    }
+    throw new Error("SUSPENDED: Tu cuenta de usuario se encuentra suspendida.");
+  }
+
   return session;
+}
+
+export function isExpectedAuthError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  return (
+    error.message.startsWith("UNAUTHORIZED:") ||
+    error.message.startsWith("FORBIDDEN:") ||
+    error.message.startsWith("SUSPENDED:")
+  );
 }
 
 /**

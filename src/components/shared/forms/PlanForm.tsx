@@ -88,7 +88,7 @@ export function PlanForm({ initialData, onSuccess }: PlanFormProps) {
         <Textarea {...register("description")} className="bg-white/5 border-white/10" placeholder="Describe los beneficios..." />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Precio (S/.)</Label>
           <Input {...register("price")} className="bg-white/5 border-white/10" placeholder="120.00" />

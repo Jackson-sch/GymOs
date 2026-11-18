@@ -26,8 +26,8 @@ export default async function TrainersPage() {
               Staff Técnico & Expertos
             </span>
           </div>
-          <h1 className="text-6xl font-serif leading-tight">Entrenadores</h1>
-          <p className="text-muted-foreground font-sans max-w-md">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold leading-tight text-foreground">Entrenadores</h1>
+          <p className="text-muted-foreground font-sans text-sm">
             Gestionando el equipo de élite que impulsa el rendimiento de <span className="text-foreground font-medium">GymOS</span>.
           </p>
         </div>

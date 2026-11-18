@@ -28,10 +28,10 @@ export default async function MembersPage() {
               Base de Datos de Socios
             </span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-serif font-bold leading-tight text-foreground">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold leading-tight text-foreground">
             Directorio de Socios
           </h1>
-          <p className="text-muted-foreground font-sans max-w-md text-sm">
+          <p className="text-muted-foreground font-sans text-sm">
             Gestión de la comunidad de{" "}
             <span className="text-foreground font-medium">GymOS</span> con precisión quirúrgica y estilo.
           </p>

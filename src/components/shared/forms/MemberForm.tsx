@@ -211,11 +211,11 @@ export function MemberForm({ initialData, onSuccess }: MemberFormProps) {
                 <FormLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">Estado</FormLabel>
                 <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
-                    <SelectTrigger className="bg-white/5 border-white/10 h-12 w-full">
+                    <SelectTrigger className="bg-muted/40 border-border text-foreground h-12 w-full">
                       <SelectValue placeholder="Seleccionar estado" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="bg-black/95 border-white/10 backdrop-blur-xl">
+                  <SelectContent className="bg-popover border-border text-popover-foreground backdrop-blur-xl">
                     <SelectItem value="ACTIVE">Activo</SelectItem>
                     <SelectItem value="INACTIVE">Inactivo</SelectItem>
                     <SelectItem value="SUSPENDED">Suspendido</SelectItem>

@@ -67,21 +67,21 @@ export function BranchControlBar({
 }: BranchControlBarProps) {
 
   return (
-    <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 glass-card p-4 rounded-3xl border-white/10">
-      <div className="flex flex-col md:flex-row gap-4 items-center flex-1">
+    <div className="flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-4 glass-card p-4 rounded-3xl border-white/10">
+      <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center flex-1 min-w-0">
         {/* Search Input */}
-        <div className="relative flex-1 w-full group">
+        <div className="relative flex-1 min-w-[200px] w-full group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input
             placeholder="Buscar por nombre de sede, slug o dirección física..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-11 h-11 bg-white/5 border-white/10 rounded-2xl text-xs focus-visible:ring-primary/30 transition-colors"
+            className="pl-11 h-11 bg-muted/40 dark:bg-white/5 border-border/80 dark:border-white/10 rounded-2xl text-xs focus-visible:ring-primary/30 transition-colors"
           />
         </div>
 
         {/* Status Filter Pills */}
-        <div className="flex items-center gap-1.5 bg-black/40 p-1 rounded-2xl border border-white/10 overflow-x-auto custom-scrollbar w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-1.5 bg-muted/60 dark:bg-black/40 p-1 rounded-2xl border border-border/70 dark:border-white/10 w-full md:w-auto">
           {FILTER_OPTIONS.map((s) => (
             <button type="button"
               key={s.id}
@@ -107,7 +107,7 @@ export function BranchControlBar({
               <Plus className="size-4 mr-2" /> Registrar Nueva Sede
             </Button>
           </DialogTrigger>
-          <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl max-w-xl rounded-3xl">
+          <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl w-[95vw] max-w-xl max-h-[90vh] overflow-y-auto custom-scrollbar rounded-3xl">
             <DialogHeader>
               <DialogTitle className="text-3xl font-serif text-foreground">
                 Nueva Sede / Sucursal Física

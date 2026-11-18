@@ -145,10 +145,10 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
           Nuevo Plan
         </Label>
         <Select value={selectedPlanId} onValueChange={setSelectedPlanId}>
-          <SelectTrigger className="bg-white/5 border-white/10 rounded-xl h-12 w-full">
+          <SelectTrigger className="bg-muted/40 border-border text-foreground rounded-xl h-12 w-full">
             <SelectValue placeholder="Seleccionar plan..." />
           </SelectTrigger>
-          <SelectContent className="bg-black/95 border-white/10 backdrop-blur-xl">
+          <SelectContent className="bg-popover border-border text-popover-foreground backdrop-blur-xl">
             {plans.flatMap((plan) => {
               if (!plan.isActive) return [];
               const days = plan.durationDays;
@@ -242,10 +242,10 @@ export function RenewalForm({ member, plans, onSuccess }: RenewalFormProps) {
           Método de Pago
         </Label>
         <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-          <SelectTrigger className="bg-white/5 border-white/10 rounded-xl h-12 w-full">
+          <SelectTrigger className="bg-muted/40 border-border text-foreground rounded-xl h-12 w-full">
             <SelectValue placeholder="Registrar pago (opcional)..." />
           </SelectTrigger>
-          <SelectContent className="bg-black/95 border-white/10 backdrop-blur-xl">
+          <SelectContent className="bg-popover border-border text-popover-foreground backdrop-blur-xl">
             {paymentMethods.map((pm) => (
               <SelectItem key={pm.value} value={pm.value}>
                 <div className="flex items-center gap-2">

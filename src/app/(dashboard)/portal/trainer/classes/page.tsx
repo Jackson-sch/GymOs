@@ -25,7 +25,7 @@ export default async function TrainerClassesPage() {
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="space-y-1">
-        <h1 className="text-4xl font-serif">Gestión de Clases</h1>
+        <h1 className="text-2xl sm:text-4xl font-serif">Gestión de Clases</h1>
         <p className="text-muted-foreground">Consulta tu horario y gestiona la asistencia de tus clases próximas.</p>
       </div>
 

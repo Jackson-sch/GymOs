@@ -30,65 +30,65 @@ export function SystemTab({ loading, onTriggerCron }: SystemTabProps) {
             Gestión de tareas programadas, salud del servidor y optimización del núcleo
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px] font-bold px-3 py-1 gap-1.5">
-            <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+        <div className="flex items-center gap-2 shrink-0">
+          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold px-3 py-1 gap-1.5">
+            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
             Servidores Operativos
           </Badge>
         </div>
       </div>
 
       {/* Health Checks Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-5">
         <div className="p-5 rounded-2xl bg-white/2 border border-white/5 space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Base de Datos PostgreSQL
             </span>
-            <Database className="size-4 text-primary" />
+            <Database className="size-4 shrink-0 text-primary" />
           </div>
           <p className="text-lg font-serif font-bold text-foreground">Conectado (Pool Activo)</p>
-          <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-semibold">
-            <CheckCircle2 className="size-3" /> Prisma ORM 7.8 — Latencia 4ms
+          <div className="flex items-center gap-1.5 text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold">
+            <CheckCircle2 className="size-3 shrink-0" /> Prisma ORM 7.8 — Latencia 4ms
           </div>
         </div>
 
         <div className="p-5 rounded-2xl bg-white/2 border border-white/5 space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Motor de Notificaciones
             </span>
-            <Activity className="size-4 text-primary" />
+            <Activity className="size-4 shrink-0 text-primary" />
           </div>
           <p className="text-lg font-serif font-bold text-foreground">Resend & WhatsApp</p>
-          <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-semibold">
-            <CheckCircle2 className="size-3" /> Cola en tiempo real OK
+          <div className="flex items-center gap-1.5 text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold">
+            <CheckCircle2 className="size-3 shrink-0" /> Cola en tiempo real OK
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-white/2 border border-white/5 space-y-2">
-          <div className="flex items-center justify-between">
+        <div className="p-5 rounded-2xl bg-white/2 border border-white/5 space-y-2 sm:col-span-2 2xl:col-span-1">
+          <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Monitor de Errores (Sentry)
             </span>
-            <ShieldCheck className="size-4 text-primary" />
+            <ShieldCheck className="size-4 shrink-0 text-primary" />
           </div>
           <p className="text-lg font-serif font-bold text-foreground">0 Excepciones Críticas</p>
-          <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-semibold">
-            <CheckCircle2 className="size-3" /> Telemetría Edge Activa
+          <div className="flex items-center gap-1.5 text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold">
+            <CheckCircle2 className="size-3 shrink-0" /> Telemetría Edge Activa
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Card 1: Mantenimiento de Membresías */}
         <div className="p-6 rounded-3xl bg-white/2 border border-white/5 space-y-6 shadow-xl backdrop-blur-md flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center gap-3 border-b border-white/5 pb-3">
-              <div className="size-10 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
-                <History className="size-5 text-amber-400" />
+              <div className="size-10 shrink-0 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
+                <History className="size-5 text-amber-500 dark:text-amber-400" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <h3 className="font-serif text-lg font-bold text-foreground">
                   Mantenimiento de Membresías
                 </h3>
@@ -106,14 +106,14 @@ export function SystemTab({ loading, onTriggerCron }: SystemTabProps) {
           <Button
             onClick={onTriggerCron}
             disabled={loading}
-            className="w-full bg-white/5 hover:bg-white/10 text-foreground border border-white/10 rounded-xl h-11 text-xs uppercase tracking-wider font-bold gap-2 transition-colors mt-4"
+            className="w-full h-auto min-h-11 py-2.5 px-4 whitespace-normal text-center leading-tight bg-white/5 hover:bg-white/10 text-foreground border border-white/10 rounded-xl text-xs uppercase tracking-wider font-bold gap-2 transition-colors mt-4"
           >
             {loading ? (
-              <Loader2 className="size-4 animate-spin text-primary" />
+              <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
             ) : (
-              <Cpu className="size-4 text-primary" />
+              <Cpu className="size-4 shrink-0 text-primary" />
             )}
-            Ejecutar Mantenimiento Manual
+            <span>Ejecutar Mantenimiento Manual</span>
           </Button>
         </div>
 
@@ -121,10 +121,10 @@ export function SystemTab({ loading, onTriggerCron }: SystemTabProps) {
         <div className="p-6 rounded-3xl bg-white/2 border border-white/5 space-y-6 shadow-xl backdrop-blur-md flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center gap-3 border-b border-white/5 pb-3">
-              <div className="size-10 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
-                <RefreshCw className="size-5 text-blue-400" />
+              <div className="size-10 shrink-0 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+                <RefreshCw className="size-5 text-blue-500 dark:text-blue-400" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <h3 className="font-serif text-lg font-bold text-foreground">
                   Caché & Optimización PWA
                 </h3>
@@ -135,13 +135,13 @@ export function SystemTab({ loading, onTriggerCron }: SystemTabProps) {
             </div>
 
             <div className="space-y-2 text-xs text-muted-foreground">
-              <div className="flex items-center justify-between text-[11px] font-semibold">
+              <div className="flex items-center justify-between gap-2 text-[11px] font-semibold">
                 <span>Estado de PWA Portal:</span>
-                <span className="text-emerald-400 font-bold">Activo & Instalable</span>
+                <span className="text-emerald-700 dark:text-emerald-400 font-bold">Activo & Instalable</span>
               </div>
-              <div className="flex items-center justify-between text-[11px] font-semibold">
+              <div className="flex items-center justify-between gap-2 text-[11px] font-semibold">
                 <span>Manifest / Service Worker:</span>
-                <span className="text-emerald-400 font-bold">Sincronizado</span>
+                <span className="text-emerald-700 dark:text-emerald-400 font-bold">Sincronizado</span>
               </div>
             </div>
           </div>
@@ -149,14 +149,14 @@ export function SystemTab({ loading, onTriggerCron }: SystemTabProps) {
           <Button
             onClick={handleClearCache}
             disabled={clearingCache}
-            className="w-full bg-white/5 hover:bg-white/10 text-foreground border border-white/10 rounded-xl h-11 text-xs uppercase tracking-wider font-bold gap-2 transition-colors mt-4"
+            className="w-full h-auto min-h-11 py-2.5 px-4 whitespace-normal text-center leading-tight bg-white/5 hover:bg-white/10 text-foreground border border-white/10 rounded-xl text-xs uppercase tracking-wider font-bold gap-2 transition-colors mt-4"
           >
             {clearingCache ? (
-              <Loader2 className="size-4 animate-spin text-primary" />
+              <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
             ) : (
-              <Zap className="size-4 text-primary" />
+              <Zap className="size-4 shrink-0 text-primary" />
             )}
-            Purgar Caché del Sistema
+            <span>Purgar Caché del Sistema</span>
           </Button>
         </div>
       </div>
@@ -164,12 +164,12 @@ export function SystemTab({ loading, onTriggerCron }: SystemTabProps) {
       {/* Footer Specs */}
       <div className="pt-6 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-muted-foreground">
         <div className="flex items-center gap-2">
-          <Monitor className="size-4 text-primary" />
+          <Monitor className="size-4 shrink-0 text-primary" />
           <p className="text-[10px] uppercase tracking-[0.2em] font-semibold">
             GymOS Platform v2.4.0 — High-Performance Stack
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Badge variant="outline" className="text-[9px] font-mono border-white/10 bg-white/5">
             Next.js 16.2.6
           </Badge>

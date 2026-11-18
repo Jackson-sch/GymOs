@@ -20,7 +20,7 @@ export function MemberRoutineTab({ member }: { member: any }) {
 
   if (routines.length === 0) {
     return (
-      <Card className="glass-card border-white/10 p-12 text-center">
+      <Card className="glass-card border-white/10 p-6 sm:p-12 text-center">
         <Dumbbell className="size-12 text-muted-foreground mx-auto mb-4 opacity-40" />
         <h3 className="text-xl font-serif font-bold text-foreground">Sin Rutina Asignada</h3>
         <p className="text-xs text-muted-foreground mt-2 max-w-sm mx-auto">
@@ -121,7 +121,7 @@ export function MemberRoutineTab({ member }: { member: any }) {
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 text-center pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center pt-2">
                   <div className="p-2 rounded-xl bg-black/30 border border-white/5">
                     <p className="text-[8px] uppercase text-muted-foreground font-bold">Series</p>
                     <p className="text-base font-serif font-bold text-foreground">{item.sets}</p>

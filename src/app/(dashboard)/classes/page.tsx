@@ -22,8 +22,8 @@ export default async function ClassesPage() {
             <Calendar className="w-4 h-4" />
             <span className="text-[10px] uppercase tracking-[0.3em] font-bold">Agenda de Sesiones</span>
           </div>
-          <h1 className="text-6xl font-serif leading-tight">Clases Grupales</h1>
-          <p className="text-muted-foreground font-sans max-w-md">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold leading-tight text-foreground">Clases Grupales</h1>
+          <p className="text-muted-foreground font-sans text-sm">
             Gestionando la programación de <span className="text-foreground font-medium">entrenamientos dirigidos</span> y staff técnico.
           </p>
         </div>

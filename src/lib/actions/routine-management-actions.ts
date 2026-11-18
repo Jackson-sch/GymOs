@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { serialize } from "@/lib/utils";
-import { verifySession } from "@/lib/security";
+import { verifySession, isExpectedAuthError } from "@/lib/security";
 
 /**
  * Obtiene todos los ejercicios en la biblioteca
@@ -111,8 +111,81 @@ export async function assignRoutineAction(data: {
     revalidatePath("/routines");
     return { success: true, data: serialize(routine) };
   } catch (error) {
-    console.error("Error assigning routine:", error);
-    return { success: false, error: "Error al asignar la rutina" };
+    if (!isExpectedAuthError(error)) {
+      console.error("Error assigning routine:", error);
+    }
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Error al asignar la rutina",
+    };
+  }
+}
+
+/**
+ * Agrega ejercicios a todas las rutinas vinculadas a un plan existente
+ */
+export async function addExercisesToPlanAction(data: {
+  routineIds: string[];
+  exercises: {
+    exerciseId: string;
+    day: string;
+    order: number;
+    sets: number;
+    reps: string;
+    weight?: string;
+    rest?: string;
+    notes?: string;
+  }[];
+}) {
+  try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "TRAINER"]);
+    if (!data.routineIds.length || !data.exercises.length) {
+      return { success: false, error: "Debes seleccionar al menos un ejercicio" };
+    }
+
+    const records = data.routineIds.flatMap((routineId) =>
+      data.exercises.map((ex, idx) => ({
+        routineId,
+        exerciseId: ex.exerciseId,
+        day: ex.day || "Lunes",
+        order: ex.order ?? idx,
+        sets: ex.sets || 3,
+        reps: ex.reps || "12",
+        weight: ex.weight,
+        rest: ex.rest,
+        notes: ex.notes,
+      }))
+    );
+
+    await prisma.routineExercise.createMany({
+      data: records,
+    });
+
+    const updatedRoutines = await prisma.routine.findMany({
+      where: { id: { in: data.routineIds } },
+      include: {
+        member: { select: { id: true, fullName: true, dni: true } },
+        trainer: { select: { fullName: true } },
+        exercises: {
+          include: {
+            exercise: { select: { name: true, muscleGroup: true } },
+          },
+          orderBy: { order: "asc" },
+        },
+        _count: { select: { exercises: true } },
+      },
+    });
+
+    revalidatePath("/routines");
+    return { success: true, data: serialize(updatedRoutines) };
+  } catch (error) {
+    if (!isExpectedAuthError(error)) {
+      console.error("Error adding exercises to plan:", error);
+    }
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Error al agregar ejercicios al plan",
+    };
   }
 }
 
@@ -138,8 +211,13 @@ export async function getAllAssignedRoutinesAction() {
     });
     return { success: true, data: serialize(routines) };
   } catch (error) {
-    console.error("Error fetching routines:", error);
-    return { success: false, error: "Error al obtener rutinas asignadas" };
+    if (!isExpectedAuthError(error)) {
+      console.error("Error fetching routines:", error);
+    }
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Error al obtener rutinas asignadas",
+    };
   }
 }
 

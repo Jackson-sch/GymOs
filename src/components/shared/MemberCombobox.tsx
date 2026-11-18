@@ -24,6 +24,7 @@ interface MemberComboboxProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  triggerClassName?: string;
   name?: string; // For form submission if needed
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -35,6 +36,7 @@ export function MemberCombobox({
   onChange,
   placeholder = "Seleccionar socio...",
   className,
+  triggerClassName,
   name,
   open: externalOpen,
   onOpenChange: setExternalOpen,
@@ -57,7 +59,10 @@ export function MemberCombobox({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between bg-white/5 border-white/10 h-12 rounded-2xl hover:bg-white/8 text-left font-normal px-4"
+            className={cn(
+              "w-full justify-between bg-white/5 border-white/10 h-12 rounded-2xl hover:bg-white/8 text-left font-normal px-4",
+              triggerClassName
+            )}
           >
             {selectedMember ? (
               <span className="flex items-center gap-3 truncate">
@@ -78,7 +83,7 @@ export function MemberCombobox({
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-[var(--radix-popover-trigger-width)] p-0 bg-black/95 backdrop-blur-2xl border-white/10 rounded-2xl overflow-hidden shadow-2xl z-[100]"
+          className="w-[var(--radix-popover-trigger-width)] p-0 bg-popover/95 dark:bg-black/95 backdrop-blur-2xl border-border dark:border-white/10 rounded-2xl overflow-hidden shadow-2xl z-[100]"
           align="start"
         >
           <Command className="bg-transparent">

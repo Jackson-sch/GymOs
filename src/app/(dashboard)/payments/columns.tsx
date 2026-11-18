@@ -18,34 +18,34 @@ const getMethodBadge = (method: string) => {
     return {
       label: m === "YAPE" || m === "PLIN" ? m : "YAPE / PLIN",
       icon: Smartphone,
-      className: "bg-purple-500/10 text-purple-400 border-purple-500/30",
+      className: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30",
     };
   }
   if (m === "CARD" || m.includes("CARD") || m.includes("TARJETA") || m.includes("POS")) {
     return {
       label: "TARJETA POS",
       icon: CreditCard,
-      className: "bg-blue-500/10 text-blue-400 border-blue-500/30",
+      className: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30",
     };
   }
   if (m === "TRANSFER" || m.includes("TRANSFER") || m.includes("BANK")) {
     return {
       label: "TRANSFERENCIA",
       icon: Building2,
-      className: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+      className: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30",
     };
   }
   return {
     label: "EFECTIVO",
     icon: Banknote,
-    className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+    className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
   };
 };
 
 export const getColumns = (defaultReceiptFormat: string = "A4"): ColumnDef<any>[] => [
   {
     accessorKey: "member.fullName",
-    header: "Socio / Cliente",
+    header: "Socio",
     id: "member_fullName",
     cell: ({ row }) => {
       const memberName = row.original.member?.fullName || "Cliente General";
@@ -53,13 +53,20 @@ export const getColumns = (defaultReceiptFormat: string = "A4"): ColumnDef<any>[
       const planName = row.original.membership?.plan?.name || "Cobro General";
 
       return (
-        <div className="flex items-center gap-3">
-          <div className="size-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-serif font-bold text-xs shrink-0">
+        <div className="flex items-center gap-3 min-w-45">
+          <div className="size-9 rounded-full bg-primary/15 border border-primary/25 flex items-center justify-center text-primary font-serif font-bold text-xs shrink-0">
             {initials}
           </div>
-          <div>
-            <p className="text-sm font-semibold text-foreground">{memberName}</p>
-            <p className="text-[10px] text-muted-foreground font-mono">{planName}</p>
+          <div className="min-w-0">
+            <p
+              title={memberName}
+              className="text-sm font-semibold text-foreground truncate max-w-50"
+            >
+              {memberName}
+            </p>
+            <p className="text-[10px] text-muted-foreground font-mono truncate max-w-50">
+              {planName}
+            </p>
           </div>
         </div>
       );
@@ -67,34 +74,34 @@ export const getColumns = (defaultReceiptFormat: string = "A4"): ColumnDef<any>[
   },
   {
     accessorKey: "invoiceNumber",
-    header: "N° Comprobante",
+    header: "N°",
     cell: ({ row }) => (
-      <span className="font-mono text-xs font-semibold text-primary/90">
+      <span className="font-mono text-xs font-semibold text-primary/90 whitespace-nowrap">
         {row.original.invoiceNumber || `F001-${row.original.id.substring(0, 4)}`}
       </span>
     ),
   },
   {
     accessorKey: "amount",
-    header: "Monto Total",
+    header: "Monto",
     cell: ({ row }) => (
-      <span className="text-base font-serif font-bold text-foreground">
+      <span className="text-sm font-serif font-bold text-foreground whitespace-nowrap tabular-nums">
         {formatCurrency(row.original.amount)}
       </span>
     ),
   },
   {
     accessorKey: "method",
-    header: "Método de Pago",
+    header: "Método",
     cell: ({ row }) => {
       const badgeInfo = getMethodBadge(row.original.method);
       const Icon = badgeInfo.icon;
       return (
         <Badge
           variant="outline"
-          className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 gap-1.5 ${badgeInfo.className}`}
+          className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 gap-1.5 whitespace-nowrap ${badgeInfo.className}`}
         >
-          <Icon className="size-3" />
+          <Icon className="size-3 shrink-0" />
           {badgeInfo.label}
         </Badge>
       );
@@ -102,16 +109,16 @@ export const getColumns = (defaultReceiptFormat: string = "A4"): ColumnDef<any>[
   },
   {
     accessorKey: "createdAt",
-    header: "Fecha de Registro",
+    header: "Fecha",
     cell: ({ row }) => (
-      <span className="text-xs font-mono text-muted-foreground">
-        {formatDate(row.original.createdAt, "d MMM yyyy, HH:mm")}
+      <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">
+        {formatDate(row.original.createdAt, "d MMM, HH:mm")}
       </span>
     ),
   },
   {
     id: "actions",
-    header: () => <div className="text-right">Comprobante</div>,
+    header: () => <div className="text-right">Recibo</div>,
     cell: ({ row }) => (
       <div className="text-right">
         <DropdownMenu>
@@ -119,7 +126,7 @@ export const getColumns = (defaultReceiptFormat: string = "A4"): ColumnDef<any>[
             <Button
               variant="outline"
               size="sm"
-              className="h-8 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-[10px] uppercase font-bold tracking-wider gap-1.5"
+              className="h-8 rounded-xl border-border bg-muted/50 hover:bg-muted text-[10px] uppercase font-bold tracking-wider gap-1.5"
             >
               <Download className="size-3.5 text-primary" />
               Recibo
@@ -127,7 +134,7 @@ export const getColumns = (defaultReceiptFormat: string = "A4"): ColumnDef<any>[
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-56 p-2 rounded-2xl border-white/10 bg-zinc-950/95 backdrop-blur-2xl shadow-2xl space-y-1"
+            className="w-56 p-2 rounded-2xl border-border bg-popover/95 backdrop-blur-2xl shadow-2xl space-y-1"
           >
             <DropdownMenuItem
               onClick={() =>

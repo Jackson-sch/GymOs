@@ -16,9 +16,9 @@ interface ExpenseStatsCardsProps {
 
 export function ExpenseStatsCards({ currentMonthExpenses, totalExpenses, diff, topCategory }: ExpenseStatsCardsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <Card className="glass-card border-white/5 relative overflow-hidden group">
-        <CardContent className="p-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card className="glass-card border-white/5 relative overflow-hidden group py-0 gap-0">
+        <CardContent className="p-5">
           <div className="flex items-start justify-between mb-4">
             <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20">
               <TrendingDown className="size-5" />
@@ -45,8 +45,8 @@ export function ExpenseStatsCards({ currentMonthExpenses, totalExpenses, diff, t
         </CardContent>
       </Card>
 
-      <Card className="glass-card border-white/5 relative overflow-hidden group">
-        <CardContent className="p-6">
+      <Card className="glass-card border-white/5 relative overflow-hidden group py-0 gap-0">
+        <CardContent className="p-5">
           <div className="flex items-start justify-between mb-4">
             <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
               <Briefcase className="size-5" />
@@ -63,8 +63,8 @@ export function ExpenseStatsCards({ currentMonthExpenses, totalExpenses, diff, t
         </CardContent>
       </Card>
 
-      <Card className="glass-card border-white/5 relative overflow-hidden group">
-        <CardContent className="p-6">
+      <Card className="glass-card border-white/5 relative overflow-hidden group py-0 gap-0">
+        <CardContent className="p-5">
           <div className="flex items-start justify-between mb-4">
             <div className="p-2.5 rounded-xl bg-accent/10 text-accent border border-accent/20">
               <CalendarIcon className="size-5" />

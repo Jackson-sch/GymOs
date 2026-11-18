@@ -123,7 +123,7 @@ export function JoinClient({ organization }: { organization: PublicOrganization 
   if (successData) {
     return (
       <div className="min-h-screen bg-background premium-gradient flex items-center justify-center p-4">
-        <div className="max-w-md w-full glass-card p-8 border-white/10 text-center space-y-6 animate-zoom-in-95">
+        <div className="max-w-md w-full glass-card p-5 sm:p-8 border-white/10 text-center space-y-6 animate-zoom-in-95">
           <div className="size-16 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto shadow-2xl shadow-emerald-900/30">
             <CheckCircle2 className="size-10" />
           </div>
@@ -216,7 +216,7 @@ export function JoinClient({ organization }: { organization: PublicOrganization 
             onContinue={() => setStep(2)}
           />
         ) : (
-          <form onSubmit={handleRegister} className="glass-card p-8 border-white/10 space-y-8 max-w-2xl mx-auto">
+          <form onSubmit={handleRegister} className="glass-card p-5 sm:p-8 border-white/10 space-y-8 max-w-2xl mx-auto">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div>
                 <button

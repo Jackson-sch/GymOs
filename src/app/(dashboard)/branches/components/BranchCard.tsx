@@ -42,16 +42,16 @@ export function BranchCard({ branch, revenueSharePct, onEdit, onDelete }: Branch
     >
       {/* Branch Card Top Header */}
       <div className="space-y-5">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3.5">
-            <div className="size-12 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center font-bold text-primary shrink-0 shadow-sm">
-              <Building2 className="size-6" />
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="size-11 rounded-2xl bg-primary/10 border border-primary/25 flex items-center justify-center font-bold text-primary shrink-0 shadow-sm">
+              <Building2 className="size-5" />
             </div>
-            <div>
-              <h3 className="text-xl font-serif font-bold text-foreground group-hover:text-primary transition-colors">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-lg sm:text-xl font-serif font-bold text-foreground group-hover:text-primary transition-colors truncate">
                 {branch.name}
               </h3>
-              <p className="text-[10px] font-mono text-muted-foreground font-semibold">
+              <p className="text-[10px] font-mono text-muted-foreground font-semibold truncate">
                 slug: {branch.slug}
               </p>
             </div>
@@ -60,10 +60,10 @@ export function BranchCard({ branch, revenueSharePct, onEdit, onDelete }: Branch
           <Badge
             variant="outline"
             className={cn(
-              "text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 border",
+              "text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 border shrink-0",
               branch.isActive
-                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                : "bg-rose-500/10 text-rose-400 border-rose-500/30",
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30",
             )}
           >
             {branch.isActive ? "Activa" : "Inactiva"}
@@ -71,7 +71,7 @@ export function BranchCard({ branch, revenueSharePct, onEdit, onDelete }: Branch
         </div>
 
         {/* Contact Info Details */}
-        <div className="space-y-2 text-xs font-semibold text-foreground/90 p-4 rounded-2xl bg-white/5 border border-white/10">
+        <div className="space-y-2 text-xs font-semibold text-foreground/90 p-3.5 rounded-2xl bg-muted/40 dark:bg-white/5 border border-border/70 dark:border-white/10">
           {branch.address ? (
             <p className="flex items-center gap-2">
               <MapPin className="size-4 text-primary shrink-0" />
@@ -100,18 +100,18 @@ export function BranchCard({ branch, revenueSharePct, onEdit, onDelete }: Branch
         </div>
 
         {/* Branch Performance Metrics Grid */}
-        <div className="grid grid-cols-3 gap-2.5 text-center">
-          <div className="p-3 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-            <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Socios</p>
-            <p className="text-xl font-serif font-bold text-foreground">{branch.totalMembers}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
+          <div className="p-2.5 rounded-2xl bg-muted/40 dark:bg-white/5 border border-border/70 dark:border-white/10 space-y-1 min-w-0">
+            <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wide truncate">Socios</p>
+            <p className="text-xl font-serif font-bold text-foreground tabular-nums">{branch.totalMembers}</p>
           </div>
-          <div className="p-3 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-            <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Asistencias</p>
-            <p className="text-xl font-serif font-bold text-foreground">{branch.totalAttendances}</p>
+          <div className="p-2.5 rounded-2xl bg-muted/40 dark:bg-white/5 border border-border/70 dark:border-white/10 space-y-1 min-w-0">
+            <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wide truncate">Asistencias</p>
+            <p className="text-xl font-serif font-bold text-foreground tabular-nums">{branch.totalAttendances}</p>
           </div>
-          <div className="p-3 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-            <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Facturación</p>
-            <p className="text-xs font-mono font-bold text-emerald-400">
+          <div className="p-2.5 rounded-2xl bg-muted/40 dark:bg-white/5 border border-border/70 dark:border-white/10 space-y-1 min-w-0">
+            <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wide truncate">Facturación</p>
+            <p className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 truncate tabular-nums">
               {formatCurrency(branch.totalRevenue)}
             </p>
           </div>

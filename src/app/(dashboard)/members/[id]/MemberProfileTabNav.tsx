@@ -9,61 +9,38 @@ interface MemberProfileTabNavProps {
   onTabChange: (tab: string) => void;
 }
 
+const TABS = [
+  { id: "GENERAL", label: "Expediente & Membresía", icon: User },
+  { id: "PROGRESS", label: "Progreso Físico", icon: TrendingUp },
+  { id: "ROUTINE", label: "Rutina Prescrita", icon: Dumbbell },
+  { id: "PAYMENTS", label: "Historial de Pagos", icon: Receipt },
+] as const;
+
 export function MemberProfileTabNav({ activeTab, onTabChange }: MemberProfileTabNavProps) {
   return (
-    <div className="flex flex-wrap bg-background/50 backdrop-blur-xl p-1.5 rounded-2xl w-fit mb-8 border border-white/10 gap-1">
-      <button
-        type="button"
-        onClick={() => onTabChange("GENERAL")}
-        className={cn(
-          "px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-colors duration-300 flex items-center gap-2",
-          activeTab === "GENERAL"
-            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-            : "text-muted-foreground hover:text-foreground hover:bg-white/5",
-        )}
-      >
-        <User className="size-3.5" />
-        Expediente & Membresía
-      </button>
-      <button
-        type="button"
-        onClick={() => onTabChange("PROGRESS")}
-        className={cn(
-          "px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-colors duration-300 flex items-center gap-2",
-          activeTab === "PROGRESS"
-            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-            : "text-muted-foreground hover:text-foreground hover:bg-white/5",
-        )}
-      >
-        <TrendingUp className="size-3.5" />
-        Progreso Físico
-      </button>
-      <button
-        type="button"
-        onClick={() => onTabChange("ROUTINE")}
-        className={cn(
-          "px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-colors duration-300 flex items-center gap-2",
-          activeTab === "ROUTINE"
-            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-            : "text-muted-foreground hover:text-foreground hover:bg-white/5",
-        )}
-      >
-        <Dumbbell className="size-3.5" />
-        Rutina Prescrita
-      </button>
-      <button
-        type="button"
-        onClick={() => onTabChange("PAYMENTS")}
-        className={cn(
-          "px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-colors duration-300 flex items-center gap-2",
-          activeTab === "PAYMENTS"
-            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-            : "text-muted-foreground hover:text-foreground hover:bg-white/5",
-        )}
-      >
-        <Receipt className="size-3.5" />
-        Historial de Pagos
-      </button>
-    </div>
+    <nav
+      aria-label="Secciones del perfil del socio"
+      className="flex items-center gap-1 overflow-x-auto no-scrollbar border-t border-border bg-muted/30 px-4 sm:px-6 py-2"
+    >
+      {TABS.map((tab) => {
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => onTabChange(tab.id)}
+            className={cn(
+              "relative shrink-0 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all duration-200 flex items-center gap-2",
+              isActive
+                ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
+            )}
+          >
+            <tab.icon className="size-3.5 shrink-0" />
+            <span>{tab.label}</span>
+          </button>
+        );
+      })}
+    </nav>
   );
 }

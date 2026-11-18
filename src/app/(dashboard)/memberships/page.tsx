@@ -26,8 +26,8 @@ export default async function MembershipsPage() {
             <ShieldCheck className="w-4 h-4" />
             <span className="text-[10px] uppercase tracking-[0.3em] font-bold">Arquitectura de Ingresos</span>
           </div>
-          <h1 className="text-6xl font-serif leading-tight">Planes de Membresía</h1>
-          <p className="text-muted-foreground font-sans max-w-md">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold leading-tight text-foreground">Planes de Membresía</h1>
+          <p className="text-muted-foreground font-sans text-sm">
             Diseñando experiencias de acceso exclusivas para los socios de <span className="text-foreground font-medium">GymOS</span>.
           </p>
         </div>
@@ -37,7 +37,7 @@ export default async function MembershipsPage() {
       <MembershipsClient data={plans} />
 
       {/* Stats Section */}
-      <div className="glass-card p-10 border-white/5 bg-linear-to-br from-primary/5 to-transparent">
+      <div className="glass-card p-5 sm:p-10 border-white/5 bg-linear-to-br from-primary/5 to-transparent">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {[
             { label: "Plan más Vendido", value: stats.bestSeller, trend: "TOP" },

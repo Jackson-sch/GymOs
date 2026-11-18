@@ -59,13 +59,21 @@ export const getColumns = ({
         ? "border-amber-400/60 ring-2 ring-amber-400/20 shadow-amber-500/10"
         : isStandard
         ? "border-emerald-400/50 ring-1 ring-emerald-400/20"
-        : "border-white/15";
+        : "border-border dark:border-white/15";
+
+      const initials = (row.original.fullName || "SO")
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((n: string) => n[0])
+        .join("")
+        .toUpperCase();
 
       return (
         <div className="flex items-center gap-3.5">
           <div className="relative shrink-0">
             <div
-              className={`size-11 rounded-2xl bg-white/5 border flex items-center justify-center overflow-hidden relative shadow-md ${tierBorder}`}
+              className={`size-11 rounded-2xl bg-primary/10 border flex items-center justify-center overflow-hidden relative shadow-sm ${tierBorder}`}
             >
               {row.original.photo ? (
                 <Image
@@ -77,7 +85,9 @@ export const getColumns = ({
                   sizes="44px"
                 />
               ) : (
-                <User className="size-5 text-muted-foreground/40" />
+                <span className="text-xs font-serif font-bold text-primary">
+                  {initials}
+                </span>
               )}
             </div>
             {isVip && (
@@ -112,8 +122,8 @@ export const getColumns = ({
           variant="outline"
           className={`rounded-xl text-[9px] font-bold uppercase tracking-wider px-3 py-1 border ${
             active
-              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-              : "bg-rose-500/10 text-rose-400 border-rose-500/30"
+              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+              : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
           }`}
         >
           {active ? "Activo" : "Inactivo"}

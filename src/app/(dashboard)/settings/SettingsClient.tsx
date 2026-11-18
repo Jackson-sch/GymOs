@@ -216,7 +216,7 @@ export function SettingsClient({ initialData }: { initialData: any[] }) {
     <div className="space-y-12 animate-fade-in">
       <SettingsHeader loading={loading} onSave={handleSave} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 xl:gap-8">
         <SettingsTabs
           tabs={TABS}
           activeTab={activeTab}
@@ -224,7 +224,7 @@ export function SettingsClient({ initialData }: { initialData: any[] }) {
           setCurrentPage={setCurrentPage}
         />
 
-        <div className="lg:col-span-9 space-y-10">
+        <div className="xl:col-span-9 space-y-10">
           {activeTab === "general" && (
             <GeneralTab formState={formState} handleChange={handleChange} />
           )}

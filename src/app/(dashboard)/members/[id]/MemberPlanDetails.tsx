@@ -8,35 +8,35 @@ import { format } from "date-fns";
 
 export function MemberPlanDetails({ member, currentMembership }: { member: any, currentMembership: any }) {
   return (
-    <div className="lg:col-span-5 space-y-6">
-      <Card className="border-border/10 shadow-sm bg-secondary/10">
-        <CardHeader>
-          <CardTitle className="text-sm font-bold uppercase tracking-widest opacity-60 flex items-center gap-2">
-            <Weight className="size-4" /> Última Métrica
+    <div className="lg:col-span-4 space-y-6">
+      <Card className="border-border shadow-sm bg-card/85 backdrop-blur-sm rounded-2xl">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+            <Weight className="size-4 text-primary" /> Última Métrica
           </CardTitle>
         </CardHeader>
         <CardContent>
           {member.bodyMetrics?.[0] ? (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-background/30 border border-border/10">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3.5 rounded-xl bg-muted/50 border border-border">
                 <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Peso</div>
-                <div className="text-2xl font-light">{member.bodyMetrics[0].weight}kg</div>
+                <div className="text-2xl font-light text-foreground">{member.bodyMetrics[0].weight}kg</div>
               </div>
-              <div className="p-4 rounded-xl bg-background/30 border border-border/10">
+              <div className="p-3.5 rounded-xl bg-muted/50 border border-border">
                 <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Grasa</div>
-                <div className="text-2xl font-light">{member.bodyMetrics[0].bodyFat}%</div>
+                <div className="text-2xl font-light text-foreground">{member.bodyMetrics[0].bodyFat}%</div>
               </div>
             </div>
           ) : (
-            <div className="text-center py-8 opacity-30 text-xs uppercase tracking-widest">Sin mediciones</div>
+            <div className="text-center py-6 text-muted-foreground/60 text-xs uppercase tracking-widest font-medium">Sin mediciones</div>
           )}
         </CardContent>
       </Card>
 
-      <Card className="border-border/10 shadow-sm bg-secondary/10">
-        <CardHeader>
-          <CardTitle className="text-sm font-bold uppercase tracking-widest opacity-60 flex items-center gap-2">
-            <CreditCard className="size-4" /> Membresía Actual
+      <Card className="border-border shadow-sm bg-card/85 backdrop-blur-sm rounded-2xl">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+            <CreditCard className="size-4 text-primary" /> Membresía Actual
           </CardTitle>
         </CardHeader>
         <CardContent>

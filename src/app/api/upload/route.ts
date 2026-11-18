@@ -36,14 +36,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validar tipo MIME permitido
+    // Validar tipo MIME permitido (excluimos SVG para evitar XSS almacenado)
     const allowedMimeTypes = [
       "image/jpeg",
       "image/png",
       "image/webp",
       "image/gif",
-      "image/svg+xml",
-      "application/pdf"
+      "application/pdf",
     ];
 
     if (!allowedMimeTypes.includes(file.type)) {

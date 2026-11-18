@@ -36,6 +36,7 @@ import {
   Users,
   Lightbulb,
   Activity,
+  RotateCcw,
 } from "lucide-react";
 import { DateRangePicker } from "@/components/shared/DateRangePicker";
 import { RosenChart } from "@/components/shared/RosenChart";
@@ -163,85 +164,148 @@ export function ReportsClient({
     }
   };
 
+  const applyQuickPreset = (preset: "7D" | "30D" | "MONTH" | "YEAR") => {
+    const end = new Date();
+    const start = new Date();
+    if (preset === "7D") start.setDate(end.getDate() - 7);
+    else if (preset === "30D") start.setDate(end.getDate() - 30);
+    else if (preset === "MONTH") start.setDate(1);
+    else if (preset === "YEAR") start.setMonth(0, 1);
+
+    setFrom(start.toISOString().slice(0, 10));
+    setTo(end.toISOString().slice(0, 10));
+  };
+
+  const insights = useMemo(() => {
+    const topPlan = [...membershipsByPlan].sort((a: any, b: any) => b.count - a.count)[0];
+    const bestMonth = [...revenueByMonth].sort((a: any, b: any) => b.revenue - a.revenue)[0];
+    const totalMembersStatus = membersByStatus.reduce((acc: number, s: any) => acc + (s.count || 0), 0);
+    const activeMembers = kpis?.activeMembers ?? 0;
+    const activePct = totalMembersStatus > 0 ? Math.round((activeMembers / totalMembersStatus) * 100) : 0;
+
+    return {
+      topPlanLabel: topPlan ? `${topPlan.plan} (${topPlan.count} socios)` : "Sin datos de planes",
+      bestMonthLabel: bestMonth ? `${bestMonth.month} (S/ ${Number(bestMonth.revenue).toLocaleString()})` : "Sin registros",
+      activePct,
+      growth: kpis?.revenueGrowth ?? 0,
+    };
+  }, [membershipsByPlan, revenueByMonth, membersByStatus, kpis]);
+
   return (
-    <div className="space-y-8 pb-8 animate-fade-in-fast w-full">
-      {/* Header Editorial & Date Controls */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 glass-card p-6 sm:p-8 rounded-3xl border-white/10">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-primary">
-            <Sparkles className="size-4" />
-            <span className="text-[10px] uppercase tracking-[0.3em] font-bold">
-              Inteligencia de Negocio
-            </span>
+    <div className="space-y-6 pb-10 animate-fade-in-fast w-full">
+      {/* Header Editorial (unificado con el resto de módulos) */}
+      <div className="space-y-1">
+        <div className="flex items-center gap-2 text-primary">
+          <Sparkles className="size-4" />
+          <span className="text-[10px] uppercase tracking-[0.3em] font-bold">
+            Inteligencia de Negocio
+          </span>
+        </div>
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold leading-tight text-foreground">
+          Analytics & BI Hub
+        </h1>
+        <p className="text-sm text-muted-foreground font-sans">
+          Desglosando el rendimiento operativo y financiero para una{" "}
+          <span className="text-foreground font-medium">gestión basada en datos</span>.
+        </p>
+      </div>
+
+      {/* Unified Period & Export Control Bar */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 glass-card p-4 rounded-2xl border-border">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border">
+            {[
+              { id: "7D", label: "7D" },
+              { id: "30D", label: "30D" },
+              { id: "MONTH", label: "Este Mes" },
+              { id: "YEAR", label: "Año" },
+            ].map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => applyQuickPreset(p.id as "7D" | "30D" | "MONTH" | "YEAR")}
+                className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                {p.label}
+              </button>
+            ))}
           </div>
-          <h1 className="text-4xl sm:text-5xl font-serif leading-tight">
-            Analytics & BI Hub
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground font-sans max-w-md">
-            Desglosando el rendimiento operativo y financiero para una{" "}
-            <span className="text-foreground font-medium">gestión basada en datos</span>.
-          </p>
+
+          <DateRangePicker
+            from={from}
+            to={to}
+            onSelectRange={({ from, to }) => {
+              setFrom(from);
+              setTo(to);
+            }}
+            placeholder="Filtrar período"
+            showPresets={false}
+            align="start"
+          />
+
+          {(from || to) && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setFrom(null);
+                setTo(null);
+              }}
+              className="h-9 px-3 rounded-xl text-xs text-muted-foreground hover:text-foreground gap-1.5"
+            >
+              <RotateCcw className="size-3.5" />
+              Limpiar
+            </Button>
+          )}
         </div>
 
-        {/* Date Range Controls & Presets */}
-        <div className="flex flex-col space-y-3 w-full lg:w-auto">
-          <div className="flex flex-wrap items-center gap-3">
-            <DateRangePicker
-              from={from}
-              to={to}
-              onSelectRange={({ from, to }) => {
-                setFrom(from);
-                setTo(to);
-              }}
-              placeholder="Filtrar período"
-              showPresets={true}
-              align="end"
+        <div className="flex flex-wrap items-center gap-2 justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleExport("csv")}
+            className="h-11 px-4 rounded-xl border-border bg-muted/40 hover:bg-muted font-bold text-[10px] uppercase tracking-widest gap-2"
+          >
+            <FileSpreadsheet className="size-4 text-emerald-600 dark:text-emerald-400" />
+            Exportar CSV
+          </Button>
+
+          {mounted && (
+            <ReportExport
+              kpis={kpis}
+              revenueByMonth={revenueByMonth}
+              attendanceByDay={attendanceByDay}
+              membershipsByPlan={membershipsByPlan}
+              membersByStatus={membersByStatus}
+              topMembers={topMembers}
+              startDate={from ? new Date(`${from}T00:00:00`) : undefined}
+              endDate={to ? new Date(`${to}T23:59:59`) : undefined}
+              generatedDate={reportGeneratedDate}
+              fileNameDate={reportFileNameDate}
             />
-
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => handleExport("csv")}
-                title="Exportar datos CSV"
-                className="glass-card bg-white/5 hover:bg-white/10 border-white/10 rounded-xl size-11 font-bold p-0 flex items-center justify-center group"
-              >
-                <FileSpreadsheet className="size-5 text-emerald-400 group-hover:scale-110 transition-transform" />
-              </Button>
-
-              {mounted && (
-                <ReportExport
-                  kpis={kpis}
-                  revenueByMonth={revenueByMonth}
-                  attendanceByDay={attendanceByDay}
-                  membershipsByPlan={membershipsByPlan}
-                  membersByStatus={membersByStatus}
-                  topMembers={topMembers}
-                  startDate={from ? new Date(`${from}T00:00:00`) : undefined}
-                  endDate={to ? new Date(`${to}T23:59:59`) : undefined}
-                  generatedDate={reportGeneratedDate}
-                  fileNameDate={reportFileNameDate}
-                />
-              )}
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* Executive Smart Insights Banner */}
-      <div className="p-6 rounded-3xl bg-linear-to-r from-primary/15 via-primary/5 to-transparent border border-primary/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl backdrop-blur-md">
-        <div className="flex items-start gap-4">
-          <div className="size-10 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0 mt-0.5">
+      {/* Executive Smart Insights Banner (datos reales) */}
+      <div className="p-5 rounded-2xl bg-linear-to-r from-primary/12 via-primary/5 to-transparent border border-primary/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm backdrop-blur-md">
+        <div className="flex items-start gap-3.5">
+          <div className="size-10 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center shrink-0 mt-0.5">
             <Lightbulb className="size-5 text-primary" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
               Resumen Inteligente de Negocio
-              <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-[9px]">
+              <Badge variant="outline" className="bg-primary/15 text-primary border-primary/30 text-[9px]">
                 Auto-Insight
               </Badge>
             </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed max-w-3xl">
-              El horario de mayor demanda se registra los <strong>Martes y Jueves de 7:00 PM a 9:00 PM</strong>. La tasa de retención de miembros se mantiene positiva con un crecimiento de ingresos del <strong>+{kpis.revenueGrowth || 0}%</strong> respecto al período anterior.
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Plan líder: <strong className="text-foreground">{insights.topPlanLabel}</strong> &bull;{" "}
+              Pico de ingresos: <strong className="text-foreground">{insights.bestMonthLabel}</strong> &bull;{" "}
+              Base activa: <strong className="text-foreground">{insights.activePct}%</strong> (crecimiento mensual:{" "}
+              <strong className="text-primary">+{insights.growth}%</strong>).
             </p>
           </div>
         </div>
@@ -251,8 +315,8 @@ export function ReportsClient({
       <KpiCards kpis={kpis} />
 
       {/* Tabbed Analytics Views */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-        <TabsList className="bg-white/5 border border-white/10 p-1 rounded-2xl grid grid-cols-3 max-w-xl">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="bg-muted/60 border border-border p-1 rounded-2xl grid grid-cols-1 sm:grid-cols-3 h-auto max-w-xl w-full">
           <TabsTrigger
             value="overview"
             className="rounded-xl text-xs font-bold gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"

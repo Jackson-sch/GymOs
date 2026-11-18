@@ -115,7 +115,7 @@ export function DateRangePicker({
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className="glass-card bg-white/5 hover:bg-white/10 border-white/10 rounded-xl h-11 px-4 font-bold text-xs gap-2.5 transition-colors"
+            className="bg-white/5 hover:bg-white/10 border-white/10 rounded-xl h-11 px-4 font-bold text-xs gap-2.5 transition-colors"
           >
             <CalendarIcon className="size-4 text-primary shrink-0" />
             <span className="truncate">
@@ -128,7 +128,7 @@ export function DateRangePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="p-0 glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl w-auto rounded-3xl shadow-2xl"
+          className="p-0 glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl w-auto rounded-3xl"
           align={align}
         >
           <Calendar

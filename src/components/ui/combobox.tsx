@@ -73,7 +73,7 @@ export function Combobox({
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-[var(--radix-popover-trigger-width)] p-0 bg-black/95 backdrop-blur-2xl border-white/10 rounded-2xl overflow-hidden shadow-2xl z-[100]"
+          className="w-[var(--radix-popover-trigger-width)] p-0 bg-popover/95 dark:bg-black/95 backdrop-blur-2xl border-border dark:border-white/10 rounded-2xl overflow-hidden shadow-2xl z-[100]"
           align="start"
         >
           <Command className="bg-transparent">

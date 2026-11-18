@@ -2,12 +2,10 @@
 
 import React from "react";
 import Link from "next/link";
-import { 
+import {
   ArrowLeft,
   Edit2,
-  Save,
-  X,
-  Activity
+  Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -253,7 +251,10 @@ export default function TrainerProfileClient({
     selectedClassId: null,
   });
 
-  const [mounted] = React.useState(() => typeof window !== "undefined");
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
   const [isPhotoDeleteOpen, setIsPhotoDeleteOpen] = React.useState(false);
   const [isPhotoDeleteLoading, setIsPhotoDeleteLoading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -362,76 +363,131 @@ export default function TrainerProfileClient({
         <div className="absolute bottom-[-10%] left-[-10%] size-[40%] bg-primary/5 blur-[120px] rounded-full animate-pulse delay-1000" />
       </div>
 
-      <div className="w-full relative space-y-8">
-        {/* Navigation Header */}
-        <TrainerProfileHeader
-          activeTab={activeTab}
-          onTabChange={(tab) => dispatch({ type: "SET_TAB", payload: tab })}
-        />
+      <div className="w-full relative space-y-6 pb-12">
+        {/* Breadcrumb + Horizontal Action Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+            <Link
+              href="/trainers"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card/80 border border-border hover:border-primary/40 hover:text-foreground transition-colors font-medium shrink-0"
+            >
+              <ArrowLeft className="size-3.5" />
+              <span>Entrenadores</span>
+            </Link>
+            <span className="opacity-40">/</span>
+            <span className="truncate font-semibold text-foreground">{trainer.fullName}</span>
+          </div>
 
-        {/* Profile Header Card */}
-        <div className="relative mb-12 animate-enter">
-          <div className="absolute inset-0 bg-linear-to-r from-primary/15 via-transparent to-transparent blur-3xl opacity-40" />
-          <div className="relative rounded-[2.5rem] border border-white/15 bg-zinc-950/85 backdrop-blur-2xl overflow-hidden shadow-2xl">
-            {/* Top accent line */}
-            <div className="h-px bg-linear-to-r from-transparent via-primary/50 to-transparent" />
-            
-            {/* Action Controls - Top Bar */}
-            <div className="flex items-center justify-end gap-2 px-8 pt-6 pb-0">
-              {!isEditing ? (
-                <button type="button"
-                  onClick={() => dispatch({ type: "TOGGLE_EDIT" })}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/30 hover:bg-primary hover:text-primary-foreground transition-colors text-xs font-bold uppercase tracking-wider shadow-md hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <Edit2 className="size-3.5" />
-                  Editar Perfil
-                </button>
-              ) : null}
+          {!isEditing && (
+            <button
+              type="button"
+              onClick={() => dispatch({ type: "TOGGLE_EDIT" })}
+              className="inline-flex items-center justify-center gap-2 px-5 h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-xs font-bold uppercase tracking-wider shadow-md shadow-primary/20 self-start sm:self-auto"
+            >
+              <Edit2 className="size-3.5" />
+              Editar Perfil
+            </button>
+          )}
+        </div>
+
+        {/* Unified Hero Split Card + Integrated Tabs */}
+        <div className="relative animate-enter">
+          <div className="relative rounded-3xl border border-border glass-card backdrop-blur-2xl overflow-hidden shadow-xl">
+            <div className="flex flex-col lg:flex-row items-center lg:items-stretch justify-between gap-6 p-6 md:p-8">
+              {/* Left: Photo + Profile Info */}
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-6 flex-1 min-w-0 w-full">
+                <PhotoManager
+                  formData={formData}
+                  isUploading={isUploading}
+                  photoControlsVisible={photoControlsVisible}
+                  dragReposition={dragReposition}
+                  fileInputRef={fileInputRef}
+                  dispatch={dispatch}
+                  fullName={trainer.fullName}
+                  deletePhoto={deletePhoto}
+                  uploadPhoto={uploadPhoto}
+                />
+
+                <div className="flex-1 min-w-0 w-full">
+                  <ProfileInfo
+                    isEditing={isEditing}
+                    formData={formData}
+                    newSpecialty={newSpecialty}
+                    trainer={trainer}
+                    dispatch={dispatch}
+                    isSaving={isSaving}
+                    onSave={() => handleSave()}
+                    onCancel={() =>
+                      dispatch({
+                        type: "RESET_FORM",
+                        payload: {
+                          fullName: trainer.fullName || "",
+                          email: trainer.email || "",
+                          phone: trainer.phone || "",
+                          dni: trainer.dni || "",
+                          bio: trainer.bio || "",
+                          specialties: trainer.specialties || [],
+                          photo: trainer.photo || null,
+                          photoPosition: trainer.photoPosition ?? 50,
+                          baseSalary: trainer.baseSalary ? Number(trainer.baseSalary) : null,
+                          perClassRate: trainer.perClassRate ? Number(trainer.perClassRate) : null,
+                          commissionPct: trainer.commissionPct ? Number(trainer.commissionPct) : null,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Right: Integrated Compensation Summary Card */}
+              {!isEditing && (
+                <div className="w-full lg:w-76 shrink-0 rounded-2xl bg-muted/50 border border-border p-5 flex flex-col justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                      Esquema de Compensación
+                    </p>
+                    <p className="text-lg font-serif font-semibold text-foreground mt-0.5">
+                      {trainer.baseSalary ? `S/ ${Number(trainer.baseSalary).toLocaleString()} base` : "Por clases & comisión"}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5 text-xs">
+                    <div className="p-2.5 rounded-xl bg-card/80 border border-border">
+                      <p className="text-[10px] text-muted-foreground uppercase font-bold">Por Clase</p>
+                      <p className="font-mono font-bold text-foreground mt-0.5">
+                        S/ {trainer.perClassRate ? Number(trainer.perClassRate) : 0}
+                      </p>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-card/80 border border-border">
+                      <p className="text-[10px] text-muted-foreground uppercase font-bold">Comisión</p>
+                      <p className="font-mono font-bold text-primary mt-0.5">
+                        {trainer.commissionPct ? Number(trainer.commissionPct) : 10}%
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => dispatch({ type: "SET_TAB", payload: "PAYROLL" })}
+                    className="w-full h-9 rounded-xl border border-border bg-card/80 hover:border-primary/40 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 text-foreground transition-colors"
+                  >
+                    <Wallet className="size-3.5 text-primary" />
+                    Ver Nómina & Pagos
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Profile Content */}
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-10 p-10 pt-6">
-              <PhotoManager 
-                formData={formData}
-                isUploading={isUploading}
-                photoControlsVisible={photoControlsVisible}
-                dragReposition={dragReposition}
-                fileInputRef={fileInputRef}
-                dispatch={dispatch}
-                fullName={trainer.fullName}
-                deletePhoto={deletePhoto}
-                uploadPhoto={uploadPhoto}
-              />
-
-              <ProfileInfo 
-                isEditing={isEditing}
-                formData={formData}
-                newSpecialty={newSpecialty}
-                trainer={trainer}
-                dispatch={dispatch}
-                isSaving={isSaving}
-                onSave={() => handleSave()}
-                onCancel={() => dispatch({ type: "RESET_FORM", payload: {
-                  fullName: trainer.fullName || "",
-                  email: trainer.email || "",
-                  phone: trainer.phone || "",
-                  dni: trainer.dni || "",
-                  bio: trainer.bio || "",
-                  specialties: trainer.specialties || [],
-                  photo: trainer.photo || null,
-                  photoPosition: trainer.photoPosition ?? 50,
-                  baseSalary: trainer.baseSalary ? Number(trainer.baseSalary) : null,
-                  perClassRate: trainer.perClassRate ? Number(trainer.perClassRate) : null,
-                  commissionPct: trainer.commissionPct ? Number(trainer.commissionPct) : null,
-                } })}
-              />
-            </div>
+            {/* Integrated Tab Switcher */}
+            <TrainerProfileHeader
+              activeTab={activeTab}
+              onTabChange={(tab) => dispatch({ type: "SET_TAB", payload: tab })}
+            />
           </div>
         </div>
 
         {activeTab === "GENERAL" && (
-          <>
-            {/* Stats Grid - Subtle and Modern */}
+          <div className="space-y-6">
             <TrainerStats
               classesThisWeek={classesThisWeek}
               completedClasses={completedClasses}
@@ -439,23 +495,20 @@ export default function TrainerProfileClient({
               commissionPct={trainer.commissionPct}
             />
 
-            {/* Content Section */}
-            <div className="grid lg:grid-cols-12 gap-8 mb-16">
-              {/* Bio Section */}
+            <div className="grid lg:grid-cols-12 gap-6">
               <BioSection
                 isEditing={isEditing}
                 bio={formData.bio}
                 dispatch={dispatch}
               />
 
-              {/* Timeline Section */}
-              <SessionTimeline 
+              <SessionTimeline
                 classes={trainer.classes}
                 mounted={mounted}
                 onSelectClass={(id) => dispatch({ type: "SET_SELECTED_CLASS", payload: id })}
               />
             </div>
-          </>
+          </div>
         )}
 
         {activeTab === "ROUTINES" && <TrainerRoutinesTab trainer={trainer} />}

@@ -227,8 +227,8 @@ export function InventoryClient({ data }: { data: any[] }) {
                 className={cn(
                   "px-4 py-1.5 rounded-2xl text-[10px] font-bold uppercase tracking-wider border transition-colors shrink-0",
                   categoryFilter === "ALL"
-                    ? "bg-white text-black border-white shadow-sm"
-                    : "bg-white/5 text-muted-foreground border-white/10 hover:bg-white/10 hover:text-foreground",
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                    : "bg-muted/60 dark:bg-white/5 text-muted-foreground border-border/70 dark:border-white/10 hover:bg-muted dark:hover:bg-white/10 hover:text-foreground",
                 )}
               >
                 Todas las Categorías
@@ -278,7 +278,8 @@ export function InventoryClient({ data }: { data: any[] }) {
           {/* LIST VIEW (Data Table) */}
           {viewMode === "list" && (
             <div className="glass-card border-white/10 rounded-3xl overflow-hidden backdrop-blur-md">
-              <Table>
+              <div className="overflow-x-auto">
+                <Table>
                 <TableHeader className="bg-white/5">
                   <TableRow className="border-white/5 hover:bg-transparent">
                     <TableHead className="text-muted-foreground font-bold text-xs py-4">Equipo</TableHead>
@@ -353,6 +354,7 @@ export function InventoryClient({ data }: { data: any[] }) {
                   })}
                 </TableBody>
               </Table>
+              </div>
             </div>
           )}
 
@@ -382,7 +384,7 @@ export function InventoryClient({ data }: { data: any[] }) {
 
       {/* TAB 2: SCHEDULE */}
       {activeTab === "SCHEDULE" && (
-        <div className="glass-card p-8 rounded-3xl border-white/10">
+        <div className="glass-card p-5 sm:p-8 rounded-3xl border-white/10">
           <div className="mb-6">
             <h3 className="text-2xl font-serif font-bold text-foreground">Cronograma de Mantenimientos Preventivos</h3>
             <p className="text-xs text-muted-foreground mt-1">
@@ -407,7 +409,8 @@ export function InventoryClient({ data }: { data: any[] }) {
           </div>
 
           <div className="glass-card border-white/10 rounded-3xl overflow-hidden backdrop-blur-md">
-            <Table>
+            <div className="overflow-x-auto">
+              <Table>
               <TableHeader className="bg-white/5">
                 <TableRow className="border-white/5 hover:bg-transparent">
                   <TableHead className="text-muted-foreground font-bold text-xs py-4">Equipo</TableHead>
@@ -453,6 +456,7 @@ export function InventoryClient({ data }: { data: any[] }) {
                 )}
               </TableBody>
             </Table>
+            </div>
           </div>
         </div>
       )}
@@ -460,7 +464,7 @@ export function InventoryClient({ data }: { data: any[] }) {
       {/* Equipment Create Modal */}
       {isCreateOpen && (
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogContent className="glass-card bg-zinc-950/95 border-white/10 sm:max-w-xl rounded-3xl">
+          <DialogContent className="glass-card bg-popover/95 dark:bg-zinc-950/95 border-border sm:max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl">
             <DialogHeader>
               <DialogTitle className="text-2xl font-serif text-foreground">Registrar Nuevo Equipo</DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
@@ -475,7 +479,7 @@ export function InventoryClient({ data }: { data: any[] }) {
       {/* Equipment Edit Modal */}
       {editingItem && (
         <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
-          <DialogContent className="glass-card bg-zinc-950/95 border-white/10 sm:max-w-xl rounded-3xl">
+          <DialogContent className="glass-card bg-popover/95 dark:bg-zinc-950/95 border-border sm:max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl">
             <DialogHeader>
               <DialogTitle className="text-2xl font-serif text-foreground">Editar Equipo</DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">

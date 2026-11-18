@@ -67,7 +67,7 @@ export default function ForceChangePasswordPage() {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/10 rounded-full blur-[120px]" />
 
-      <div className="w-full max-w-md glass-card p-8 relative z-10">
+      <div className="w-full max-w-md glass-card p-5 sm:p-8 relative z-10">
         <div className="space-y-6 animate-slide-left-fast">
           <div className="flex flex-col items-center text-center space-y-6 mb-8">
             <div className="relative">
@@ -78,7 +78,7 @@ export default function ForceChangePasswordPage() {
             </div>
 
             <div className="space-y-2">
-              <h1 className="text-4xl font-serif text-foreground leading-tight tracking-tight">
+              <h1 className="text-2xl sm:text-4xl font-serif text-foreground leading-tight tracking-tight">
                 Cambio de Contraseña
               </h1>
               <p className="text-sm text-muted-foreground max-w-sm">

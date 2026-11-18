@@ -50,10 +50,10 @@ export function MembershipPlanCard({
   return (
     <div
       className={cn(
-        "glass-card group relative flex flex-col p-8 rounded-3xl border transition-colors duration-300 shadow-xl overflow-hidden backdrop-blur-md",
+        "glass-card group relative flex flex-col p-5 sm:p-8 rounded-3xl border transition-colors duration-300 shadow-xl overflow-hidden backdrop-blur-md",
         isBestValue
-          ? "border-primary/50 bg-linear-to-b from-primary/10 via-zinc-950/90 to-zinc-950 shadow-primary/10"
-          : "border-white/15 bg-zinc-950/80 hover:border-primary/30",
+          ? "border-primary/50 bg-linear-to-b from-primary/10 via-card/95 to-card dark:via-zinc-950/90 dark:to-zinc-950 shadow-primary/10"
+          : "border-border dark:border-white/15 bg-card/90 dark:bg-zinc-950/80 hover:border-primary/30",
       )}
     >
       {/* Ribbon Tag for Best Value */}
@@ -124,21 +124,21 @@ export function MembershipPlanCard({
       </div>
 
       {/* Pricing & Monthly Equivalence Breakdown */}
-      <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2 mb-6">
+      <div className="p-4 rounded-2xl bg-muted/50 dark:bg-white/5 border border-border dark:border-white/10 space-y-2 mb-6">
         <div className="flex items-baseline justify-between">
-          <div className="flex items-baseline gap-1">
-            <span className="text-4xl font-serif font-bold text-foreground">
+          <div className="flex flex-wrap items-baseline gap-1.5">
+            <span className="text-2xl sm:text-3xl xl:text-4xl font-serif font-bold text-foreground tabular-nums">
               {formatCurrency(price)}
             </span>
-            <span className="text-xs text-muted-foreground uppercase font-mono font-semibold">
+            <span className="text-xs text-muted-foreground uppercase font-mono font-semibold whitespace-nowrap">
               / {days} días
             </span>
           </div>
         </div>
         {days > 31 && (
-          <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px]">
+          <div className="flex items-center justify-between pt-2 border-t border-border/60 dark:border-white/10 text-[11px]">
             <span className="text-muted-foreground font-medium">Equivalente mensual:</span>
-            <span className="font-mono font-bold text-emerald-400">
+            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
               {formatCurrency(monthlyEquivalent)} / mes
             </span>
           </div>

@@ -71,28 +71,41 @@ export function RoutineExecutorClient({ routines }: { routines: Routine[] }) {
 
   if (!routines || routines.length === 0) {
     return (
-      <div className="max-w-xl mx-auto text-center py-16 space-y-6 glass-card p-8 border-white/10">
-        <div className="size-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto text-primary">
+      <div className="max-w-xl mx-auto text-center py-16 space-y-5 glass-card p-5 sm:p-8 border-border/70 dark:border-white/10">
+        <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto text-primary">
           <Dumbbell className="size-8" />
         </div>
-        <h2 className="text-2xl font-serif font-bold">Sin Rutinas Asignadas</h2>
-        <p className="text-xs text-muted-foreground max-w-md mx-auto">
+        <h2 className="text-2xl font-serif font-bold text-foreground">Sin Rutinas Asignadas</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
           Aún no tienes rutinas de entrenamiento asignadas por tu entrenador. Pide a tu instructor que configure tu plan en la sede.
         </p>
       </div>
     );
   }
 
+  const totalSets = activeRoutine
+    ? activeRoutine.exercises?.reduce((acc, ex) => acc + (ex.sets || 4), 0) || 0
+    : 0;
+  const completedCount = activeRoutine
+    ? activeRoutine.exercises?.reduce((acc, ex, exIdx) => {
+        const count = Array.from({ length: ex.sets || 4 }).filter(
+          (_, setIdx) => completedSets[`${ex.id || exIdx}_${setIdx}`]
+        ).length;
+        return acc + count;
+      }, 0) || 0
+    : 0;
+  const sessionPct = totalSets > 0 ? Math.round((completedCount / totalSets) * 100) : 0;
+
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in pb-16">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-semibold uppercase tracking-widest mb-2">
+    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in pb-16">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border/60 dark:border-white/10 pb-6">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-bold uppercase tracking-widest mb-1">
             <Sparkles className="size-3.5" />
             Entrenamiento Inteligente
           </div>
-          <h1 className="text-3xl font-serif font-bold">Mis Rutinas de Ejercicio</h1>
-          <p className="text-xs text-muted-foreground">
+          <h1 className="text-3xl sm:text-4xl font-serif font-bold text-foreground">Mis Rutinas de Ejercicio</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Ejecuta tus rutinas diarias con seguimiento de series y temporizador de descanso.
           </p>
         </div>
@@ -101,7 +114,7 @@ export function RoutineExecutorClient({ routines }: { routines: Routine[] }) {
           <Button
             onClick={() => setActiveRoutine(null)}
             variant="outline"
-            className="h-10 px-4 rounded-xl bg-white/5 border-white/10 text-xs font-bold"
+            className="h-10 px-4 rounded-xl bg-background border-border/80 hover:bg-muted text-xs font-bold self-start sm:self-auto"
           >
             ← Volver a Rutinas
           </Button>
@@ -109,29 +122,31 @@ export function RoutineExecutorClient({ routines }: { routines: Routine[] }) {
       </div>
 
       {restSecondsLeft !== null && (
-        <div className="sticky top-4 z-50 glass-card p-4 border-primary/40 bg-zinc-950/95 backdrop-blur-2xl shadow-2xl flex items-center justify-between gap-4 animate-in slide-in-from-top-4">
+        <div className="sticky top-20 md:top-4 z-50 glass-card p-4 border-primary/40 bg-card/95 dark:bg-zinc-950/95 backdrop-blur-2xl shadow-2xl flex items-center justify-between gap-4 animate-in slide-in-from-top-4">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-mono font-bold text-sm">
+            <div className="size-11 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center text-primary font-mono font-bold text-sm tabular-nums">
               {restSecondsLeft}s
             </div>
             <div>
               <p className="text-xs font-bold text-foreground">Tiempo de Descanso</p>
-              <p className="text-[10px] text-muted-foreground">
-                {isTimerRunning ? "Descansando..." : "Descanso terminado"}
+              <p className="text-[11px] text-muted-foreground">
+                {isTimerRunning ? "Recuperando para la siguiente serie..." : "Descanso terminado"}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <button type="button"
+            <button
+              type="button"
               onClick={() => setIsTimerRunning(!isTimerRunning)}
-              className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold"
+              className="px-3.5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors"
             >
               {isTimerRunning ? "Pausar" : "Reanudar"}
             </button>
-            <button type="button"
+            <button
+              type="button"
               onClick={() => setRestSecondsLeft(null)}
-              className="px-3 py-1.5 rounded-lg bg-white/10 text-xs text-muted-foreground hover:text-foreground font-semibold"
+              className="px-3 py-2 rounded-xl bg-muted/70 dark:bg-white/10 text-xs text-muted-foreground hover:text-foreground font-semibold transition-colors"
             >
               Cerrar
             </button>
@@ -148,30 +163,32 @@ export function RoutineExecutorClient({ routines }: { routines: Routine[] }) {
               tabIndex={0}
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
               onClick={() => setActiveRoutine(routine)}
-              className="glass-card p-6 border-white/10 hover:border-primary/40 cursor-pointer transition-colors space-y-4 group shadow-xl"
+              className="glass-card p-6 border-border/70 dark:border-white/10 hover:border-primary/40 cursor-pointer transition-colors space-y-4 group shadow-xl flex flex-col justify-between"
             >
-              <div className="flex items-center justify-between">
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px] uppercase font-bold">
-                  {routine.category || "Hipertrofia"}
-                </Badge>
-                <ChevronRight className="size-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/25 text-[10px] uppercase font-bold">
+                    {routine.category || "Plan Personalizado"}
+                  </Badge>
+                  <ChevronRight className="size-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                </div>
+
+                <div className="space-y-1">
+                  <h3 className="text-xl font-serif font-bold text-foreground group-hover:text-primary transition-colors">
+                    {routine.name}
+                  </h3>
+                  {routine.description && (
+                    <p className="text-xs text-muted-foreground line-clamp-2">{routine.description}</p>
+                  )}
+                </div>
               </div>
 
-              <div className="space-y-1">
-                <h3 className="text-xl font-serif font-bold text-foreground group-hover:text-primary transition-colors">
-                  {routine.name}
-                </h3>
-                {routine.description && (
-                  <p className="text-xs text-muted-foreground">{routine.description}</p>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-white/10">
-                <span className="flex items-center gap-1 font-semibold">
-                  <Flame className="size-4 text-amber-400" />
+              <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/60 dark:border-white/10">
+                <span className="flex items-center gap-1.5 font-semibold text-foreground">
+                  <Flame className="size-4 text-amber-500" />
                   {routine.exercises?.length || 0} Ejercicios
                 </span>
-                <span className="text-primary font-bold flex items-center gap-1">
+                <span className="text-primary font-bold flex items-center gap-1.5">
                   Iniciar Rutina <Play className="size-3.5 fill-primary" />
                 </span>
               </div>
@@ -180,22 +197,39 @@ export function RoutineExecutorClient({ routines }: { routines: Routine[] }) {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="glass-card p-6 border-white/10 space-y-2">
-            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px] uppercase font-bold">
-              Modo Entrenamiento Activo
-            </Badge>
-            <h2 className="text-2xl font-serif font-bold">{activeRoutine.name}</h2>
-            <p className="text-xs text-muted-foreground">
-              Marca las series a medida que las vayas completando para iniciar el cronómetro de descanso automático.
-            </p>
+          <div className="glass-card p-6 border-border/70 dark:border-white/10 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-1">
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/25 text-[10px] uppercase font-bold">
+                  Modo Entrenamiento Activo
+                </Badge>
+                <h2 className="text-2xl font-serif font-bold text-foreground">{activeRoutine.name}</h2>
+                <p className="text-xs text-muted-foreground">
+                  Marca las series a medida que las completes para iniciar el cronómetro de descanso.
+                </p>
+              </div>
+              <div className="text-left sm:text-right shrink-0">
+                <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Progreso</p>
+                <p className="text-2xl font-serif font-bold text-primary tabular-nums">
+                  {completedCount} / {totalSets}{" "}
+                  <span className="text-xs font-sans text-muted-foreground font-semibold">series</span>
+                </p>
+              </div>
+            </div>
+            <div className="h-2 w-full rounded-full bg-muted dark:bg-white/10 overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-[width] duration-500"
+                style={{ width: `${sessionPct}%` }}
+              />
+            </div>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-5">
             {activeRoutine.exercises?.map((ex, exIdx) => (
-              <div key={ex.id || exIdx} className="glass-card p-6 border-white/10 space-y-4">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div key={ex.id || exIdx} className="glass-card p-6 border-border/70 dark:border-white/10 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 dark:border-white/10 pb-3.5">
                   <div className="flex items-center gap-3">
-                    <span className="size-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-mono font-bold text-xs text-primary">
+                    <span className="size-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center font-mono font-bold text-xs text-primary shrink-0">
                       #{exIdx + 1}
                     </span>
                     <div>
@@ -206,20 +240,18 @@ export function RoutineExecutorClient({ routines }: { routines: Routine[] }) {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => startRestTimer(ex.restSeconds || 60)}
-                      variant="outline"
-                      className="h-8 text-[11px] bg-white/5 border-white/10 gap-1.5 font-semibold"
-                    >
-                      <Clock className="size-3 text-primary" />
-                      Descanso ({ex.restSeconds || 60}s)
-                    </Button>
-                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => startRestTimer(ex.restSeconds || 60)}
+                    variant="outline"
+                    className="h-9 text-xs bg-background border-border/80 hover:bg-muted gap-1.5 font-semibold self-start sm:self-auto rounded-xl"
+                  >
+                    <Clock className="size-3.5 text-primary" />
+                    Descanso ({ex.restSeconds || 60}s)
+                  </Button>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
                   {Array.from({ length: ex.sets || 4 }).map((_, setIdx) => {
                     const setKey = `${ex.id || exIdx}_${setIdx}`;
                     const isDone = !!completedSets[setKey];
@@ -228,17 +260,17 @@ export function RoutineExecutorClient({ routines }: { routines: Routine[] }) {
                         key={setIdx}
                         type="button"
                         onClick={() => toggleSetCompleted(ex.id || String(exIdx), setIdx, ex.restSeconds || 60)}
-                        className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-between transition-colors ${
+                        className={`p-3.5 rounded-xl border text-xs font-bold flex items-center justify-between transition-colors ${
                           isDone
-                            ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
-                            : "bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10"
+                            ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                            : "bg-muted/40 dark:bg-white/5 border-border/70 dark:border-white/10 text-foreground hover:bg-muted/70 dark:hover:bg-white/10"
                         }`}
                       >
                         <span>Serie {setIdx + 1}</span>
                         {isDone ? (
-                          <CheckCircle2 className="size-4 text-emerald-400" />
+                          <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" />
                         ) : (
-                          <span className="text-[10px] text-muted-foreground/60">{ex.reps}</span>
+                          <span className="text-[10px] text-muted-foreground font-mono">{ex.reps}</span>
                         )}
                       </button>
                     );

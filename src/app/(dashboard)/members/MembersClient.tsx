@@ -36,6 +36,7 @@ export function MembersClient({ data, plans, serverStats }: MembersClientProps) 
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [search, setSearch] = useState("");
 
   const handleDelete = useCallback((id: string) => {
     setDeletingId(id);
@@ -100,16 +101,64 @@ export function MembersClient({ data, plans, serverStats }: MembersClientProps) 
 
   // Filtered dataset for Table
   const filteredData = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    const now = new Date();
+    const next7Days = new Date();
+    next7Days.setDate(next7Days.getDate() + 7);
+
     return data.filter((m) => {
+      if (query) {
+        const name = (m.fullName || "").toLowerCase();
+        const dni = (m.dni || "").toLowerCase();
+        const email = (m.email || "").toLowerCase();
+        const phone = (m.phone || "").toLowerCase();
+        if (
+          !name.includes(query) &&
+          !dni.includes(query) &&
+          !email.includes(query) &&
+          !phone.includes(query)
+        ) {
+          return false;
+        }
+      }
+
       if (statusFilter === "ACTIVE") return m.status === "ACTIVE";
       if (statusFilter === "INACTIVE") return m.status !== "ACTIVE";
+      if (statusFilter === "EXPIRING") {
+        const endDate = m.memberships?.[0]?.endDate;
+        if (!endDate) return false;
+        const endD = new Date(endDate);
+        return endD >= now && endD <= next7Days;
+      }
       if (statusFilter === "VIP") {
         const planName = m.memberships?.[0]?.plan?.name || "";
         return /vip|premium/i.test(planName);
       }
       return true;
     });
-  }, [data, statusFilter]);
+  }, [data, statusFilter, search]);
+
+  const handleExportCsv = useCallback(() => {
+    const headers = ["Nombre", "DNI", "Email", "Telefono", "Estado", "Plan"];
+    const rows = filteredData.map((m) => [
+      m.fullName || "",
+      m.dni || "",
+      m.email || "",
+      m.phone || "",
+      m.status || "",
+      m.memberships?.[0]?.plan?.name || "Sin plan",
+    ]);
+    const csv = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `gymos-socios-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [filteredData]);
 
   const columns = useMemo(
     () =>
@@ -123,26 +172,35 @@ export function MembersClient({ data, plans, serverStats }: MembersClientProps) 
   );
 
   return (
-    <div className="space-y-8 w-full animate-fade-in">
-      <MemberStatsCards stats={stats} />
+    <div className="space-y-6 w-full animate-fade-in">
+      <MemberStatsCards
+        stats={stats}
+        activeFilter={statusFilter}
+        onSelectFilter={setStatusFilter}
+      />
 
       <MemberControlBar
+        search={search}
+        onSearchChange={setSearch}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
+        onExportCsv={handleExportCsv}
+        exportDisabled={filteredData.length === 0}
         isCreateOpen={isCreateOpen}
         setIsCreateOpen={setIsCreateOpen}
       />
 
-      <DataTable
-        columns={columns}
-        data={filteredData}
-        filterColumn="fullName"
-        placeholder="Buscar socio por nombre, DNI o email..."
-      />
+      <div className="glass-card border-border rounded-3xl overflow-hidden backdrop-blur-md">
+        <DataTable
+          columns={columns}
+          data={filteredData}
+          showSearchInput={false}
+        />
+      </div>
 
       {editingMember && (
         <Dialog open={!!editingMember} onOpenChange={() => setEditingMember(null)}>
-          <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl max-w-2xl rounded-3xl">
+          <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar rounded-3xl">
             <DialogHeader>
               <DialogTitle className="text-3xl font-serif text-foreground">Editar Datos del Socio</DialogTitle>
               <DialogDescription className="text-xs uppercase tracking-widest text-muted-foreground">

@@ -38,11 +38,112 @@ export interface PaymentInput {
   planId?: string;
   referralTrainerId?: string | null;
   reference?: string | null;
+  force?: boolean;
+}
+
+export async function checkMemberPaymentStatusAction(memberId: string) {
+  try {
+    await verifySession(["ADMIN", "SUPER_ADMIN", "RECEPTIONIST"]);
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const [recentPaymentToday, activeMembership] = await Promise.all([
+      prisma.payment.findFirst({
+        where: {
+          memberId,
+          status: "COMPLETED",
+          createdAt: { gte: todayStart },
+        },
+        orderBy: { createdAt: "desc" },
+        include: { membership: { include: { plan: true } } },
+      }),
+      prisma.membership.findFirst({
+        where: {
+          memberId,
+          status: "ACTIVE",
+          endDate: { gt: now },
+        },
+        orderBy: { endDate: "desc" },
+        include: { plan: true },
+      }),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        recentPaymentToday: recentPaymentToday
+          ? {
+              id: recentPaymentToday.id,
+              invoiceNumber: recentPaymentToday.invoiceNumber,
+              amount: Number(recentPaymentToday.amount),
+              method: recentPaymentToday.method,
+              createdAt: recentPaymentToday.createdAt.toISOString(),
+              planName: recentPaymentToday.membership?.plan?.name || "Cobro General",
+            }
+          : null,
+        activeMembership: activeMembership
+          ? {
+              id: activeMembership.id,
+              planName: activeMembership.plan?.name || "Plan Activo",
+              endDate: activeMembership.endDate.toISOString(),
+            }
+          : null,
+      },
+    };
+  } catch (error) {
+    console.error("[checkMemberPaymentStatusAction] Error:", error);
+    return { success: false, data: { recentPaymentToday: null, activeMembership: null } };
+  }
 }
 
 export async function createPaymentAction(data: PaymentInput) {
   try {
     await verifySession(["ADMIN", "SUPER_ADMIN"]);
+    const parsedAmount =
+      typeof data.amount === "string" ? parseFloat(data.amount) : data.amount;
+
+    if (!data.force) {
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      const duplicateToday = await prisma.payment.findFirst({
+        where: {
+          memberId: data.memberId,
+          status: "COMPLETED",
+          createdAt: { gte: todayStart },
+          amount: parsedAmount,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (duplicateToday) {
+        return {
+          success: false,
+          code: "DUPLICATE_PAYMENT" as const,
+          error: `Ya existe un cobro idéntico registrado hoy (${duplicateToday.invoiceNumber || "Comprobante"} · S/ ${Number(duplicateToday.amount).toFixed(2)}). Marca la confirmación si deseas registrar un pago adicional.`,
+        };
+      }
+
+      if (data.planId) {
+        const activeMembership = await prisma.membership.findFirst({
+          where: {
+            memberId: data.memberId,
+            status: "ACTIVE",
+            endDate: { gt: now },
+          },
+          orderBy: { endDate: "desc" },
+          include: { plan: true },
+        });
+
+        if (activeMembership) {
+          return {
+            success: false,
+            code: "ACTIVE_MEMBERSHIP" as const,
+            error: `El socio ya tiene la membresía "${activeMembership.plan?.name || "Activa"}" vigente hasta el ${format(activeMembership.endDate, "dd/MM/yyyy", { locale: es })}. Marca la confirmación si deseas reemplazarla o cobrar de nuevo.`,
+          };
+        }
+      }
+    }
     
     const result = await prisma.$transaction(async (tx) => {
       let membershipId = null;

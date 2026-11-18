@@ -541,7 +541,7 @@ export function NotificationsClient({
 
       {/* Main Content Area */}
       {isPending && notifications.length === 0 ? (
-        <div className="glass-card p-16 rounded-3xl border-white/10 flex flex-col items-center justify-center text-center">
+        <div className="glass-card p-6 sm:p-16 rounded-3xl border-white/10 flex flex-col items-center justify-center text-center">
           <RefreshCw className="size-10 text-primary animate-spin mb-4" />
           <h3 className="text-xl font-serif">Sincronizando notificaciones...</h3>
           <p className="text-xs text-muted-foreground mt-1">
@@ -549,7 +549,7 @@ export function NotificationsClient({
           </p>
         </div>
       ) : notifications.length === 0 ? (
-        <div className="glass-card p-16 rounded-3xl border-white/10 flex flex-col items-center justify-center text-center">
+        <div className="glass-card p-6 sm:p-16 rounded-3xl border-white/10 flex flex-col items-center justify-center text-center">
           <div className="size-16 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 text-muted-foreground">
             <Bell className="size-8 opacity-50" />
           </div>
@@ -835,19 +835,19 @@ export function NotificationsClient({
                 </div>
               </div>
 
-              <DialogFooter className="border-t border-white/10 pt-4 flex flex-row items-center justify-between gap-3">
+              <DialogFooter className="border-t border-white/10 pt-4 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={() => handleDelete(selectedNotification.id)}
                   disabled={deletingId === selectedNotification.id}
-                  className="text-rose-400 hover:bg-rose-500/10 text-xs uppercase font-bold"
+                  className="w-full sm:w-auto text-rose-400 hover:bg-rose-500/10 text-xs uppercase font-bold"
                 >
                   Eliminar Registro
                 </Button>
                 <Button
                   onClick={() => setSelectedNotification(null)}
-                  className="bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider rounded-xl"
+                  className="w-full sm:w-auto bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider rounded-xl"
                 >
                   Cerrar
                 </Button>

@@ -17,13 +17,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MemberCombobox } from "@/components/shared/MemberCombobox";
-import { createPaymentAction } from "@/lib/actions/payments-actions";
+import {
+  createPaymentAction,
+  checkMemberPaymentStatusAction,
+} from "@/lib/actions/payments-actions";
 import { toast } from "sonner";
 import {
   Loader2,
   CreditCard,
   RefreshCw,
   Zap,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -60,6 +64,11 @@ export function PaymentForm({ members, plans, trainers, onSuccess }: PaymentForm
   const [selectedMember, setSelectedMember] = React.useState<any>(null);
   const [changingPlan, setChangingPlan] = React.useState(false);
   const [comboOpen, setComboOpen] = React.useState(false);
+  const [paymentWarning, setPaymentWarning] = React.useState<{
+    recentPaymentToday: any | null;
+    activeMembership: any | null;
+  } | null>(null);
+  const [forceConfirm, setForceConfirm] = React.useState(false);
 
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentSchema),
@@ -83,13 +92,15 @@ export function PaymentForm({ members, plans, trainers, onSuccess }: PaymentForm
 
   const activePlan = activeMembership?.plan;
 
-  // When a member is selected, auto-fill their current plan
+  // When a member is selected, auto-fill their current plan and check recent/active payments
   const handleMemberSelect = React.useCallback(
-    (memberId: string) => {
+    async (memberId: string) => {
       const member = members.find((m) => m.id === memberId);
       setSelectedMember(member);
       setValue("memberId", memberId);
       setChangingPlan(false);
+      setForceConfirm(false);
+      setPaymentWarning(null);
 
       if (member?.memberships?.length) {
         const membership =
@@ -102,6 +113,13 @@ export function PaymentForm({ members, plans, trainers, onSuccess }: PaymentForm
       }
 
       setComboOpen(false);
+
+      const statusRes = await checkMemberPaymentStatusAction(memberId);
+      if (statusRes.success && statusRes.data) {
+        if (statusRes.data.recentPaymentToday || statusRes.data.activeMembership) {
+          setPaymentWarning(statusRes.data);
+        }
+      }
     },
     [members, setValue]
   );
@@ -116,10 +134,18 @@ export function PaymentForm({ members, plans, trainers, onSuccess }: PaymentForm
     [plans, setValue]
   );
 
+  const hasBlockingWarning = Boolean(
+    paymentWarning?.recentPaymentToday || paymentWarning?.activeMembership,
+  );
+
   const onSubmit = async (values: PaymentFormValues) => {
+    if (hasBlockingWarning && !forceConfirm) {
+      toast.warning("Este socio ya tiene un pago reciente o membresía vigente. Confirma la casilla para continuar.");
+      return;
+    }
     setLoading(true);
     try {
-      const result = await createPaymentAction(values);
+      const result = await createPaymentAction({ ...values, force: forceConfirm });
       if (result.success) {
         toast.success("Pago y Membresía registrados");
         onSuccess();
@@ -239,11 +265,11 @@ export function PaymentForm({ members, plans, trainers, onSuccess }: PaymentForm
                       }}
                     >
                       <FormControl>
-                        <SelectTrigger className="bg-white/5 border-white/10 h-11">
+                        <SelectTrigger className="bg-muted/40 border-border text-foreground h-11 w-full">
                           <SelectValue placeholder="Seleccionar plan..." />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="glass-card bg-black/90 text-white">
+                      <SelectContent className="bg-popover border-border text-popover-foreground backdrop-blur-xl">
                         {plans.map((p) => (
                           <SelectItem key={p.id} value={p.id}>
                             <span className="flex items-center gap-2">
@@ -324,11 +350,11 @@ export function PaymentForm({ members, plans, trainers, onSuccess }: PaymentForm
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="bg-white/5 border-white/10 h-11 w-full">
+                      <SelectTrigger className="bg-muted/40 border-border text-foreground h-11 w-full">
                         <SelectValue placeholder="Seleccionar..." />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="glass-card bg-black/90 text-white">
+                    <SelectContent className="bg-popover border-border text-popover-foreground backdrop-blur-xl">
                       <SelectItem value="CASH">Efectivo</SelectItem>
                       <SelectItem value="YAPE">Yape</SelectItem>
                       <SelectItem value="PLIN">Plin</SelectItem>
@@ -376,11 +402,11 @@ export function PaymentForm({ members, plans, trainers, onSuccess }: PaymentForm
                   </FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className="bg-white/5 border-white/10 h-11">
+                      <SelectTrigger className="bg-muted/40 border-border text-foreground h-11 w-full">
                         <SelectValue placeholder="Sin asignar" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="glass-card bg-black/90 text-white">
+                    <SelectContent className="bg-popover border-border text-popover-foreground backdrop-blur-xl">
                       <SelectItem value="none">Ninguno</SelectItem>
                       {(trainers || []).map((t: any) => (
                         <SelectItem key={t.id} value={t.id}>{t.fullName}</SelectItem>
@@ -394,9 +420,46 @@ export function PaymentForm({ members, plans, trainers, onSuccess }: PaymentForm
           </div>
         )}
 
+        {hasBlockingWarning && (
+          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2.5 text-xs">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider text-[11px]">
+                  Verificación de Cobro Existente
+                </p>
+                {paymentWarning?.recentPaymentToday && (
+                  <p className="text-foreground">
+                    Ya existe un pago registrado <strong>hoy</strong> ({paymentWarning.recentPaymentToday.invoiceNumber || "Comprobante"} ·{" "}
+                    <strong>S/ {Number(paymentWarning.recentPaymentToday.amount).toFixed(2)}</strong> · {paymentWarning.recentPaymentToday.planName}).
+                  </p>
+                )}
+                {paymentWarning?.activeMembership && (
+                  <p className="text-muted-foreground">
+                    Membresía actual <strong className="text-foreground">{paymentWarning.activeMembership.planName}</strong> vigente hasta el{" "}
+                    <strong className="text-foreground">
+                      {new Date(paymentWarning.activeMembership.endDate).toLocaleDateString("es-PE")}
+                    </strong>.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <label className="flex items-center gap-2 pt-1 cursor-pointer select-none text-[11px] font-medium text-foreground">
+              <input
+                type="checkbox"
+                checked={forceConfirm}
+                onChange={(e) => setForceConfirm(e.target.checked)}
+                className="size-4 rounded border-amber-500/50 accent-amber-600"
+              />
+              <span>Confirmo que deseo registrar este cobro de todas formas (pago adicional o reemplazo).</span>
+            </label>
+          </div>
+        )}
+
         <Button
           type="submit"
-          disabled={loading || !selectedMember}
+          disabled={loading || !selectedMember || (hasBlockingWarning && !forceConfirm)}
           className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12 rounded-xl font-bold uppercase tracking-widest gap-2 disabled:opacity-40"
         >
           {loading ? (

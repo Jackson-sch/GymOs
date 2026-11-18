@@ -18,6 +18,7 @@ interface ImageUploadProps {
   onRemove: () => void
   disabled?: boolean
   className?: string
+  fit?: "cover" | "contain"
 }
 
 export function ImageUpload({
@@ -26,6 +27,7 @@ export function ImageUpload({
   onRemove,
   disabled: externalDisabled,
   className,
+  fit = "cover",
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = React.useState(false)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -127,7 +129,10 @@ export function ImageUpload({
               fill
               sizes="(max-width: 768px) 100vw, 300px"
               unoptimized
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              className={cn(
+                "transition-transform duration-500 group-hover:scale-105",
+                fit === "contain" ? "object-contain p-2" : "object-cover"
+              )}
             />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <Upload className="w-8 h-8 text-white animate-bounce" />

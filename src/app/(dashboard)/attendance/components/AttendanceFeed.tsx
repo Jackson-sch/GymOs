@@ -37,34 +37,34 @@ export default function AttendanceFeed({
         return (
           <div
             key={entry.id}
-            className="group flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-zinc-950/80 hover:border-primary/40 hover:bg-white/10 transition-colors shadow-md backdrop-blur-md"
+            className="group flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-border bg-card/85 dark:bg-zinc-950/80 hover:border-primary/40 hover:bg-muted/50 dark:hover:bg-white/5 transition-colors shadow-sm backdrop-blur-md"
           >
-            <div className="flex items-center gap-4">
-              <div className="size-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-xs shrink-0 group-hover:scale-105 transition-transform">
-                {isQr ? <QrCode className="size-5 text-emerald-400" /> : initials}
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="size-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-xs shrink-0 group-hover:scale-105 transition-transform">
+                {isQr ? <QrCode className="size-5 text-emerald-600 dark:text-emerald-400" /> : initials}
               </div>
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+              <div className="space-y-0.5 min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate">
                     {memberName}
                   </p>
                   <Badge
                     variant="outline"
-                    className="text-[9px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border-emerald-500/30 px-2 py-0.5"
+                    className="text-[9px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 px-2 py-0.5"
                   >
                     {planName}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-3 text-[10px] font-mono text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono text-muted-foreground">
                   <span className="flex items-center gap-1 font-bold text-primary">
                     {isQr ? (
                       <>
-                        <QrCode className="size-3 text-emerald-400" />
+                        <QrCode className="size-3 text-emerald-600 dark:text-emerald-400" />
                         <span>ACCESO QR</span>
                       </>
                     ) : (
                       <>
-                        <UserCheck className="size-3 text-emerald-400" />
+                        <UserCheck className="size-3 text-emerald-600 dark:text-emerald-400" />
                         <span>CHECK-IN MANUAL</span>
                       </>
                     )}

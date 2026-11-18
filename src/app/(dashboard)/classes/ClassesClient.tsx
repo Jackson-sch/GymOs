@@ -167,17 +167,17 @@ export function ClassesClient({ classes, trainers }: { classes: any[]; trainers:
       {/* Main Content Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Main Schedule Timeline View */}
-        <div className="lg:col-span-8 space-y-6">
+        <div className="lg:col-span-8 space-y-6 min-w-0">
           <WeeklyCalendar
             selectedDate={selectedDate}
             onDateSelect={(date) => dispatch({ type: "SET_SELECTED_DATE", payload: date })}
           />
 
-          <div className="flex items-center justify-between pt-2">
-            <h2 className="text-2xl font-serif font-bold text-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+            <h2 className="text-xl sm:text-2xl font-serif font-bold text-foreground">
               Sesiones para el {mounted ? formatLongDate(selectedDate) : "..."}
             </h2>
-            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 font-mono text-xs font-bold px-3 py-1">
+            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 font-mono text-xs font-bold px-3 py-1 shrink-0">
               {filteredClasses.length} Sesiones
             </Badge>
           </div>
@@ -260,7 +260,7 @@ export function ClassesClient({ classes, trainers }: { classes: any[]; trainers:
       {/* Edit Class Dialog */}
       {editingClass && (
         <Dialog open={!!editingClass} onOpenChange={() => dispatch({ type: "SET_EDITING_CLASS", payload: null })}>
-          <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl max-w-2xl rounded-3xl">
+          <DialogContent className="glass-card border-white/10 bg-zinc-950/95 backdrop-blur-2xl w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar rounded-3xl">
             <DialogHeader>
               <DialogTitle className="text-3xl font-serif text-foreground">Ajustar Sesión</DialogTitle>
               <DialogDescription className="text-xs uppercase tracking-widest text-muted-foreground">

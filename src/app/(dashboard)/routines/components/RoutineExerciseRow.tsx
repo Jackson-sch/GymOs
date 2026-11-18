@@ -8,14 +8,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Combobox } from "@/components/ui/combobox";
 import { Dumbbell, Trash2 } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
-import type { RoutineFormValues } from "../RoutineAssignmentDialog";
 
 interface RoutineExerciseRowProps {
-  form: UseFormReturn<RoutineFormValues>;
+  form: UseFormReturn<any>;
   index: number;
   exercises: any[];
   onRemove: (index: number) => void;
 }
+
+const DAYS_OF_WEEK = [
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
+  "General",
+];
 
 export function RoutineExerciseRow({
   form,
@@ -24,16 +34,32 @@ export function RoutineExerciseRow({
   onRemove,
 }: RoutineExerciseRowProps) {
   return (
-    <div className="p-5 rounded-2xl bg-white/3 border border-white/10 hover:bg-white/6 transition-colors grid grid-cols-1 md:grid-cols-12 gap-5 items-end animate-slide-right-fast group">
-      <div className="md:col-span-4 space-y-2">
-        <FormLabel className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-          Ejercicio
-        </FormLabel>
+    <div className="p-4 rounded-2xl bg-card dark:bg-white/[0.03] border border-border/80 dark:border-white/10 hover:border-primary/30 shadow-xs transition-colors animate-slide-right-fast group">
+      <div className="flex items-center justify-between mb-3 md:hidden">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+          Ejercicio #{index + 1}
+        </span>
+        <Button
+          type="button"
+          onClick={() => onRemove(index)}
+          variant="ghost"
+          size="icon"
+          aria-label={`Eliminar ejercicio ${index + 1}`}
+          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors h-8 w-8"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-[minmax(0,2.3fr)_minmax(126px,1fr)_72px_84px_minmax(0,1.5fr)_36px] gap-3 items-start">
         <FormField
           control={form.control}
           name={`exercises.${index}.exerciseId`}
           render={({ field: exerciseField }) => (
-            <FormItem>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Ejercicio
+              </FormLabel>
               <FormControl>
                 <Combobox
                   items={exercises.map((e) => ({
@@ -45,124 +71,121 @@ export function RoutineExerciseRow({
                   onSelect={exerciseField.onChange}
                   placeholder="Seleccionar"
                   searchPlaceholder="Buscar ejercicio..."
-                  triggerClassName="h-10 rounded-xl"
+                  triggerClassName="h-10 rounded-xl bg-background border-border/80 hover:bg-muted/40 text-sm"
                   icon={Dumbbell}
                 />
               </FormControl>
-              <FormMessage className="text-[8px]" />
+              <FormMessage className="text-[11px]" />
             </FormItem>
           )}
         />
-      </div>
 
-      <div className="md:col-span-2 space-y-2">
-        <FormLabel className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-          Día
-        </FormLabel>
         <FormField
           control={form.control}
           name={`exercises.${index}.day`}
           render={({ field: dayField }) => (
-            <FormItem>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Día
+              </FormLabel>
               <Select value={dayField.value} onValueChange={dayField.onChange}>
                 <FormControl>
-                  <SelectTrigger className="h-10 rounded-xl bg-white/5 border-white/10">
+                  <SelectTrigger className="h-10 w-full rounded-xl bg-background border-border/80 text-sm">
                     <SelectValue />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent className="bg-secondary/95 backdrop-blur-md border-white/10">
-                  {["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo", "General"].map(
-                    (d) => (
-                      <SelectItem key={d} value={d}>
-                        {d}
-                      </SelectItem>
-                    ),
-                  )}
+                <SelectContent className="bg-popover/95 backdrop-blur-md border-border rounded-xl">
+                  {DAYS_OF_WEEK.map((d) => (
+                    <SelectItem key={d} value={d}>
+                      {d}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              <FormMessage className="text-[8px]" />
+              <FormMessage className="text-[11px]" />
             </FormItem>
           )}
         />
-      </div>
 
-      <div className="md:col-span-1 space-y-2">
-        <FormLabel className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground text-center">
-          Sets
-        </FormLabel>
-        <FormField
-          control={form.control}
-          name={`exercises.${index}.sets`}
-          render={({ field: setsField }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  type="number"
-                  {...setsField}
-                  onChange={(e) => setsField.onChange(parseInt(e.target.value))}
-                  className="h-10 px-2 rounded-xl bg-white/5 border-white/10 text-center"
-                />
-              </FormControl>
-              <FormMessage className="text-[8px]" />
-            </FormItem>
-          )}
-        />
-      </div>
+        <div className="grid grid-cols-2 gap-3 md:contents">
+          <FormField
+            control={form.control}
+            name={`exercises.${index}.sets`}
+            render={({ field: setsField }) => (
+              <FormItem className="space-y-1.5">
+                <FormLabel className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:text-center">
+                  Sets
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min={1}
+                    {...setsField}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      setsField.onChange(Number.isNaN(val) ? 0 : val);
+                    }}
+                    className="h-10 px-2 rounded-xl bg-background border-border/80 text-center font-medium tabular-nums"
+                  />
+                </FormControl>
+                <FormMessage className="text-[11px]" />
+              </FormItem>
+            )}
+          />
 
-      <div className="md:col-span-1 space-y-2">
-        <FormLabel className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground text-center">
-          Reps
-        </FormLabel>
-        <FormField
-          control={form.control}
-          name={`exercises.${index}.reps`}
-          render={({ field: repsField }) => (
-            <FormItem>
-              <FormControl>
-                <Input
-                  {...repsField}
-                  placeholder="12"
-                  className="h-10 px-2 rounded-xl bg-white/5 border-white/10 text-center"
-                />
-              </FormControl>
-              <FormMessage className="text-[8px]" />
-            </FormItem>
-          )}
-        />
-      </div>
+          <FormField
+            control={form.control}
+            name={`exercises.${index}.reps`}
+            render={({ field: repsField }) => (
+              <FormItem className="space-y-1.5">
+                <FormLabel className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground md:text-center">
+                  Reps
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...repsField}
+                    placeholder="12"
+                    className="h-10 px-2 rounded-xl bg-background border-border/80 text-center font-medium"
+                  />
+                </FormControl>
+                <FormMessage className="text-[11px]" />
+              </FormItem>
+            )}
+          />
+        </div>
 
-      <div className="md:col-span-3 space-y-2">
-        <FormLabel className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-          Notas / Peso
-        </FormLabel>
         <FormField
           control={form.control}
           name={`exercises.${index}.notes`}
           render={({ field: notesField }) => (
-            <FormItem>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Notas / Peso
+              </FormLabel>
               <FormControl>
                 <Input
                   {...notesField}
                   placeholder="Ej: 20kg, lento"
-                  className="h-10 rounded-xl bg-white/5 border-white/10"
+                  className="h-10 rounded-xl bg-background border-border/80 text-sm"
                 />
               </FormControl>
-              <FormMessage className="text-[8px]" />
+              <FormMessage className="text-[11px]" />
             </FormItem>
           )}
         />
-      </div>
 
-      <div className="md:col-span-1 flex justify-end">
-        <Button
-          type="button"
-          onClick={() => onRemove(index)}
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors h-10 w-10"
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
+        <div className="hidden md:flex justify-end pt-[22px]">
+          <Button
+            type="button"
+            onClick={() => onRemove(index)}
+            variant="ghost"
+            size="icon"
+            aria-label={`Eliminar ejercicio ${index + 1}`}
+            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors h-10 w-9"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );

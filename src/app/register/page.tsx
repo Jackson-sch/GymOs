@@ -127,7 +127,7 @@ export default function RegisterPage() {
             </div>
             
             <div className="space-y-2">
-              <h1 className="text-4xl sm:text-5xl font-serif text-foreground leading-tight tracking-tight">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-serif text-foreground leading-tight tracking-tight">
                 {step === 1 && "Únete a GymOS"}
                 {step === 2 && "Elige tu Plan de Éxito"}
                 {step === 3 && "¡Bienvenido a la Élite!"}
@@ -333,7 +333,7 @@ export default function RegisterPage() {
                 <Button 
                   onClick={handleRegister}
                   disabled={loading}
-                  className="h-12 px-8 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-wider shadow-xl shadow-primary/20"
+                  className="h-12 p-5 sm:p-8 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-wider shadow-xl shadow-primary/20"
                 >
                   {loading ? <Loader2 className="size-4 mr-2 animate-spin" /> : <CheckCircle2 className="size-4 mr-2" />}
                   {loading ? "Creando Identidad..." : (selectedPlanId ? "Completar Registro" : "Continuar Sin Plan")}
@@ -367,7 +367,7 @@ export default function RegisterPage() {
               <div className="pt-6">
                 <Button 
                   onClick={() => router.push("/login")}
-                  className="h-12 px-8 bg-emerald-500 hover:bg-emerald-600 text-black font-extrabold uppercase tracking-widest text-xs rounded-xl shadow-xl shadow-emerald-500/20 transition-colors duration-300"
+                  className="h-12 p-5 sm:p-8 bg-emerald-500 hover:bg-emerald-600 text-black font-extrabold uppercase tracking-widest text-xs rounded-xl shadow-xl shadow-emerald-500/20 transition-colors duration-300"
                 >
                   Ingresar a Mi Portal
                   <ArrowRight className="ml-2 size-4" />
